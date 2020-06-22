@@ -7,3 +7,11 @@ services:
 #    service_name:
 #        class: AppBundle\Directory\ClassName
 #        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
+
+    # Upgraded Doctrine naming strategy with number aware (fixed temporarily a depreciation):
+    doctrine.orm.naming_strategy.underscore:
+        class: Doctrine\ORM\Mapping\UnderscoreNamingStrategy
+        arguments:
+            $case: 0
+            $numberAware: true
+
