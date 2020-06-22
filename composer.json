@@ -1,5 +1,6 @@
 {
-    "name": "saro0h/to-do-list",
+    "name": "sje_guedes/symfony-td-ac",
+    "description": "Simple Symfony 3 management project to upgrade to Symfony 4",
     "license": "proprietary",
     "type": "project",
     "autoload": {
@@ -31,7 +32,9 @@
     },
     "require-dev": {
         "sensio/generator-bundle": "^3.0",
-        "symfony/phpunit-bridge": "^3.0"
+        "symfony/phpunit-bridge": "^3.0",
+        "doctrine/doctrine-fixtures-bundle": "^2.3",
+        "fzaninotto/faker": "^1.9"
     },
     "scripts": {
         "symfony-scripts": [
