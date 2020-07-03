@@ -14,3 +14,6 @@
 !var/SymfonyRequirements.php
 /vendor/
 /web/bundles/
+
+# ignore pid file which is generated with Sf3.3
+.web-server-pid
