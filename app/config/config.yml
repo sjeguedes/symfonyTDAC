@@ -67,3 +67,10 @@ swiftmailer:
     username:  "%mailer_user%"
     password:  "%mailer_password%"
     spool:     { type: memory }
+
+# added for Sf3.4 du to sensio framework extra bundle route annotations deprecation
+# https://github.com/symfony/demo/issues/786
+# https://medium.com/@nebkam/symfony-deprecated-route-and-method-annotations-4d5e1d34556a
+sensio_framework_extra:
+    router:
+        annotations: false
