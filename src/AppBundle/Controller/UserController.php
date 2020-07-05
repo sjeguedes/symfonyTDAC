@@ -73,7 +73,7 @@ class UserController extends Controller
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $password = $userPasswordEncoder->encodePassword($user, $user->getPassword());
             $user->setPassword($password);
 
