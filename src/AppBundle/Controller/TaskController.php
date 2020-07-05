@@ -6,11 +6,15 @@ use AppBundle\Entity\Task;
 use AppBundle\Form\TaskType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TaskController extends Controller
 {
     /**
+     * List all tasks.
+     *
      * @Route("/tasks", name="task_list")
      */
     public function listAction()
@@ -19,6 +23,12 @@ class TaskController extends Controller
     }
 
     /**
+     * Create a Task entity ans save data.
+     *
+     * @param Request $request
+     *
+     * @return RedirectResponse|Response
+     *
      * @Route("/tasks/create", name="task_create")
      */
     public function createAction(Request $request)
@@ -43,6 +53,13 @@ class TaskController extends Controller
     }
 
     /**
+     * Update a Task entity and save modified data.
+     *
+     * @param Task    $task
+     * @param Request $request
+     *
+     * @return RedirectResponse|Response
+     *
      * @Route("/tasks/{id}/edit", name="task_edit")
      */
     public function editAction(Task $task, Request $request)
@@ -66,6 +83,12 @@ class TaskController extends Controller
     }
 
     /**
+     * Toggle Task "isDone" state.
+     *
+     * @param Task $task
+     *
+     * @return RedirectResponse
+     *
      * @Route("/tasks/{id}/toggle", name="task_toggle")
      */
     public function toggleTaskAction(Task $task)
@@ -79,6 +102,12 @@ class TaskController extends Controller
     }
 
     /**
+     * Delete a Task entity and remove data.
+     *
+     * @param Task $task
+     *
+     * @return RedirectResponse
+     *
      * @Route("/tasks/{id}/delete", name="task_delete")
      */
     public function deleteTaskAction(Task $task)

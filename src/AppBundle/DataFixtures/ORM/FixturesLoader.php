@@ -7,13 +7,12 @@ use AppBundle\Entity\User;
 use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * Class FixturesLoader.
  */
-class FixturesLoader implements FixtureInterface, ContainerAwareInterface
+class FixturesLoader implements FixtureInterface
 {
     /**
      * @var Faker\Generator
@@ -21,34 +20,30 @@ class FixturesLoader implements FixtureInterface, ContainerAwareInterface
     private $faker;
 
     /**
-     * @var ContainerInterface|null
+     * @var UserPasswordEncoderInterface
      */
-    private $container;
+    private $userPasswordEncoder;
 
     /**
      * LoadFixtures constructor.
+     *
+     * @param UserPasswordEncoderInterface $userPasswordEncoder
      */
-    public function __construct()
+    public function __construct(UserPasswordEncoderInterface $userPasswordEncoder)
     {
+        // Configure Faker to create french data
         $this->faker = $faker = Faker\Factory::create('fr_FR');
+        $this->userPasswordEncoder = $userPasswordEncoder;
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-    }
-
-    /**
+     * Load User and Task entities fixtures and save data.
+     *
      * {@inheritDoc}
      */
     public function load(ObjectManager $manager)
     {
-        $encoder = $this->container->get('security.password_encoder');
-
-        // Keep the same set of Faker data for each fixtures load (on this computer)
+        // Keep the same set of Faker data for each fixtures loading (on this computer)
         $this->faker->seed(2020); // Define what you want
 
         // Create User instances
@@ -58,7 +53,7 @@ class FixturesLoader implements FixtureInterface, ContainerAwareInterface
             // Sadly, setters are not chained in the base project!
             $userName = $this->faker->userName;
             $users[$i]->setUserName($userName . '_' . ($i + 1) );
-            $users[$i]->setPassword($encoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1)));
+            $users[$i]->setPassword($this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1)));
             $users[$i]->setEmail($userName. '@' . $this->faker->freeEmailDomain);
             $manager->persist($users[$i]);
         }

@@ -5,16 +5,23 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends Controller
 {
     /**
+     * log in a user.
+     *
+     * @param AuthenticationUtils $authenticationUtils
+     * @param Request             $request
+     *
+     * @return Response
+     *
      * @Route("/login", name="login")
      */
-    public function loginAction(Request $request)
+    public function loginAction(AuthenticationUtils $authenticationUtils, Request $request)
     {
-        $authenticationUtils = $this->get('security.authentication_utils');
-
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
@@ -25,6 +32,8 @@ class SecurityController extends Controller
     }
 
     /**
+     * Create a route for guard authentication process.
+     *
      * @Route("/login_check", name="login_check")
      */
     public function loginCheck()
@@ -33,6 +42,8 @@ class SecurityController extends Controller
     }
 
     /**
+     * Create a route to log out a user.
+     *
      * @Route("/logout", name="logout")
      */
     public function logoutCheck()

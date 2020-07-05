@@ -34,7 +34,7 @@ services:
     #     arguments:
     #         $someArgument: 'some_value'
 
-    # Upgraded Doctrine naming strategy with number aware (fixed temporarily a depreciation):
+    # Upgraded Doctrine naming strategy with number aware (fixed temporarily a deprecation):
     doctrine.orm.naming_strategy.underscore_number_aware:
         class: Doctrine\ORM\Mapping\UnderscoreNamingStrategy
         arguments:
