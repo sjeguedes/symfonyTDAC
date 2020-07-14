@@ -2,12 +2,17 @@
 
 namespace AppBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class DefaultController
+ */
 class DefaultController extends Controller
 {
     /**
+     * Show homepage.
+     *
      * @Route("/", name="homepage")
      */
     public function indexAction()
