@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class TaskController
+ */
 class TaskController extends Controller
 {
     /**
@@ -30,6 +33,8 @@ class TaskController extends Controller
      * @return RedirectResponse|Response
      *
      * @Route("/tasks/create", name="task_create")
+     *
+     * @throws \Exception
      */
     public function createAction(Request $request)
     {

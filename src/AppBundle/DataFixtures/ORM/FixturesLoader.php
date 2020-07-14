@@ -10,7 +10,9 @@ use Faker;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
- * Class FixturesLoader.
+ * Class FixturesLoader
+ *
+ * Load Faker fixtures thanks to Doctrine bundle.
  */
 class FixturesLoader implements FixtureInterface
 {
@@ -50,10 +52,12 @@ class FixturesLoader implements FixtureInterface
         $users = [];
         for ($i = 0; $i < 5; $i ++) {
             $users[$i] = new User();
-            // Sadly, setters are not chained in the base project!
+            // Sadly, setters are not chained in the forked project!
             $userName = $this->faker->userName;
             $users[$i]->setUserName($userName . '_' . ($i + 1) );
-            $users[$i]->setPassword($this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1)));
+            $users[$i]->setPassword(
+                $this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1))
+            );
             $users[$i]->setEmail($userName. '@' . $this->faker->freeEmailDomain);
             $manager->persist($users[$i]);
         }
@@ -65,7 +69,9 @@ class FixturesLoader implements FixtureInterface
             // Sadly, setters are not chained in the base project!
             $tasks[$i]->setTitle('Task ' . ($i + 1) . ': ' . $this->faker->word);
             $tasks[$i]->setContent($this->faker->text);
-            $tasks[$i]->setCreatedAt($this->faker->dateTimeBetween('-30 days', 'now', 'Europe/Paris'));
+            $tasks[$i]->setCreatedAt(
+                $this->faker->dateTimeBetween('-30 days', 'now', 'Europe/Paris')
+            );
             $tasks[$i]->toggle(array_rand([true, false]));
             $manager->persist($tasks[$i]);
         }
