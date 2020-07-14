@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\DataFixtures\ORM;
+namespace AppBundle\DataFixtures;
 
 use AppBundle\Entity\Task;
 use AppBundle\Entity\User;
