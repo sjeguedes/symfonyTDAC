@@ -34,7 +34,12 @@ services:
     #     arguments:
     #         $someArgument: 'some_value'
 
-    doctrine.orm.naming_strategy.underscore_number_aware:
-        class: Doctrine\ORM\Mapping\UnderscoreNamingStrategy
+    # must declare custom Doctrine fixtures loader as a service with the right tag id for Sf4.0
+    AppBundle\DataFixtures\:
+        resource: '%kernel.project_dir%/src/AppBundle/DataFixtures/*'
+        tags: ['doctrine.fixture.orm']
+
+    # use Doctrine naming strategy underscore number aware explicitly as a service
+    Doctrine\ORM\Mapping\UnderscoreNamingStrategy:
         arguments:
             $numberAware: true

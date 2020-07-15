@@ -34,7 +34,7 @@ class FixturesLoader implements FixtureInterface
     public function __construct(UserPasswordEncoderInterface $userPasswordEncoder)
     {
         // Configure Faker to create french data
-        $this->faker = $faker = Faker\Factory::create('fr_FR');
+        $this->faker = Faker\Factory::create('fr_FR');
         $this->userPasswordEncoder = $userPasswordEncoder;
     }
 

@@ -63,6 +63,20 @@ doctrine:
         #naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
 
+doctrine_migrations:
+    migrations_paths:
+        'AppBundle\Migrations': 'src/AppBundle/Migrations'
+
+    storage:
+        # Default (SQL table) metadata storage configuration
+        # https://symfony.com/doc/master/bundles/DoctrineMigrationsBundle/index.html
+        table_storage:
+            table_name: 'doctrine_migration_versions'
+            version_column_name: 'version'
+            version_column_length: 1024
+            executed_at_column_name: 'executedAt' #'executed_at' for underscore naming strategy
+            execution_time_column_name: 'executionTime' #'execution_time' for underscore naming strategy
+
 # Swiftmailer Configuration
 swiftmailer:
     transport: "%mailer_transport%"
