@@ -17,3 +17,9 @@
 
 # ignore pid file which is generated with Sf3.3
 .web-server-pid
+
+###> symfony/phpunit-bridge ###
+.phpunit
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
