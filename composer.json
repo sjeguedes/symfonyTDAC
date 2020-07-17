@@ -5,7 +5,8 @@
     "type": "project",
     "autoload": {
         "psr-4": {
-            "": "src/"
+            "App\\": "src/",
+            "AppBundle\\": "src/AppBundle"
         },
         "classmap": [
             "app/AppKernel.php",
@@ -14,7 +15,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "App\\Tests\\": "tests/",
+            "Tests\\AppBundle\\": "tests/AppBundle"
         }
     },
     "config": {
@@ -25,28 +27,64 @@
     },
     "require": {
         "php": "^7.1.3",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
         "doctrine/doctrine-bundle": "^1.6",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.5",
         "sensio/framework-extra-bundle": "^5.0.0",
-        "symfony/flex": "^1.9",
-        "symfony/monolog-bundle": "^3.1.0",
+        "symfony/asset": "4.0.*",
+        "symfony/console": "4.0.*",
+        "symfony/dotenv": "4.0.*",
+        "symfony/flex": "1.1.8",
+        "symfony/form": "4.0.*",
+        "symfony/framework-bundle": "4.0.*",
+        "symfony/monolog-bundle": "^3.5",
         "symfony/polyfill-apcu": "^1.0",
-        "symfony/swiftmailer-bundle": "^3.1",
-        "symfony/symfony": "4.0"
+        "symfony/security-bundle": "4.0.*",
+        "symfony/swiftmailer-bundle": "^3.2",
+        "symfony/templating": "4.0.*",
+        "symfony/twig-bundle": "4.0.*",
+        "symfony/validator": "4.0.*",
+        "symfony/yaml": "4.0.*"
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.0.2",
         "fzaninotto/faker": "^1.9",
-        "symfony/phpunit-bridge": "4.0",
-        "symfony/web-server-bundle": "4.0"
+        "symfony/phpunit-bridge": "4.0.*",
+        "symfony/stopwatch": "4.0.*",
+        "symfony/var-dumper": "4.0.*",
+        "symfony/web-profiler-bundle": "4.0.*",
+        "symfony/web-server-bundle": "4.0.*"
+    },
+    "replace": {
+        "paragonie/random_compat": "2.*",
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-iconv": "*",
+        "symfony/polyfill-php71": "*",
+        "symfony/polyfill-php70": "*",
+        "symfony/polyfill-php56": "*"
+    },
+    "scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        },
+        "post-install-cmd": [
+            "@auto-scripts"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ]
+    },
+    "conflict": {
+        "symfony/symfony": "*"
     },
     "extra": {
-        "symfony-app-dir": "app",
-        "symfony-bin-dir": "bin",
-        "symfony-var-dir": "var",
-        "symfony-web-dir": "web",
-        "symfony-tests-dir": "tests",
-        "symfony-assets-install": "relative"
+        "symfony": {
+            "allow-contrib": false,
+            "require": "4.0.*"
+        }
     }
 }

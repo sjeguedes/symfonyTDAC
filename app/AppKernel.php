@@ -21,7 +21,6 @@ class AppKernel extends Kernel
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
-            $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
             $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
             // Bundle added at beginning of project management to create fixtures
             $bundles[] = new Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle();
