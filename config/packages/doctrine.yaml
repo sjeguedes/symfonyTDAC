@@ -12,7 +12,10 @@ doctrine:
             collate: utf8mb4_unicode_ci
     orm:
         auto_generate_proxy_classes: true
-        naming_strategy: doctrine.orm.naming_strategy.underscore
+
+        # temporarily replaced by specified service in services.yaml to "underscore number aware" strategy
+        #naming_strategy: doctrine.orm.naming_strategy.underscore
+
         auto_mapping: true
         mappings:
             App:
@@ -21,3 +24,11 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+
+            # add old config temporarily to make this old mapping until change
+            AppBundle:
+                is_bundle: false
+                type: annotation
+                dir: '%kernel.project_dir%/src/AppBundle/Entity'
+                prefix: 'AppBundle\Entity'
+                alias: AppBundle
