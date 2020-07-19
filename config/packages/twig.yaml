@@ -4,6 +4,4 @@ twig:
     strict_variables: '%kernel.debug%'
     number_format:
         thousands_separator: ','
-
-    # transferred from old config
     form_themes: ['bootstrap_3_layout.html.twig']

@@ -1,13 +1,13 @@
 security:
     encoders:
         # add old path temporarily
-        AppBundle\Entity\User: bcrypt
+        App\Entity\User: bcrypt
 
     providers:
         doctrine:
             entity:
                 # add old path temporarily
-                class: AppBundle\Entity\User
+                class: App\Entity\User
                 property: username
 
     firewalls:
