@@ -13,6 +13,4 @@ return [
     Symfony\Bundle\TwigBundle\TwigBundle::class => ['all' => true],
     Symfony\Bundle\WebProfilerBundle\WebProfilerBundle::class => ['dev' => true, 'test' => true],
     Symfony\Bundle\WebServerBundle\WebServerBundle::class => ['dev' => true],
-    # added temporarily to make old routing.yml routes declaration work in new routes.yaml file
-    AppBundle\AppBundle::class => ['dev' => true],
 ];

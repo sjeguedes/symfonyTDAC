@@ -1,8 +1,11 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
-
 # add temporarily old routes configuration
 app:
-    resource: "@AppBundle/Controller/"
+    resource: "../src/AppBundle/Controller/"
     type:     annotation
+
+# Not really necessary to be declared since it is the default config!
+homepage:
+    path: /
+    # Temporary define homepage old path until change for Flex architecture
+    controller: AppBundle\Controller\DefaultController::indexAction
+    #controller: App\Controller\DefaultController::indexAction
