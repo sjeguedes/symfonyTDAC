@@ -1,3 +1,5 @@
+# run "git status --ignored" to check
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -12,10 +14,6 @@
 ###< symfony/web-server-bundle ###
 
 ###> symfony/phpunit-bridge ###
-# added after Flex Symfony phpunit bridge initialiation
-/bin/.phpunit
-/bin/phpunit
-
 .phpunit
 .phpunit.result.cache
 /phpunit.xml
