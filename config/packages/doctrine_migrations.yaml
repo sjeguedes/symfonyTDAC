@@ -12,5 +12,5 @@ doctrine_migrations:
             table_name: 'doctrine_migration_versions'
             version_column_name: 'version'
             version_column_length: 1024
-            executed_at_column_name: 'executedAt' #'executed_at' for underscore naming strategy
-            execution_time_column_name: 'executionTime' #'execution_time' for underscore naming strategy
+            executed_at_column_name: 'executed_at' #'executedAt' for underscore number aware naming strategy
+            execution_time_column_name: 'execution_time' #'executionTime' for underscore number aware naming strategy

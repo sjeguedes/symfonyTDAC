@@ -49,8 +49,3 @@ services:
     AppBundle\DataFixtures\:
         resource: '%kernel.project_dir%/src/AppBundle/DataFixtures/*'
         tags: ['doctrine.fixture.orm']
-
-    # use Doctrine naming strategy underscore number aware explicitly as a service
-    Doctrine\ORM\Mapping\UnderscoreNamingStrategy:
-        arguments:
-            $numberAware: true
