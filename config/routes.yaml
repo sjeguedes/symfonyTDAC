@@ -1,0 +1,9 @@
+# add temporarily old routes configuration
+app:
+    resource: "../src/Controller/"
+    type:     annotation
+
+# Not really necessary to be declared since it is the default config!
+homepage:
+    path: /
+    controller: App\Controller\DefaultController::indexAction
