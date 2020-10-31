@@ -165,6 +165,9 @@
     "symfony/cache": {
         "version": "v4.3.11"
     },
+    "symfony/cache-contracts": {
+        "version": "v1.1.10"
+    },
     "symfony/config": {
         "version": "v4.4.10"
     },
@@ -322,6 +325,9 @@
     },
     "symfony/polyfill-php72": {
         "version": "v1.18.0"
+    },
+    "symfony/polyfill-php73": {
+        "version": "v1.20.0"
     },
     "symfony/polyfill-php80": {
         "version": "v1.18.0"

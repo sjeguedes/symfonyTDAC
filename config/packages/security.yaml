@@ -1,12 +1,11 @@
 security:
     encoders:
-        # add old path temporarily
-        App\Entity\User: bcrypt
+        App\Entity\User:
+            algorithm: 'auto'
 
     providers:
         doctrine:
             entity:
-                # add old path temporarily
                 class: App\Entity\User
                 property: username
 
