@@ -38,7 +38,7 @@ class User implements UserInterface
     /**
      * @var string
      *
-     * @ORM\Column(type="string", length=64)
+     * @ORM\Column(type="string", length=98)
      */
     private $password;
 
