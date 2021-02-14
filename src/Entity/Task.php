@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -22,14 +24,14 @@ class Task
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private int $id;
 
     /**
-     * @var \DateTime
+     * @var \DateTimeImmutable
      *
      * @ORM\Column(type="datetime")
      */
-    private $createdAt;
+    private \DateTimeImmutable $createdAt;
 
     /**
      * @var string
@@ -37,7 +39,7 @@ class Task
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Vous devez saisir un titre.")
      */
-    private $title;
+    private string $title;
 
     /**
      * @var string
@@ -45,95 +47,113 @@ class Task
      * @ORM\Column(type="text")
      * @Assert\NotBlank(message="Vous devez saisir du contenu.")
      */
-    private $content;
+    private string $content;
 
     /**
      * @var bool
      *
      * @ORM\Column(type="boolean")
      */
-    private $isDone;
+    private bool $isDone;
 
     /**
      * Task constructor.
+     *
+     * @return void
      *
      * @throws \Exception
      */
     public function __construct()
     {
-        $this->createdAt = new \Datetime();
+        $this->createdAt = new \DateTimeImmutable();
         $this->isDone = false;
     }
 
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * @return \Datetime
+     * @return \DateTimeImmutable
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
 
     /**
-     * @param \Datetime $createdAt
+     * @param \DateTimeImmutable $createdAt
+     *
+     * @return Task
      */
-    public function setCreatedAt($createdAt)
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
 
     /**
      * @param string $title
+     *
+     * @return Task
      */
-    public function setTitle($title)
+    public function setTitle(string $title): self
     {
         $this->title = $title;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
 
     /**
      * @param string $content
+     *
+     * @return Task
      */
-    public function setContent($content)
+    public function setContent(string $content): self
     {
         $this->content = $content;
+
+        return $this;
     }
 
     /**
      * @return bool
      */
-    public function isDone()
+    public function isDone(): bool
     {
         return $this->isDone;
     }
 
     /**
      * @param bool $flag
+     *
+     * @return Task
      */
-    public function toggle($flag)
+    public function toggle(bool $flag): self
     {
         $this->isDone = $flag;
+
+        return $this;
     }
 }
