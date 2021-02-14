@@ -41,42 +41,73 @@ class FixturesLoader implements FixtureInterface
     /**
      * Load User and Task entities fixtures and save data.
      *
-     * {@inheritDoc}
+     * {@inheritdoc}
+     * @throws \Exception
      */
     public function load(ObjectManager $manager)
     {
         // Keep the same set of Faker data for each fixtures loading (on this computer)
-        $this->faker->seed(2020); // Define what you want
-
+        $this->faker->seed(2021); // Define what you want
         // Create User instances
-        $users = [];
-        for ($i = 0; $i < 5; $i ++) {
-            $users[$i] = new User();
-            // Sadly, setters are not chained in the forked project!
-            $userName = $this->faker->userName;
-            $users[$i]->setUserName($userName . '_' . ($i + 1) );
-            $users[$i]->setPassword(
-                $this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1))
-            );
-            $users[$i]->setEmail($userName. '@' . $this->faker->freeEmailDomain);
-            $manager->persist($users[$i]);
-        }
-
+        $this->createUsers($manager);
         // Create Task instances
+        $this->createTasks($manager);
+         // Save data
+        $manager->flush();
+    }
+
+    /**
+     * Create a fake starting set of tasks without author (and obviously without last editor).
+     *
+     * @param ObjectManager $manager
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    private function createTasks(ObjectManager $manager): void
+    {
         $tasks = [];
         for ($i = 0; $i < 20; $i ++) {
             $tasks[$i] = new Task();
-            // Sadly, setters are not chained in the base project!
-            $tasks[$i]->setTitle('Task ' . ($i + 1) . ': ' . $this->faker->word);
-            $tasks[$i]->setContent($this->faker->text);
-            $tasks[$i]->setCreatedAt(
-                $this->faker->dateTimeBetween('-30 days', 'now', 'Europe/Paris')
-            );
-            $tasks[$i]->toggle(array_rand([true, false]));
+            // Set task properties
+            $tasks[$i]
+                ->setTitle('Task ' . ($i + 1) . ': ' . $this->faker->word)
+                ->setContent($this->faker->text)
+                ->setCreatedAt(
+                    \DateTimeImmutable::createFromMutable(
+                        $this->faker->dateTimeBetween('-30 days', 'now', 'Europe/Paris')
+                    )
+                )
+                ->setUpdatedAt($tasks[$i]->getCreatedAt())
+                ->toggle(array_rand([true, false]));
+            // Persist data
             $manager->persist($tasks[$i]);
         }
+    }
 
-        // Save data
-        $manager->flush();
+    /**
+     * Create a fake starting set of users.
+     *
+     * @param ObjectManager $manager
+     *
+     * @return void
+     */
+    private function createUsers(ObjectManager $manager): void
+    {
+        $users = [];
+        for ($i = 0; $i < 5; $i ++) {
+            $users[$i] = new User();
+            // Set user properties
+            $userName = $this->faker->userName;
+            $users[$i]
+                ->setUserName($userName . '_' . ($i + 1) )
+                ->setPassword(
+                    $this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1))
+                )
+                ->setEmail($userName. '@' . $this->faker->freeEmailDomain);
+            // Persist data
+            $manager->persist($users[$i]);
+        }
     }
 }

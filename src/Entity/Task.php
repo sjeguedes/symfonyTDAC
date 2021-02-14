@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -29,9 +30,16 @@ class Task
     /**
      * @var \DateTimeImmutable
      *
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime_immutable")
      */
     private \DateTimeImmutable $createdAt;
+
+    /**
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private \DateTimeImmutable $updatedAt;
 
     /**
      * @var string
@@ -57,6 +65,23 @@ class Task
     private bool $isDone;
 
     /**
+     * @var UserInterface|User|null a task corresponding author
+     *
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(name="author_id", referencedColumnName="id", nullable=true)
+     */
+    private ?UserInterface $author;
+
+    /**
+     * @var UserInterface|User|null the last corresponding user which edited a task
+     *                              which can be different from the author
+     *
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(name="last_editor_id", referencedColumnName="id", nullable=true)
+     */
+    private ?UserInterface $lastEditor;
+
+    /**
      * Task constructor.
      *
      * @return void
@@ -66,6 +91,7 @@ class Task
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->isDone = false;
     }
 
@@ -93,6 +119,26 @@ class Task
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getUpdatedAt(): \DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @param \DateTimeImmutable $updatedAt
+     *
+     * @return Task
+     */
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
@@ -153,6 +199,54 @@ class Task
     public function toggle(bool $flag): self
     {
         $this->isDone = $flag;
+
+        return $this;
+    }
+
+    /**
+     * Get the task author.
+     *
+     * @return UserInterface|User
+     */
+    public function getAuthor(): UserInterface
+    {
+        return $this->author;
+    }
+
+    /**
+     * Set the task author.
+     *
+     * @param UserInterface $user
+     *
+     * @return Task
+     */
+    public function setAuthor(UserInterface $user): self
+    {
+        $this->author = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get the last user who edited a task.
+     *
+     * @return UserInterface|User
+     */
+    public function getModifiedBy(): UserInterface
+    {
+        return $this->lastEditor;
+    }
+
+    /**
+     * Set the last user who edited a task.
+     *
+     * @param UserInterface|User $user
+     *
+     * @return Task
+     */
+    public function setLastEditor(UserInterface $user): self
+    {
+        $this->lastEditor = $user;
 
         return $this;
     }

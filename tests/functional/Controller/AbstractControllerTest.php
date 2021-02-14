@@ -46,7 +46,7 @@ abstract class AbstractControllerTest extends WebTestCase
         /* @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
         // Retrieve the test user
-        $testUser = $userRepository->findOneBy(['email' => 'peltier.gregoire@bouygtel.fr']);
+        $testUser = $userRepository->findOneBy(['email' => 'etienne.nguyen@tele2.fr']);
         // Define the context which defaults to the firewall name.
         $firewallName = 'main';
         $firewallContext = 'main';

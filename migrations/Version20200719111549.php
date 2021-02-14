@@ -12,18 +12,18 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20200719111549 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return '';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE task CHANGE createdat created_at DATETIME NOT NULL, CHANGE isdone is_done TINYINT(1) NOT NULL');
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE task CHANGE created_at createdAt DATETIME NOT NULL, CHANGE is_done isDone TINYINT(1) NOT NULL');
