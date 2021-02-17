@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DataFixtures;
 
 use App\Entity\Task;
@@ -19,12 +21,12 @@ class FixturesLoader implements FixtureInterface
     /**
      * @var Faker\Generator
      */
-    private $faker;
+    private Faker\Generator $faker;
 
     /**
      * @var UserPasswordEncoderInterface
      */
-    private $userPasswordEncoder;
+    private UserPasswordEncoderInterface $userPasswordEncoder;
 
     /**
      * LoadFixtures constructor.
@@ -42,9 +44,10 @@ class FixturesLoader implements FixtureInterface
      * Load User and Task entities fixtures and save data.
      *
      * {@inheritdoc}
+     *
      * @throws \Exception
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         // Keep the same set of Faker data for each fixtures loading (on this computer)
         $this->faker->seed(2021); // Define what you want
@@ -68,7 +71,7 @@ class FixturesLoader implements FixtureInterface
     private function createTasks(ObjectManager $manager): void
     {
         $tasks = [];
-        for ($i = 0; $i < 20; $i ++) {
+        for ($i = 0; $i < 20; $i++) {
             $tasks[$i] = new Task();
             // Set task properties
             $tasks[$i]
@@ -96,7 +99,7 @@ class FixturesLoader implements FixtureInterface
     private function createUsers(ObjectManager $manager): void
     {
         $users = [];
-        for ($i = 0; $i < 5; $i ++) {
+        for ($i = 0; $i < 5; $i++) {
             $users[$i] = new User();
             // Set user properties
             $userName = $this->faker->userName;

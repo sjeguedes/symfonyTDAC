@@ -9,7 +9,9 @@ use Doctrine\Persistence\ObjectRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class AbstractControllerTest
@@ -34,11 +36,26 @@ abstract class AbstractControllerTest extends WebTestCase
     }
 
     /**
-     * Login with a user token and session storage.
+     * Check unauthorized user with login page redirection.
+     *
+     * @param KernelBrowser $client
      *
      * @return void
      */
-    protected function loginUser(): void
+    protected static function assertAccessIsDenied(KernelBrowser $client): void
+    {
+        static::assertEquals(Response::HTTP_FOUND, $client->getResponse()->getStatusCode());
+        $crawler = $client->followRedirect();
+        $buttonCrawlerNode = $crawler->selectButton('Se connecter');
+        static::assertRegExp('/\/login_check/', $buttonCrawlerNode->form()->getUri());
+    }
+
+    /**
+     * Login with a user token and session storage.
+     *
+     * @return UserInterface|User
+     */
+    protected function loginUser(): UserInterface
     {
         // Get a Session instance
         $session = static::$container->get('session');
@@ -46,6 +63,7 @@ abstract class AbstractControllerTest extends WebTestCase
         /* @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
         // Retrieve the test user
+        /** @var UserInterface $testUser */
         $testUser = $userRepository->findOneBy(['email' => 'etienne.nguyen@tele2.fr']);
         // Define the context which defaults to the firewall name.
         $firewallName = 'main';
@@ -57,6 +75,8 @@ abstract class AbstractControllerTest extends WebTestCase
         // Get a cookie to use with HTTP client
         $cookie = new Cookie($session->getName(), $session->getId());
         $this->client->getCookieJar()->set($cookie);
+
+        return $testUser;
     }
 
     /**
@@ -67,5 +87,6 @@ abstract class AbstractControllerTest extends WebTestCase
     public function tearDown(): void
     {
         $this->client = null;
+        static::ensureKernelShutdown();
     }
 }

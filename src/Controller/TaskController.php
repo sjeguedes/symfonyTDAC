@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Form\CreateTaskType;
 use App\Form\TaskType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,6 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class TaskController
+ *
+ * Manage tasks actions.
  */
 class TaskController extends AbstractController
 {
@@ -32,25 +37,25 @@ class TaskController extends AbstractController
      *
      * @return RedirectResponse|Response
      *
-     * @Route("/tasks/create", name="task_create")
+     * @Route("/tasks/create", name="task_create", methods={"GET", "POST"})
      *
      * @throws \Exception
      */
-    public function createAction(Request $request)
+    public function createAction(Request $request): Response
     {
         $task = new Task();
-        $form = $this->createForm(TaskType::class, $task);
-
+        // Define a particular form type for task creation
+        $form = $this->createForm(CreateTaskType::class, $task);
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-
-            $em->persist($task);
-            $em->flush();
-
+            // Associate authenticated user to new task as expected
+            $task->setAuthor($this->getUser());
+            // Save the new task
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($task);
+            $entityManager->flush();
             $this->addFlash('success', 'La tâche a été bien été ajoutée.');
-
+            // Redirect to tasks list on success
             return $this->redirectToRoute('task_list');
         }
 
