@@ -138,6 +138,9 @@ class Task
      */
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
+        if ($this->createdAt >= $updatedAt) {
+            throw new \RuntimeException('Update date is not logical: Task cannot be modified before creation!');
+        }
         $this->updatedAt = $updatedAt;
 
         return $this;
@@ -206,9 +209,9 @@ class Task
     /**
      * Get the task author.
      *
-     * @return UserInterface|User
+     * @return UserInterface|User|null
      */
-    public function getAuthor(): UserInterface
+    public function getAuthor(): ?UserInterface
     {
         return $this->author;
     }
@@ -230,9 +233,9 @@ class Task
     /**
      * Get the last user who edited a task.
      *
-     * @return UserInterface|User
+     * @return UserInterface|User|null
      */
-    public function getModifiedBy(): UserInterface
+    public function getLastEditor(): ?UserInterface
     {
         return $this->lastEditor;
     }
