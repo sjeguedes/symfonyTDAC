@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Factory\ModelFactoryInterface;
 use App\Entity\Task;
-use App\Form\CreateTaskType;
+use App\Form\Handler\FormHandlerInterface;
 use App\Form\TaskType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -33,7 +34,9 @@ class TaskController extends AbstractController
     /**
      * Create a Task entity ans save data.
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param FormHandlerInterface  $createTaskHandler
+     * @param ModelFactoryInterface $modelFactory
      *
      * @return RedirectResponse|Response
      *
@@ -41,25 +44,27 @@ class TaskController extends AbstractController
      *
      * @throws \Exception
      */
-    public function createAction(Request $request): Response
-    {
-        $task = new Task();
-        // Define a particular form type for task creation
-        $form = $this->createForm(CreateTaskType::class, $task);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Associate authenticated user to new task as expected
-            $task->setAuthor($this->getUser());
-            // Save the new task
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($task);
-            $entityManager->flush();
-            $this->addFlash('success', 'La tâche a été bien été ajoutée.');
-            // Redirect to tasks list on success
+    public function createAction(
+        Request $request,
+        FormHandlerInterface $createTaskHandler,
+        ModelFactoryInterface $modelFactory
+    ): Response {
+        // Validate corresponding form
+        $form = $createTaskHandler->process($request, [
+            'dataModel' => $modelFactory->create('task')
+        ]);
+        // Perform action(s) on success
+        if ($createTaskHandler->isSuccess()) {
+            // Associate authenticated user to new task as expected, and save form data
+            // Send a flash message
+            $createTaskHandler->executeOnSuccess();
+            // Redirect to tasks list
             return $this->redirectToRoute('task_list');
         }
 
-        return $this->render('task/create.html.twig', ['form' => $form->createView()]);
+        return $this->render('task/create.html.twig', [
+            'form' => $form->createView()
+        ]);
     }
 
     /**

@@ -32,7 +32,31 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    App\Controller\TaskController:
+        bind:
+            $createTaskHandler: '@App\Form\Handler\CreateTaskFormHandler'
+
+    # define model factory as a generic lazy service for corresponding custom interface
+    App\Entity\Factory\ModelFactory: ~
+    App\Entity\Factory\ModelFactoryInterface: '@App\Entity\Factory\ModelFactory'
+
+    # define task manager as a service
+    App\Entity\Manager\TaskManager: ~
+
     # define services in this directory as Doctrine fixtures
     App\DataFixtures\:
         resource: '%kernel.project_dir%/src/DataFixtures/*'
         tags: ['doctrine.fixture.orm']
+
+    # define task creation form handler as a service
+    App\Form\Handler\CreateTaskFormHandler:
+        arguments:
+            $taskManager: '@App\Entity\Manager\TaskManager'
+
+    # define flash bag as lazy service
+    Symfony\Component\HttpFoundation\Session\Flash\FlashBag:
+        lazy: true
+
+    # define security token storage as lazy service
+    Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage:
+        lazy: true

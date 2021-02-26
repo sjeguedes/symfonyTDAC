@@ -77,6 +77,8 @@ class TaskTest extends TestCase
     /**
      * Test if update date is before creation date and throws an exception.
      *
+     * @return void
+     *
      * @throws \Exception
      */
     public function testTaskUpdateDateIsInitiallyEqualToCreation(): void
@@ -109,7 +111,7 @@ class TaskTest extends TestCase
             ->getValidator();
         // Validate instance
         $errors = $validator->validate($entity);
-        // Check correct validation for each case
+        // Check correct validation result for each case
         $this->assertEquals($data['isValid'], count($errors) == 0);
     }
 

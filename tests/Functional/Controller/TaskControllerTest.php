@@ -112,7 +112,7 @@ class TaskControllerTest extends AbstractControllerTest
         static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
         $crawler = $this->client->followRedirect();
         static::assertSame(
-            'Superbe ! La tâche a été bien été ajoutée.',
+            'Superbe ! La tâche a bien été ajoutée.',
             trim($crawler->filter('div.alert-success')->text(null, false))
         );
     }
