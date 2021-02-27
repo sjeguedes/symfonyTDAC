@@ -31,17 +31,8 @@ abstract class AbstractModelManager implements ModelManagerInterface
     /**
      * {@inheritdoc}
      */
-    public function saveData(object $dataModel = null): bool
+    public function getPersistenceLayer(): object
     {
-        try {
-            if (null !== $dataModel) {
-                $this->entityManager->persist($dataModel);
-            }
-            $this->entityManager->flush();
-
-            return true;
-        } catch(\Exception $exception) {
-            return false;
-        }
+        return $this->entityManager;
     }
 }

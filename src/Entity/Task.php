@@ -91,7 +91,7 @@ class Task
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = $this->createdAt;
         $this->isDone = false;
     }
 

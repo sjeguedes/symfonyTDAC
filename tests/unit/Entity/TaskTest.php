@@ -75,7 +75,20 @@ class TaskTest extends TestCase
     }
 
     /**
-     * Test if update date is before creation date and throws an exception.
+     * Check that update date cannot be set later before creation date and throws an exception.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testTaskUpdateDateCannotBeSetBeforeCreation(): void
+    {
+        static::expectException(\RuntimeException::class);
+        $this->task->setUpdatedAt(new \DateTimeImmutable('-1day'));
+    }
+
+    /**
+     * Check that creation and update date are both the same on instantiation.
      *
      * @return void
      *
@@ -83,9 +96,7 @@ class TaskTest extends TestCase
      */
     public function testTaskUpdateDateIsInitiallyEqualToCreation(): void
     {
-        static::expectException(\RuntimeException::class);
-        $this->task->setUpdatedAt(new \DateTimeImmutable('-1day'));
-        $this->assertEquals($this->task->getCreatedAt(), $this->task->getUpdatedAt());
+        static::assertEquals($this->task->getCreatedAt(), $this->task->getUpdatedAt());
     }
 
     /**

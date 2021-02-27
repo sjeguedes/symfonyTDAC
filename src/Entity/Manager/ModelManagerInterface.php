@@ -12,11 +12,10 @@ namespace App\Entity\Manager;
 interface ModelManagerInterface
 {
     /**
-     * Manage data saving from model to database.
+     * Get a persistence service layer instance to ease storage in database
+     * once operations are made on model.
      *
-     * @param object|null $dataModel the model or null if this operation does not need the data
-     *
-     * @return bool
+     * @return object
      */
-    public function saveData(object $dataModel = null): bool;
+    public function getPersistenceLayer(): object;
 }

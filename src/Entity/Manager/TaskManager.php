@@ -26,6 +26,7 @@ class TaskManager extends AbstractModelManager
     {
         $newTask->setAuthor($authenticatedUser);
         // Save the new task
-        $this->saveData($newTask);
+        $this->getPersistenceLayer()->persist($newTask);
+        $this->getPersistenceLayer()->flush();
     }
 }
