@@ -20,13 +20,22 @@ class TaskManager extends AbstractModelManager
      * @param Task          $newTask
      * @param UserInterface $authenticatedUser
      *
-     * @return void
+     * @return bool
      */
-    public function create(Task $newTask, UserInterface $authenticatedUser): void
+    public function create(Task $newTask, UserInterface $authenticatedUser): bool
     {
+        // Associate authenticated user
         $newTask->setAuthor($authenticatedUser);
         // Save the new task
-        $this->getPersistenceLayer()->persist($newTask);
-        $this->getPersistenceLayer()->flush();
+        try {
+            $this->getPersistenceLayer()->persist($newTask);
+            $this->getPersistenceLayer()->flush();
+
+            return true;
+        } catch (\Exception $exception) {
+            $this->logger->error('Task persistence error:' . $exception->getMessage());
+
+            return false;
+        }
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class AbstractModelManager
@@ -16,16 +17,23 @@ abstract class AbstractModelManager implements ModelManagerInterface
     /**
      * @var EntityManagerInterface
      */
-    protected EntityManagerInterface $entityManager;
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected LoggerInterface $logger;
 
     /**
      * AbstractModelManager constructor.
      *
      * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
+        $this->logger = $logger;
     }
 
     /**

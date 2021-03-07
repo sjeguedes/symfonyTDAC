@@ -16,7 +16,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  *
  * Handle a form in order to create a task.
  */
-class CreateTaskFormHandler extends AbstractFormHandler implements FormSuccessInterface
+class CreateTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
 {
     /**
      * @var ModelManagerInterface
@@ -52,14 +52,22 @@ class CreateTaskFormHandler extends AbstractFormHandler implements FormSuccessIn
      *
      * @throws \Exception
      */
-    public function executeOnSuccess(array $data = []): void
+    public function execute(bool $isSuccess = null, array $data = []): bool
     {
-        /** @var Task $task */
-        $task = $this->getDataModel();
-        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
-        // Associate authenticated user to new task as expected, and save form data
-        $this->taskManager->create($task, $authenticatedUser);
-        // Store success message in session before redirection
-        $this->flashBag->add('success', 'La tâche a bien été ajoutée.');
+        if ($isSuccess = $isSuccess ?? $this->isSuccess()) {
+            // Associate authenticated user to new task as expected, and save form data
+            /** @var Task $task */
+            $task = $this->getDataModel();
+            $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+            // Task was saved correctly!
+            if ($this->taskManager->create($task, $authenticatedUser)) {
+                // Store success message in session before redirection
+                $this->flashBag->add('success', 'La tâche a bien été ajoutée.');
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

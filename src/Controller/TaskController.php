@@ -53,12 +53,10 @@ class TaskController extends AbstractController
         $form = $createTaskHandler->process($request, [
             'dataModel' => $modelFactory->create('task')
         ]);
-        // Perform action(s) on success
-        if ($createTaskHandler->isSuccess()) {
-            // Associate authenticated user to new task as expected, and save form data
-            // Send a flash message
-            $createTaskHandler->executeOnSuccess();
-            // Redirect to tasks list
+        // Perform action(s) on validation success state
+        if ($createTaskHandler->execute()) {
+            // Associate authenticated user to new task and add a successful flash message
+            // Then, redirect to tasks list
             return $this->redirectToRoute('task_list');
         }
 

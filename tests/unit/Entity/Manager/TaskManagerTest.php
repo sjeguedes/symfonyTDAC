@@ -8,7 +8,9 @@ use App\Entity\Manager\TaskManager;
 use App\Entity\Task;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class TaskManagerTest
@@ -17,6 +19,16 @@ use PHPUnit\Framework\TestCase;
  */
 class TaskManagerTest extends TestCase
 {
+    /**
+     * @var MockObject|EntityManagerInterface|null
+     */
+    private ?EntityManagerInterface $entityManager;
+
+    /**
+     * @var MockObject|LoggerInterface|null
+     */
+    private ?LoggerInterface $logger;
+
     /**
      * @var TaskManager|null
      */
@@ -31,8 +43,9 @@ class TaskManagerTest extends TestCase
      */
     public function setUp(): void
     {
-        $entityManager = static::createMock(EntityManagerInterface::class);
-        $this->taskManager = new TaskManager($entityManager);
+        $this->entityManager = static::createMock(EntityManagerInterface::class);
+        $this->logger = static::createMock(LoggerInterface::class);
+        $this->taskManager = new TaskManager($this->entityManager, $this->logger);
     }
 
     /**
@@ -42,15 +55,16 @@ class TaskManagerTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testCreateMethodWillSetAUserAsAuthor(): void
+    public function testTaskCreationWillSetAUserAsAuthor(): void
     {
         $taskModel = new Task();
-        $authenticatedUser = static::createMock(User::class);
-        $authenticatedUser
+        // Authenticated user obtained from token storage is checked inside CreateTaskHandlerTest!
+        $user = static::createMock(User::class);
+        $user
             ->expects($this->any())
             ->method('getId')
             ->willReturn(1);
-        $this->taskManager->create($taskModel, $authenticatedUser);
+        $this->taskManager->create($taskModel, $user);
         static::assertEquals(1, $taskModel->getAuthor()->getId());
     }
 
@@ -61,6 +75,8 @@ class TaskManagerTest extends TestCase
      */
     public function tearDown(): void
     {
+        $this->entityManager = null;
+        $this->logger = null;
         $this->taskManager = null;
     }
 }

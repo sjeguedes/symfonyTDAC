@@ -23,7 +23,7 @@ abstract class AbstractFormHandler implements FormHandlerInterface
     /**
      * @var FormInterface|null
      */
-    protected ?FormInterface $form;
+    private ?FormInterface $form;
 
     /**
      * @var string
@@ -38,26 +38,25 @@ abstract class AbstractFormHandler implements FormHandlerInterface
     /**
      * @var bool|null
      */
-    protected ?bool $successState;
+    private ?bool $successState;
 
     /**
      * @var object|null
      */
-    protected ?object $dataModel;
+    private ?object $dataModel;
 
     /**
      * CreateTaskFormHandler constructor.
      *
-     * @param FormFactoryInterface      $formFactory
-     * @param string $formTypeClassName a Fully Qualified Class Name (F.Q.C.N)
-     * @param FlashBagInterface         $flashBag
+     * @param FormFactoryInterface $formFactory
+     * @param string               $formTypeClassName a Fully Qualified Class Name (F.Q.C.N)
+     * @param FlashBagInterface    $flashBag
      */
     public function __construct(
         FormFactoryInterface $formFactory,
         string $formTypeClassName,
         FlashBagInterface $flashBag
-    )
-    {
+    ) {
         $this->formFactory = $formFactory;
         $this->formTypeClassName = $formTypeClassName;
         $this->flashBag = $flashBag;
@@ -83,7 +82,7 @@ abstract class AbstractFormHandler implements FormHandlerInterface
      */
     public function isSuccess(): bool
     {
-        if (null === $this->successState) {
+        if (null === $this->form) {
             throw new \RuntimeException('Form must be processed first!');
         }
 
