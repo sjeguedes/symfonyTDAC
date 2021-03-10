@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Functional\Controller;
+namespace App\Tests\Functional\Controller\Helpers;
 
 use App\Entity\User;
 use Doctrine\Persistence\ObjectRepository;
@@ -14,11 +14,11 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Class AbstractControllerTest
+ * Class AbstractControllerTestCase
  *
  * Manage all tests common actions as parent class.
  */
-abstract class AbstractControllerTest extends WebTestCase
+abstract class AbstractControllerTestCase extends WebTestCase
 {
     /**
      * @var KernelBrowser|null

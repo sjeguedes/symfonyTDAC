@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
+use App\Tests\Functional\Controller\Helpers\AbstractControllerTestCase;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\Security\Csrf\CsrfToken;
 
@@ -13,7 +14,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
  *
  * Define functional tests for TaskController.
  */
-class TaskControllerTest extends AbstractControllerTest
+class TaskControllerTest extends AbstractControllerTestCase
 {
     /**
      * Provide controller methods URIs.

@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Task;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Validation;
 
 /**
@@ -83,7 +84,7 @@ class TaskTest extends TestCase
      */
     public function testTaskUpdateDateCannotBeSetBeforeCreation(): void
     {
-        static::expectException(\RuntimeException::class);
+        static::expectException(\LogicException::class);
         $this->task->setUpdatedAt(new \DateTimeImmutable('-1day'));
     }
 
@@ -97,6 +98,26 @@ class TaskTest extends TestCase
     public function testTaskUpdateDateIsInitiallyEqualToCreation(): void
     {
         static::assertEquals($this->task->getCreatedAt(), $this->task->getUpdatedAt());
+    }
+
+    /**
+     * Check that author cannot be modified (if task is already persisted).
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testTaskAuthorCannotBeModified(): void
+    {
+        $user = static::createMock(UserInterface::class);
+        // Use a fake task object type here would be better than reflection!
+        $reflectionClass = new \ReflectionClass(Task::class);
+        $idProperty = $reflectionClass->getProperty('id');
+        $idProperty->setAccessible(true);
+        // "Simulate" an already persisted object by setting id
+        $idProperty->setValue($this->task, 1);
+        static::expectException(\RuntimeException::class);
+        $this->task->setAuthor($user);
     }
 
     /**

@@ -19,13 +19,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Task
 {
     /**
-     * @var int
+     * @var int|null
      *
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private int $id;
+    private ?int $id = null;
 
     /**
      * @var \DateTimeImmutable
@@ -42,20 +42,20 @@ class Task
     private \DateTimeImmutable $updatedAt;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Vous devez saisir un titre.")
      */
-    private string $title;
+    private ?string $title;
 
     /**
-     * @var string
+     * @var string|null
      *
      * @ORM\Column(type="text")
      * @Assert\NotBlank(message="Vous devez saisir du contenu.")
      */
-    private string $content;
+    private ?string $content;
 
     /**
      * @var bool
@@ -139,7 +139,7 @@ class Task
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         if ($this->createdAt >= $updatedAt) {
-            throw new \RuntimeException('Update date is not logical: Task cannot be modified before creation!');
+            throw new \LogicException('Update date is not logical: Task cannot be modified before creation!');
         }
         $this->updatedAt = $updatedAt;
 
@@ -155,11 +155,11 @@ class Task
     }
 
     /**
-     * @param string $title
+     * @param string|null $title
      *
      * @return Task
      */
-    public function setTitle(string $title): self
+    public function setTitle(?string $title): self
     {
         $this->title = $title;
 
@@ -175,11 +175,11 @@ class Task
     }
 
     /**
-     * @param string $content
+     * @param string|null $content
      *
      * @return Task
      */
-    public function setContent(string $content): self
+    public function setContent(?string $content): self
     {
         $this->content = $content;
 
@@ -225,6 +225,10 @@ class Task
      */
     public function setAuthor(UserInterface $user): self
     {
+        if (null !== $this->id) {
+            throw new \RuntimeException('Task author cannot be modified after creation');
+        }
+
         $this->author = $user;
 
         return $this;

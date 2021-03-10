@@ -21,13 +21,13 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 class User implements UserInterface
 {
     /**
-     * @var int
+     * @var int|null
      *
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private int $id;
+    private ?int $id = null;
 
     /**
      * @var string

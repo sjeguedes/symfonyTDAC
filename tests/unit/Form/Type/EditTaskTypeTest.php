@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace App\Tests\unit\Form\Type;
 
 use App\Entity\Task;
-use App\Form\Type\CreateTaskType;
+use App\Form\Type\EditTaskType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
+use Symfony\Component\PropertyAccess\Exception\InvalidArgumentException;
 use Symfony\Component\Validator\Validation;
 
 /**
- * Class CreateTaskTypeTest
+ * Class EditTaskTypeTest
  *
- * Manage unit tests for task creation form type.
+ * Manage unit tests for task modification (edit/update) form type.
  *
  * @see Form type unit testing: https://symfony.com/doc/current/form/unit_testing.html
  */
-class CreateTaskTypeTest extends TypeTestCase
+class EditTaskTypeTest extends TypeTestCase
 {
     /**
      * Get form extensions to use it as expected.
@@ -57,64 +58,66 @@ class CreateTaskTypeTest extends TypeTestCase
     {
         yield [
             'Succeeds when data are correct' => [
-                'title'   => 'Nouvelle tâche',
-                'content' => 'Ceci est une description de nouvelle tâche.',
+                'title'   => 'Tâche modifiée',
+                'content' => 'Ceci est une description de tâche modifiée.',
                 'isValid' => true
             ]
         ];
         yield [
             'Fails when title data is blank' => [
                 'title'   => '',
-                'content' => 'Ceci est une description de nouvelle tâche.',
+                'content' => 'Ceci est une description de tâche modifiée.',
                 'isValid' => false
             ]
         ];
         yield [
             'Fails when content is blank' => [
-                'title'   => 'Nouvelle tâche',
+                'title'   => 'Tâche modifiée',
                 'content' => '',
                 'isValid' => false
             ]
         ];
         yield [
             'Fails when title data is not set' => [
-                'content' => 'Ceci est une description de nouvelle tâche.',
+                'content' => 'Ceci est une description de tâche modifiée.',
                 'isValid' => false
             ]
         ];
         yield [
             'Fails when content is not set' => [
-                'title'   => 'Nouvelle tâche',
+                'title'   => 'Tâche modifiée',
                 'isValid' => false
             ]
         ];
     }
 
     /**
-     * Check that data mapping is correctly made when task creation form is submitted.
+     * Check that data mapping is correctly made when task modification form is submitted.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testSubmittedNewTaskFormMapping(): void
+    public function testSubmittedModifiedTaskFormMapping(): void
     {
-        $dataModel = new Task();
-        $title = 'Titre de tâche';
-        $content = 'Description de tâche';
+        $dataModel = (new Task())
+        ->setTitle('Titre de tâche existante')
+        ->setContent('Description de tâche existante');
+        $title = 'Titre de tâche modifiée';
+        $content = 'Description de tâche modifiée';
         // Clone data model to get the same data automatically set in constructor
         $expectedObject = (clone $dataModel)
             ->setTitle($title)
             ->setContent($content);
         $formData = ['title' => $title, 'content' => $content];
-        $form = $this->factory->create(CreateTaskType::class, $dataModel);
+        $form = $this->factory->create(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertEquals($expectedObject, $form->getData());
     }
 
     /**
-     * Check that expected data are validated when task creation form is submitted.
+     * Check that expected data are validated when task modification form is submitted.
      *
      * Please note that each validation constraint is already checked
      * in TaskTest::testValidationRulesAreCorrectlySet().
@@ -127,20 +130,21 @@ class CreateTaskTypeTest extends TypeTestCase
      *
      * @throws \Exception
      */
-    public function testSubmittedNewTaskDataValidation(array $data): void
+    public function testSubmittedModifiedTaskDataValidation(array $data): void
     {
-        $dataModel = new Task();
-        $isValid = $data['isValid'];
+        $dataModel = (new Task())
+            ->setTitle('Titre de tâche existante')
+            ->setContent('Description de tâche existante');
         // Use arrow function combined to array filtering with flag based on key
-        $formData = array_filter($data, fn ($key) => 'isValid' !== $key, ARRAY_FILTER_USE_KEY);
-        $form = $this->factory->create(CreateTaskType::class, $dataModel);
+        $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
+        $form = $this->factory->create(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
-        static::assertSame($isValid, $form->isValid());
+        static::assertSame($data['isValid'], $form->isValid());
     }
 
     /**
-     * Check that data transformation is correctly made when task creation form is submitted.
+     * Check that data transformation is correctly made when task modification form is submitted.
      *
      * @return void
      *
@@ -148,9 +152,11 @@ class CreateTaskTypeTest extends TypeTestCase
      */
     public function testSubmittedNewTaskDataTransformation(): void
     {
-        $dataModel = new Task();
-        $formData = ['title' => 'Titre de tâche', 'content' => 'Description de tâche'];
-        $form = $this->factory->create(CreateTaskType::class, $dataModel);
+        $dataModel = (new Task())
+            ->setTitle('Titre de tâche existante')
+            ->setContent('Description de tâche existante');
+        $formData = ['title' => 'Titre de tâche modifiée', 'content' => 'Description de tâche modifiée'];
+        $form = $this->factory->create(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertTrue($form->isSynchronized());
