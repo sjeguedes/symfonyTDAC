@@ -40,7 +40,7 @@ class TaskTest extends TestCase
     public function provideDataToValidate(): \Generator
     {
         yield [
-            'Succeeds when data is correct' => [
+            'Succeeds when data are correct' => [
                 'title'   => 'Nouvelle tâche',
                 'content' => 'Ceci est une description de nouvelle tâche.',
                 'isValid' =>  true
