@@ -21,6 +21,11 @@ abstract class AbstractFormHandler implements FormHandlerInterface
     protected FormFactoryInterface $formFactory;
 
     /**
+     * @var object|null
+     */
+    private ?object $clonedOriginalModel;
+
+    /**
      * @var FormInterface|null
      */
     private ?FormInterface $form;
@@ -60,9 +65,20 @@ abstract class AbstractFormHandler implements FormHandlerInterface
         $this->formFactory = $formFactory;
         $this->formTypeClassName = $formTypeClassName;
         $this->flashBag = $flashBag;
+        $this->clonedOriginalModel = null;
         $this->form = null;
         $this->successState = false;
         $this->dataModel = null;
+    }
+
+    /**
+     * Retrieve cloned initial data model.
+     *
+     * @return object|null
+     */
+    protected function getClonedOriginalModel(): ?object
+    {
+        return $this->clonedOriginalModel;
     }
 
     /**
@@ -70,7 +86,7 @@ abstract class AbstractFormHandler implements FormHandlerInterface
      *
      * @return object|null
      */
-    public function getDataModel(): ?object
+    protected function getDataModel(): ?object
     {
         return $this->dataModel;
     }
@@ -97,8 +113,10 @@ abstract class AbstractFormHandler implements FormHandlerInterface
     public function process(object $request, array $data = [], array $formOptions = []): object
     {
         if (!isset($data['dataModel'])) {
-            throw new \OutOfBoundsException('A "dataModel" key must be defined!');
+            throw new \RuntimeException('A "dataModel" key must be defined!');
         }
+        // Get a clone of original passed model for later comparison
+        $this->clonedOriginalModel = clone $data['dataModel'];
         // Create a form based on a form type reference (Symfony way)
         $this->form = $this->formFactory->create($this->formTypeClassName, $data['dataModel'], $formOptions);
         $this->form->handleRequest($request);

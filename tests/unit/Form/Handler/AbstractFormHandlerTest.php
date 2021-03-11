@@ -129,7 +129,7 @@ class AbstractFormHandlerTest extends TestCase
      */
     public function testFormCannotBeProcessedWithoutDataModelKey(): void
     {
-        static::expectException(\OutOfBoundsException::class);
+        static::expectException(\RuntimeException::class);
         $this->formHandler->process(new Request());
     }
 

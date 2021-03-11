@@ -15,17 +15,17 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class TaskManager extends AbstractModelManager
 {
     /**
-     * Add a new task associated to authenticated user.
+     * Add a new task associated to authenticated user as author.
      *
      * @param Task          $newTask
-     * @param UserInterface $authenticatedUser
+     * @param UserInterface $author
      *
      * @return bool
      */
-    public function create(Task $newTask, UserInterface $authenticatedUser): bool
+    public function create(Task $newTask, UserInterface $author): bool
     {
-        // Associate authenticated user
-        $newTask->setAuthor($authenticatedUser);
+        // Associate authenticated user as author (which can be only set here)
+        $newTask->setAuthor($author);
         // Save the new task
         try {
             $this->getPersistenceLayer()->persist($newTask);
@@ -34,6 +34,30 @@ class TaskManager extends AbstractModelManager
             return true;
         } catch (\Exception $exception) {
             $this->logger->error('Task persistence error:' . $exception->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * Update an existing task associated to authenticated user as last editor.
+     *
+     * @param Task          $task
+     * @param UserInterface $lastEditor
+     *
+     * @return bool
+     */
+    public function update(Task $task, UserInterface $lastEditor): bool
+    {
+        // Associate authenticated user as last editor (Author is locked with exception thrown in setter!)
+        $task->setLastEditor($lastEditor);
+        // Save the change(s) made on task
+        try {
+            $this->getPersistenceLayer()->flush();
+
+            return true;
+        } catch (\Exception $exception) {
+            $this->logger->error('Task update error:' . $exception->getMessage());
 
             return false;
         }

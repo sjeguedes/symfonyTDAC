@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Entity\Factory\ModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
-use App\Form\TaskType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -68,24 +67,27 @@ class TaskController extends AbstractController
     /**
      * Update a Task entity and save modified data.
      *
-     * @param Task    $task
-     * @param Request $request
+     * @param Task                 $task
+     * @param Request              $request
+     * @param FormHandlerInterface $editTaskHandler
      *
      * @return RedirectResponse|Response
      *
-     * @Route("/tasks/{id}/edit", name="task_edit")
+     * @Route("/tasks/{id}/edit", name="task_edit", methods={"GET", "POST"})
      */
-    public function editAction(Task $task, Request $request)
-    {
-        $form = $this->createForm(TaskType::class, $task);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            $this->addFlash('success', 'La tâche a bien été modifiée.');
-
+    public function editAction(
+        Task $task,
+        Request $request,
+        FormHandlerInterface $editTaskHandler
+    ): Response {
+        // Validate corresponding form
+        $form = $editTaskHandler->process($request, [
+            'dataModel' => $task
+        ]);
+        // Perform action(s) on validation success state
+        if ($editTaskHandler->execute($request)) {
+            // Save change(s), specify authenticated user as task last editor, and add a successful flash message
+            // Then, redirect to tasks list
             return $this->redirectToRoute('task_list');
         }
 

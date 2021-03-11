@@ -35,6 +35,7 @@ services:
     App\Controller\TaskController:
         bind:
             $createTaskHandler: '@App\Form\Handler\CreateTaskFormHandler'
+            $editTaskHandler: '@App\Form\Handler\EditTaskFormHandler'
 
     # define model factory as a generic lazy service for corresponding custom interface
     App\Entity\Factory\ModelFactory: ~
@@ -48,8 +49,13 @@ services:
         resource: '%kernel.project_dir%/src/DataFixtures/*'
         tags: ['doctrine.fixture.orm']
 
-    # define task creation form handler as a service
+    # define task creation form handler as a service with concrete dependencies
     App\Form\Handler\CreateTaskFormHandler:
+        arguments:
+            $taskManager: '@App\Entity\Manager\TaskManager'
+
+    # define task update form handler as a service with concrete dependencies
+    App\Form\Handler\EditTaskFormHandler:
         arguments:
             $taskManager: '@App\Entity\Manager\TaskManager'
 

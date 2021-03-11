@@ -68,6 +68,13 @@
                         </div>
                     {% endfor %}
 
+                    {# Add custom info flash message! #}
+                    {% for flash_message in app.session.flashBag.get('info') %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Surprenant !</strong> {{ flash_message }}
+                        </div>
+                    {% endfor %}
+
                     {% block header_title %}{% endblock %}
                     {% block header_img %}<img class="slide-image" src="{{ asset('img/todolist_homepage.jpg') }}" alt="todo list">{% endblock %}
                 </div>
