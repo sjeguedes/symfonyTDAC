@@ -42,15 +42,19 @@ class TaskManager extends AbstractModelManager
     /**
      * Update an existing task associated to authenticated user as last editor.
      *
-     * @param Task          $task
+     * @param Task $task
      * @param UserInterface $lastEditor
      *
      * @return bool
+     *
+     * @throws \Exception
      */
     public function update(Task $task, UserInterface $lastEditor): bool
     {
         // Associate authenticated user as last editor (Author is locked with exception thrown in setter!)
         $task->setLastEditor($lastEditor);
+        // Trace task update
+        $task->setUpdatedAt(new \DateTimeImmutable());
         // Save the change(s) made on task
         try {
             $this->getPersistenceLayer()->flush();

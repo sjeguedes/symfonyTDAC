@@ -69,6 +69,58 @@ class TaskManagerTest extends TestCase
     }
 
     /**
+     * Check that "update" method will set (associate) a user as last editor.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testTaskUpdateWillSetAUserAsLastEditor(): void
+    {
+        $taskModel = new Task();
+        // Authenticated user obtained from token storage is checked inside CreateTaskHandlerTest!
+        $author = static::createMock(User::class);
+        $authenticatedUser = static::createMock(User::class);
+        $author
+            ->expects($this->any())
+            ->method('getId')
+            ->willReturn(1);
+        $authenticatedUser
+            ->expects($this->any())
+            ->method('getId')
+            ->willReturn(2);
+        // Set author (permitted without id set) first, which will fake a task creation result.
+        $taskModel->setAuthor($author);
+        $this->taskManager->update($taskModel, $authenticatedUser);
+        // Ensure no change was made on author and authenticated user is set as last editor
+        static::assertEquals(1, $taskModel->getAuthor()->getId());
+        static::assertEquals(2, $taskModel->getLastEditor()->getId());
+    }
+
+    /**
+     * Check that "update" method will set a date of update.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testTaskUpdateIsCorrectlyTraced(): void
+    {
+        // Dates of creation and update are set in constructor automatically with the same value.
+        $taskModel = new Task();
+        // Authenticated user obtained from token storage is checked inside CreateTaskHandlerTest!
+        $authenticatedUser = static::createMock(User::class);
+        $authenticatedUser
+            ->expects($this->any())
+            ->method('getId')
+            ->willReturn(2);
+        // Set author (permitted without id set) first, which will fake a task creation result.
+        $this->taskManager->update($taskModel, $authenticatedUser);
+        // Ensure task date of update is set
+        static::assertTrue($taskModel->getUpdatedAt() !== $taskModel->getCreatedAt());
+    }
+
+    /**
      * Clear setup to free memory.
      *
      * @return void

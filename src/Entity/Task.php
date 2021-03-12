@@ -112,6 +112,11 @@ class Task
     }
 
     /**
+     * Please note this setter is an optional since data is set in constructor.
+     * This allows to keep control on date of creation.
+     *
+     * @codeCoverageIgnore
+     *
      * @param \DateTimeImmutable $createdAt
      *
      * @return Task
