@@ -55,7 +55,7 @@ class FixturesLoader implements FixtureInterface
         $this->createUsers($manager);
         // Create Task instances
         $this->createTasks($manager);
-         // Save data
+        // Save data
         $manager->flush();
     }
 
@@ -83,7 +83,7 @@ class FixturesLoader implements FixtureInterface
                     )
                 )
                 ->setUpdatedAt($tasks[$i]->getCreatedAt())
-                ->toggle(array_rand([true, false]));
+                ->toggle((bool) rand(0, 1));
             // Persist data
             $manager->persist($tasks[$i]);
         }

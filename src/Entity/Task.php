@@ -143,7 +143,7 @@ class Task
      */
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
-        if ($this->createdAt >= $updatedAt) {
+        if ($this->createdAt > $updatedAt) {
             throw new \LogicException('Update date is not logical: Task cannot be modified before creation!');
         }
         $this->updatedAt = $updatedAt;

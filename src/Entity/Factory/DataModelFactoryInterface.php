@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Entity\Factory;
 
 /**
- * Interface ModelFactoryInterface
+ * Interface DataModelFactoryInterface
  *
  * Define a contract to create a model.
  */
-interface ModelFactoryInterface
+interface DataModelFactoryInterface
 {
     /**
      * Manage creation about a particular model instance.

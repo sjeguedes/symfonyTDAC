@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Entity\Factory;
 
-use App\Entity\Factory\ModelFactory;
+use App\Entity\Factory\DataModelFactory;
 use App\Entity\Task;
 use App\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class ModelFactoryTest
+ * Class DataModelFactoryTest
  *
  * Manage unit tests for model factory.
  */
-class ModelFactoryTest extends TestCase
+class DataModelFactoryTest extends TestCase
 {
     /**
-     * @var ModelFactory|null
+     * @var DataModelFactory|null
      */
-    private ?ModelFactory $modelFactory;
+    private ?DataModelFactory $modelFactory;
 
     /**
      * Setup needed instance(s).
@@ -30,7 +30,7 @@ class ModelFactoryTest extends TestCase
      */
     public function setUp(): void
     {
-        $this->modelFactory = new ModelFactory();
+        $this->modelFactory = new DataModelFactory();
     }
 
     /**

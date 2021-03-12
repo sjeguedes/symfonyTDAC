@@ -8,11 +8,11 @@ use App\Entity\Task;
 use App\Entity\User;
 
 /**
- * Class ModelFactory
+ * Class DataModelFactory
  *
  * Manage entity production.
  */
-class ModelFactory implements ModelFactoryInterface
+class DataModelFactory implements DataModelFactoryInterface
 {
     /**
      * Define expected entity types to produce.
