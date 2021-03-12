@@ -85,7 +85,7 @@ class TaskController extends AbstractController
             'dataModel' => $task
         ]);
         // Perform action(s) on validation success state
-        if ($editTaskHandler->execute($request)) {
+        if ($editTaskHandler->execute()) {
             // Save change(s), specify authenticated user as task last editor, and add a successful flash message
             // Then, redirect to tasks list
             return $this->redirectToRoute('task_list');

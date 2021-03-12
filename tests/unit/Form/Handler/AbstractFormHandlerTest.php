@@ -8,6 +8,7 @@ use App\Entity\Task;
 use App\Form\Handler\AbstractFormHandler;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Type\CreateTaskType;
+use App\Form\Type\EditTaskType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
@@ -117,7 +118,8 @@ class AbstractFormHandlerTest extends TestCase
     public function provideFormTypeNames(): array
     {
         return [
-            'Uses task creation form type' => [CreateTaskType::class]
+            'Uses task creation form type' => [CreateTaskType::class, Task::class],
+            'Uses task update form type'   => [EditTaskType::class, Task::class]
             // IMPORTANT: complete other existing types here later!
         ];
     }
@@ -139,12 +141,13 @@ class AbstractFormHandlerTest extends TestCase
      * @dataProvider provideFormTypeNames
      *
      * @param string $formTypeName
+     * @param string $modelName
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testProcessReturnsAFormInstanceWithCorrectImplementation(string $formTypeName): void
+    public function testProcessReturnsAFormInstanceCorrectImplementation(string $formTypeName, string $modelName): void
     {
         // Use a concrete form factory with Http foundation extension to be able to handle a Request.
         $this->formFactory = Forms::createFormFactoryBuilder()
@@ -156,7 +159,7 @@ class AbstractFormHandlerTest extends TestCase
             $formTypeName,
             $this->flashBag
         ) extends AbstractFormHandler {};
-        $form = $this->formHandler->process(new Request(), ['dataModel' => new Task()]);
+        $form = $this->formHandler->process(new Request(), ['dataModel' => new $modelName()]);
         // Use custom assertion above to check implementation
         static::assertImplements(FormInterface::class, $form);
     }

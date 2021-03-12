@@ -108,7 +108,7 @@ abstract class AbstractFormHandler implements FormHandlerInterface
     /**
      * {@inheritdoc}
      *
-     * @return FormInterface
+     * @return object|FormInterface
      */
     public function process(object $request, array $data = [], array $formOptions = []): object
     {
@@ -119,6 +119,7 @@ abstract class AbstractFormHandler implements FormHandlerInterface
         $this->clonedOriginalModel = clone $data['dataModel'];
         // Create a form based on a form type reference (Symfony way)
         $this->form = $this->formFactory->create($this->formTypeClassName, $data['dataModel'], $formOptions);
+        // Handle a request to evaluate form state
         $this->form->handleRequest($request);
         // Set success state
         if ($this->form->isSubmitted()) {

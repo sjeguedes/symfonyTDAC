@@ -52,20 +52,22 @@ class CreateTaskFormHandler extends AbstractFormHandler implements FormValidatio
      *
      * @throws \Exception
      */
-    public function execute(object $request = null, array $data = [], bool $isSuccess = null): bool
+    public function execute(array $data = [], bool $isSuccess = null): bool
     {
-        if ($isSuccess = $isSuccess ?? $this->isSuccess()) {
-            // Associate authenticated user to new task as expected, and save form data
-            /** @var Task $task */
-            $task = $this->getDataModel();
-            $authenticatedUser = $this->tokenStorage->getToken()->getUser();
-            // Task was saved correctly!
-            if ($this->taskManager->create($task, $authenticatedUser)) {
-                // Store success message in session before redirection
-                $this->flashBag->add('success', 'La tâche a bien été ajoutée.');
+        // Stop execution if form is not valid
+        if (!$isSuccess = $isSuccess ?? $this->isSuccess()) {
+            return false;
+        }
+        // Associate authenticated user to new task as expected, and save form data
+        /** @var Task $task */
+        $task = $this->getDataModel();
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        // Task was saved correctly!
+        if ($this->taskManager->create($task, $authenticatedUser)) {
+            // Store success message in session before redirection
+            $this->flashBag->add('success', 'La tâche a bien été ajoutée.');
 
-                return true;
-            }
+            return true;
         }
 
         return false;

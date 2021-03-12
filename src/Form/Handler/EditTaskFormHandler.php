@@ -58,8 +58,8 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
     {
         $previousTask = $this->getClonedOriginalModel();
         $updatedTask = $this->getDataModel();
-        // Ensure form was processed, and then compare the two objects to evaluate change(s)
-        return $this->isSuccess() && $previousTask != $updatedTask;
+        // Compare the two objects to evaluate change(s)
+        return $previousTask != $updatedTask;
     }
 
     /**
@@ -67,28 +67,29 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
      *
      * @throws \Exception
      */
-    public function execute(object $request = null, array $data = [], bool $isSuccess = null): bool
+    public function execute(array $data = [], bool $isSuccess = null): bool
     {
-        // Stop execution if no form change was made!
-        if ($request && $request->isMethod('POST') && !$this->isModelDataContentChanged()) {
+        // Stop execution if form is not valid
+        if (!$isSuccess = $isSuccess ?? $this->isSuccess()) {
+            return false;
+        }
+        // Stop execution if form inputs made no change during POST request!
+        if (!$this->isModelDataContentChanged()) {
             $this->flashBag->add('info', 'Aucun changement n\'a été effectué!');
 
             return false;
         }
+        // Associate authenticated user as last editor (author is locked!) to existing task as expected,
+        // and save form data
+        /** @var Task $task */
+        $task = $this->getDataModel();
+        $authenticatedUser = $this->tokenStorage->getToken()->getUser();
+        // Task was updated correctly!
+        if ($this->taskManager->update($task, $authenticatedUser)) {
+            // Store success message in session before redirection
+            $this->flashBag->add('success', 'La tâche a bien été modifiée.');
 
-        if ($isSuccess = $isSuccess ?? $this->isSuccess()) {
-            // Associate authenticated user as last editor (author is locked!) to existing task as expected,
-            // and save form data
-            /** @var Task $task */
-            $task = $this->getDataModel();
-            $authenticatedUser = $this->tokenStorage->getToken()->getUser();
-            // Task was updated correctly!
-            if ($this->taskManager->update($task, $authenticatedUser)) {
-                // Store success message in session before redirection
-                $this->flashBag->add('success', 'La tâche a bien été modifiée.');
-
-                return true;
-            }
+            return true;
         }
 
         return false;
