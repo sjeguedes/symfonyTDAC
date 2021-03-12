@@ -75,7 +75,7 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
         }
         // Stop execution if form inputs made no change during POST request!
         if (!$this->isModelDataContentChanged()) {
-            $this->flashBag->add('info', 'Aucun changement n\'a été effectué!');
+            $this->flashBag->add('info', 'Aucun changement n\'a été effectué.');
 
             return false;
         }

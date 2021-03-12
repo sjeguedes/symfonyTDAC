@@ -49,6 +49,14 @@ class TaskControllerTest extends AbstractControllerTestCase
                 'submit_button_label' => 'Ajouter'
             ]
         ];
+        yield 'Form data to edit a task' => [
+            'data' => [
+                'uri'                 => '/tasks/1/edit',
+                'form_name'           => 'edit_task',
+                'csrf_token_id'       => 'edit_task_action',
+                'submit_button_label' => 'Modifier'
+            ]
+        ];
         // Add other forms here
     }
 
@@ -106,7 +114,7 @@ class TaskControllerTest extends AbstractControllerTestCase
     {
         $this->loginUser();
         $this->client->request('GET', '/tasks/create');
-        $crawler = $this->client->submitForm('Ajouter', [
+        $this->client->submitForm('Ajouter', [
             'create_task[title]'   => 'Nouvelle tâche',
             'create_task[content]' => 'Ceci est un contenu de nouvelle tâche.'
         ], 'POST');
@@ -128,14 +136,82 @@ class TaskControllerTest extends AbstractControllerTestCase
         $testUser = $this->loginUser();
         $this->client->request('GET', '/tasks/create');
         $uniqueID = time();
-        $crawler = $this->client->submitForm('Ajouter', [
+        $this->client->submitForm('Ajouter', [
             'create_task[title]' => 'Nouvelle tâche ' . $uniqueID,
             'create_task[content]' => 'Ceci est un contenu de nouvelle tâche.'
         ], 'POST');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
         $newTask = $taskRepository->findOneBy(['title' => 'Nouvelle tâche ' . $uniqueID]);
-        // Check that authenticated is the new task author
+        // Check that authenticated user is set as the new task author
         static::assertEquals($testUser->getId(), $newTask->getAuthor()->getId());
+    }
+
+    /**
+     * Check that an existing task is correctly updated.
+     *
+     * @return void
+     */
+    public function testExistingTaskCanBeUpdated(): void
+    {
+        $this->loginUser();
+        $this->client->request('GET', '/tasks/1/edit');
+        $crawler = $this->client->submitForm('Modifier', [
+            'edit_task[title]'   => 'Tâche modifiée',
+            'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
+        ], 'POST');
+        static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
+        $crawler = $this->client->followRedirect();
+        static::assertSame(
+            'Superbe ! La tâche a bien été modifiée.',
+            trim($crawler->filter('div.alert-success')->text(null, false))
+        );
+    }
+
+    /**
+     * Check that an existing task cannot be updated without form inputs modification (compared to initial data).
+     *
+     * @return void
+     */
+    public function testExistingTaskCannotBeUpdatedWithoutFormInputsChanges(): void
+    {
+        $this->loginUser();
+        $this->client->request('GET', '/tasks/1/edit');
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        $existingTask = $taskRepository->find(1);
+        $crawler =$this->client->submitForm('Modifier', [
+            'edit_task[title]'   => $existingTask->getTitle(),
+            'edit_task[content]' => $existingTask->getContent()
+        ], 'POST');
+        static::assertFalse($this->client->getResponse()->isRedirect('/tasks'));
+        static::assertSame(
+            'Surprenant ! Aucun changement n\'a été effectué.',
+            trim($crawler->filter('div.alert-warning')->text(null, false))
+        );
+    }
+
+    /**
+     * Check that an existing task is correctly associated to authenticated user as last editor.
+     *
+     * Please note that task author is not modified as expected.
+     *
+     * @return void
+     */
+    public function testExistingTaskWasUpdatedByAuthenticatedUserAsLastEditor(): void
+    {
+        $testUser = $this->loginUser();
+        $this->client->request('GET', '/tasks/1/edit');
+        $this->client->submitForm('Modifier', [
+            'edit_task[title]'   => 'Tâche modifiée',
+            'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
+        ], 'POST');
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        $newTask = $taskRepository->find(1);
+        // Check that author remained unchanged after update ("null" since defined without author by default)
+        static::assertSame(null, $newTask->getAuthor());
+        // Check that authenticated user is set as the last editor
+        static::assertEquals($testUser->getId(), $newTask->getLastEditor()->getId());
     }
 }
