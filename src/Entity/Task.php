@@ -200,13 +200,16 @@ class Task
     }
 
     /**
-     * @param bool $flag
+     * Inverse "isDone" value.
+     *
+     * Please note that "$flag" boolean argument with "!$this->isDone" as value
+     * was removed to avoid an issue.
      *
      * @return Task
      */
-    public function toggle(bool $flag): self
+    public function toggle(): self
     {
-        $this->isDone = $flag;
+        $this->isDone = !$this->isDone;
 
         return $this;
     }

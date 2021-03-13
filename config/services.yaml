@@ -36,6 +36,7 @@ services:
         bind:
             $createTaskHandler: '@App\Form\Handler\CreateTaskFormHandler'
             $editTaskHandler: '@App\Form\Handler\EditTaskFormHandler'
+            $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
 
     # define model factory as a generic lazy service for corresponding custom interface
     App\Entity\Factory\ModelFactory: ~
@@ -56,6 +57,11 @@ services:
 
     # define task update form handler as a service with concrete dependencies
     App\Form\Handler\EditTaskFormHandler:
+        arguments:
+            $taskManager: '@App\Entity\Manager\TaskManager'
+
+    # define task toggle form handler as a service with concrete dependencies
+    App\Form\Handler\ToggleTaskFormHandler:
         arguments:
             $taskManager: '@App\Entity\Manager\TaskManager'
 

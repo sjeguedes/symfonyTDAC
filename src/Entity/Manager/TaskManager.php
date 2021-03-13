@@ -27,16 +27,7 @@ class TaskManager extends AbstractModelManager
         // Associate authenticated user as author (which can be only set here)
         $newTask->setAuthor($author);
         // Save the new task
-        try {
-            $this->getPersistenceLayer()->persist($newTask);
-            $this->getPersistenceLayer()->flush();
-
-            return true;
-        } catch (\Exception $exception) {
-            $this->logger->error('Task persistence error:' . $exception->getMessage());
-
-            return false;
-        }
+        return $this->save($newTask, 'Task persistence error', true);
     }
 
     /**
@@ -56,14 +47,25 @@ class TaskManager extends AbstractModelManager
         // Trace task update
         $task->setUpdatedAt(new \DateTimeImmutable());
         // Save the change(s) made on task
-        try {
-            $this->getPersistenceLayer()->flush();
+        return $this->save($task, 'Task update error');
+    }
 
-            return true;
-        } catch (\Exception $exception) {
-            $this->logger->error('Task update error:' . $exception->getMessage());
-
-            return false;
-        }
+    /**
+     * Change an existing task "isDone" state by toggling value.
+     *
+     * @param Task $task
+     *
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function toggle(Task $task): bool
+    {
+        // Inverse "isDone" value internally
+        $task->toggle();
+        // Trace task update
+        $task->setUpdatedAt(new \DateTimeImmutable());
+        // Save the change(s) made on task
+        return $this->save($task, 'Task toggle error');
     }
 }

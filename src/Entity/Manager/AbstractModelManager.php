@@ -43,4 +43,29 @@ abstract class AbstractModelManager implements ModelManagerInterface
     {
         return $this->entityManager;
     }
+
+    /**
+     * Save entity new or updated data.
+     *
+     * IMPORTANT: add particular removal method implementation later!
+     *
+     * @param object $entity
+     * @param string $errorMessageIntro
+     * @param bool   $shouldPersist
+     *
+     * @return bool
+     */
+    protected function save(object $entity, string $errorMessageIntro, bool $shouldPersist = false): bool
+    {
+        try {
+            !$shouldPersist ?: $this->getPersistenceLayer()->persist($entity);
+            $this->getPersistenceLayer()->flush();
+
+            return true;
+        } catch (\Exception $exception) {
+            $this->logger->error($errorMessageIntro . ':' . $exception->getMessage());
+
+            return false;
+        }
+    }
 }

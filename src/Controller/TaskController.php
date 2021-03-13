@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Factory\ModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
+use App\Form\Type\ToggleTaskType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +28,11 @@ class TaskController extends AbstractController
      */
     public function listAction()
     {
-        return $this->render('task/list.html.twig', ['tasks' => $this->getDoctrine()->getRepository(Task::class)->findAll()]);
+        return $this->render('task/list.html.twig', [
+            'toggle_form'  => $this->createForm(ToggleTaskType::class)->createView(),
+            // IMPORTANT: add delete form later here!
+            'tasks' => $this->getDoctrine()->getRepository(Task::class)->findAll()
+        ]);
     }
 
     /**
@@ -48,11 +53,11 @@ class TaskController extends AbstractController
         FormHandlerInterface $createTaskHandler,
         ModelFactoryInterface $modelFactory
     ): Response {
-        // Validate corresponding form
+        // Handle (and validate) corresponding form
         $form = $createTaskHandler->process($request, [
             'dataModel' => $modelFactory->create('task')
         ]);
-        // Perform action(s) on validation success state
+        // Perform action(s) on handling success state
         if ($createTaskHandler->execute()) {
             // Associate authenticated user to new task and add a successful flash message
             // Then, redirect to tasks list
@@ -80,11 +85,11 @@ class TaskController extends AbstractController
         Request $request,
         FormHandlerInterface $editTaskHandler
     ): Response {
-        // Validate corresponding form
+        // Handle (and validate) corresponding form
         $form = $editTaskHandler->process($request, [
             'dataModel' => $task
         ]);
-        // Perform action(s) on validation success state
+        // Perform action(s) on handling success state
         if ($editTaskHandler->execute()) {
             // Save change(s), specify authenticated user as task last editor, and add a successful flash message
             // Then, redirect to tasks list
@@ -100,20 +105,35 @@ class TaskController extends AbstractController
     /**
      * Toggle Task "isDone" state.
      *
-     * @param Task $task
+     * @param Task                 $task
+     * @param Request              $request
+     * @param FormHandlerInterface $toggleTaskHandler
      *
-     * @return RedirectResponse
+     * @return RedirectResponse|Response
      *
-     * @Route("/tasks/{id}/toggle", name="task_toggle")
+     * @Route("/tasks/{id}/toggle", name="task_toggle", methods={"POST"})
      */
-    public function toggleTaskAction(Task $task)
-    {
-        $task->toggle(!$task->isDone());
-        $this->getDoctrine()->getManager()->flush();
+    public function toggleTaskAction(
+        Task $task,
+        Request $request,
+        FormHandlerInterface $toggleTaskHandler
+    ): Response {
+        // Handle (and validate) corresponding form
+        $form = $toggleTaskHandler->process($request, [
+            'dataModel' => $task
+        ]);
+        // Perform action(s) on handling success state
+        if ($toggleTaskHandler->execute()) {
+            // Save state change, and add a successful flash message
+            // Then, redirect to tasks list
+            return $this->redirectToRoute('task_list');
+        }
 
-        $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme faite.', $task->getTitle()));
-
-        return $this->redirectToRoute('task_list');
+        return $this->render('task/list.html.twig', [
+            'toggle_form' => $form->createView(),
+            // IMPORTANT: add delete form later here!
+            'tasks'       => $this->getDoctrine()->getRepository(Task::class)->findAll()
+        ]);
     }
 
     /**
