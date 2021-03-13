@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Tests\unit\Form\Type;
 
 use App\Entity\Task;
-use App\Form\Type\EditTaskType;
+use App\Form\Type\ToggleTaskType;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\Validator\Validation;
 
 /**
- * Class EditTaskTypeTest
+ * Class ToggleTaskTypeTest
  *
- * Manage unit tests for task modification (edit/update) form type.
+ * Manage unit tests for task toggle form type.
  *
  * @see Form type unit testing: https://symfony.com/doc/current/form/unit_testing.html
  */
-class EditTaskTypeTest extends TypeTestCase
+class ToggleTaskTypeTest extends TypeTestCase
 {
     /**
      * Get form extensions to use it as expected.
@@ -56,67 +56,44 @@ class EditTaskTypeTest extends TypeTestCase
     public function provideDataStructureToValidate(): \Generator
     {
         yield [
-            'Succeeds when data are correct' => [
-                'title'   => 'Tâche modifiée',
-                'content' => 'Ceci est une description de tâche modifiée.',
+            'Succeeds when no data exists' => [
+                // No field exists at this time!
                 'isValid' => true
             ]
         ];
         yield [
-            'Fails when title data is blank' => [
-                'title'   => '',
-                'content' => 'Ceci est une description de tâche modifiée.',
-                'isValid' => false
-            ]
-        ];
-        yield [
-            'Fails when content is blank' => [
-                'title'   => 'Tâche modifiée',
-                'content' => '',
-                'isValid' => false
-            ]
-        ];
-        yield [
-            'Fails when title data is not set' => [
-                'content' => 'Ceci est une description de tâche modifiée.',
-                'isValid' => false
-            ]
-        ];
-        yield [
-            'Fails when content is not set' => [
-                'title'   => 'Tâche modifiée',
+            'Fails when unexpected data are set' => [
+                // No data is expected to be submitted at this time!
+                'unexpected' => 'Test',
                 'isValid' => false
             ]
         ];
     }
 
     /**
-     * Check that data mapping is correctly made when task modification form is submitted.
+     * Check that data mapping is correctly made when task toggle form is submitted.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testSubmittedModifiedTaskFormMapping(): void
+    public function testSubmittedToggledTaskFormMapping(): void
     {
         $dataModel = (new Task())
-        ->setTitle('Titre de tâche existante')
-        ->setContent('Description de tâche existante');
-        $title = 'Titre de tâche modifiée';
-        $content = 'Description de tâche modifiée';
+            ->setTitle('Titre de tâche existante')
+            ->setContent('Description de tâche existante');
         // Clone data model to get the same data automatically set in constructor
-        $expectedObject = (clone $dataModel)
-            ->setTitle($title)
-            ->setContent($content);
-        $formData = ['title' => $title, 'content' => $content];
-        $form = $this->factory->create(EditTaskType::class, $dataModel);
+        $expectedObject = clone $dataModel;
+        // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
+        $formData = [];
+        $form = $this->factory->create(ToggleTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertEquals($expectedObject, $form->getData());
     }
 
     /**
-     * Check that expected data are validated when task modification form is submitted.
+     * Check that expected data are validated when task toggle form is submitted.
      *
      * Please note that each validation constraint is already checked
      * in TaskTest::testValidationRulesAreCorrectlySet().
@@ -129,21 +106,21 @@ class EditTaskTypeTest extends TypeTestCase
      *
      * @throws \Exception
      */
-    public function testSubmittedModifiedTaskDataValidation(array $data): void
+    public function testSubmittedToggledTaskDataValidation(array $data): void
     {
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
             ->setContent('Description de tâche existante');
-        // Use arrow function combined to array filtering with flag based on key
+        // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
         $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
-        $form = $this->factory->create(EditTaskType::class, $dataModel);
+        $form = $this->factory->create(ToggleTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertSame($data['isValid'], $form->isValid());
     }
 
     /**
-     * Check that data transformation is correctly made when task modification form is submitted.
+     * Check that data transformation is correctly made when task toggle form is submitted.
      *
      * @return void
      *
@@ -154,8 +131,9 @@ class EditTaskTypeTest extends TypeTestCase
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
             ->setContent('Description de tâche existante');
-        $formData = ['title' => 'Titre de tâche modifiée', 'content' => 'Description de tâche modifiée'];
-        $form = $this->factory->create(EditTaskType::class, $dataModel);
+        // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
+        $formData = [];
+        $form = $this->factory->create(ToggleTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertTrue($form->isSynchronized());

@@ -63,7 +63,7 @@ abstract class AbstractModelManager implements ModelManagerInterface
 
             return true;
         } catch (\Exception $exception) {
-            $this->logger->error($errorMessageIntro . ':' . $exception->getMessage());
+            $this->logger->error($errorMessageIntro . ': ' . $exception->getMessage());
 
             return false;
         }

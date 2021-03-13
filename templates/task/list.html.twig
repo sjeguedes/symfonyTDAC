@@ -10,7 +10,7 @@
             <div class="thumbnail">
                 <div class="caption">
                     <h4 class="pull-right">
-                        {% if task.isDone %}<span class="glyphicon glyphicon-ok"></span>{% else %}<span class="glyphicon glyphicon-remove"></span>{% endif %}
+                        <span class="glyphicon glyphicon-{{ task.isDone ? 'ok': 'remove' }}"></span>
                     </h4>
                     <h4><a href="{{ path('task_edit', {'id' : task.id }) }}">{{ task.title }}</a></h4>
                     <p>{{ task.content }}</p>
@@ -18,17 +18,10 @@
                 <div>
                     {# Added toggle form managed by Symfony as a better practice! #}
                     {{ form_start(toggle_form, {'action' : path('task_toggle', {'id' : task.id })}) }}
-                    {{ form_widget(toggle_form) }}
                     <button class="btn btn-success btn-sm pull-right">
                         Marquer {{ false == task.isDone ? 'comme faite ': 'non terminée' }}
                     </button>
                     {{ form_end(toggle_form) }}
-
-                    {#<form action="{{ path('task_toggle', {'id' : task.id }) }}">
-                        <button class="btn btn-success btn-sm pull-right">
-                            {% if not task.isDone %}Marquer comme faite{% else %}Marquer non terminée{% endif %}
-                        </button>
-                    </form>#}
                     <form action="{{ path('task_delete', {'id' : task.id }) }}">
                         <button class="btn btn-danger btn-sm pull-right">Supprimer</button>
                     </form>

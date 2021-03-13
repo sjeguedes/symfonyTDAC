@@ -30,6 +30,10 @@
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">src</directory>
+            <!-- Exclude files or directories here! -->
+            <exclude>
+                <file>src/Kernel.php</file>
+            </exclude>
         </whitelist>
     </filter>
 

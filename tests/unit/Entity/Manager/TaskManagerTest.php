@@ -108,6 +108,7 @@ class TaskManagerTest extends TestCase
     {
         // Dates of creation and update are set in constructor automatically with the same value.
         $taskModel = new Task();
+        $previousDateOfUpdate = $taskModel->getUpdatedAt();
         // Authenticated user obtained from token storage is checked inside CreateTaskHandlerTest!
         $authenticatedUser = static::createMock(User::class);
         $authenticatedUser
@@ -117,7 +118,42 @@ class TaskManagerTest extends TestCase
         // Set author (permitted without id set) first, which will fake a task creation result.
         $this->taskManager->update($taskModel, $authenticatedUser);
         // Ensure task date of update is set
-        static::assertTrue($taskModel->getUpdatedAt() !== $taskModel->getCreatedAt());
+        static::assertTrue($previousDateOfUpdate < $taskModel->getUpdatedAt());
+    }
+
+    /**
+     * Check that "toggle" method will inverse "task isDone" property.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testTaskToggleWillInverseIsDoneState(): void
+    {
+        // "IsDone" is set to false by default in constructor.
+        $taskModel = new Task();
+        // Inverse two times "isDone" state in order to expect a true toggle feature
+        $this->taskManager->toggle($taskModel);
+        static::assertTrue($taskModel->isDone());
+        $this->taskManager->toggle($taskModel);
+        static::assertFalse($taskModel->isDone());
+    }
+
+    /**
+     * Check that "toggle" method will modify a date of update.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testTaskToggleIsCorrectlyTraced(): void
+    {
+        // Dates of creation and update are set in constructor automatically with the same value.
+        $taskModel = new Task();
+        $previousDateOfUpdate = $taskModel->getUpdatedAt();
+        $this->taskManager->toggle($taskModel);
+        // Ensure task date of update is set
+        static::assertTrue($previousDateOfUpdate < $taskModel->getUpdatedAt());
     }
 
     /**

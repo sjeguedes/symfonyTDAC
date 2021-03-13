@@ -24,14 +24,16 @@ class TaskController extends AbstractController
     /**
      * List all tasks.
      *
-     * @Route("/tasks", name="task_list")
+     * @return Response
+     *
+     * @Route("/tasks", name="task_list", methods={"GET"})
      */
-    public function listAction()
+    public function listAction(): Response
     {
         return $this->render('task/list.html.twig', [
-            'toggle_form'  => $this->createForm(ToggleTaskType::class)->createView(),
+            'toggle_form' => $this->createForm(ToggleTaskType::class)->createView(),
             // IMPORTANT: add delete form later here!
-            'tasks' => $this->getDoctrine()->getRepository(Task::class)->findAll()
+            'tasks'       => $this->getDoctrine()->getRepository(Task::class)->findAll()
         ]);
     }
 
