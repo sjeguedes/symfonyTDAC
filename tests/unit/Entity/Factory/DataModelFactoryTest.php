@@ -19,7 +19,7 @@ class DataModelFactoryTest extends TestCase
     /**
      * @var DataModelFactory|null
      */
-    private ?DataModelFactory $modelFactory;
+    private ?DataModelFactory $dataModelFactory;
 
     /**
      * Setup needed instance(s).
@@ -30,7 +30,7 @@ class DataModelFactoryTest extends TestCase
      */
     public function setUp(): void
     {
-        $this->modelFactory = new DataModelFactory();
+        $this->dataModelFactory = new DataModelFactory();
     }
 
     /**
@@ -76,7 +76,7 @@ class DataModelFactoryTest extends TestCase
     public function testModelCannotBeCreatedWithWrongReference(): void
     {
         static::expectException(\RuntimeException::class);
-        $this->modelFactory->create('inexistant');
+        $this->dataModelFactory->create('inexistant');
     }
 
     /**
@@ -92,7 +92,7 @@ class DataModelFactoryTest extends TestCase
      */
     public function testModelCanBeCreatedWithCorrectReference(array $data): void
     {
-        $entity = $this->modelFactory->create($data['reference']);
+        $entity = $this->dataModelFactory->create($data['reference']);
         static::assertInstanceOf($data['className'], $entity);
     }
 
@@ -103,6 +103,6 @@ class DataModelFactoryTest extends TestCase
      */
     public function tearDown(): void
     {
-        $this->modelFactory = null;
+        $this->dataModelFactory = null;
     }
 }

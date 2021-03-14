@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Factory\ModelFactoryInterface;
+use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Type\ToggleTaskType;
@@ -42,7 +42,7 @@ class TaskController extends AbstractController
      *
      * @param Request               $request
      * @param FormHandlerInterface  $createTaskHandler
-     * @param ModelFactoryInterface $modelFactory
+     * @param DataModelFactoryInterface $dataModelFactory
      *
      * @return RedirectResponse|Response
      *
@@ -53,11 +53,11 @@ class TaskController extends AbstractController
     public function createAction(
         Request $request,
         FormHandlerInterface $createTaskHandler,
-        ModelFactoryInterface $modelFactory
+        DataModelFactoryInterface $dataModelFactory
     ): Response {
         // Handle (and validate) corresponding form
         $form = $createTaskHandler->process($request, [
-            'dataModel' => $modelFactory->create('task')
+            'dataModel' => $dataModelFactory->create('task')
         ]);
         // Perform action(s) on handling success state
         if ($createTaskHandler->execute()) {

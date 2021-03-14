@@ -39,8 +39,8 @@ services:
             $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
 
     # define model factory as a generic lazy service for corresponding custom interface
-    App\Entity\Factory\ModelFactory: ~
-    App\Entity\Factory\ModelFactoryInterface: '@App\Entity\Factory\ModelFactory'
+    App\Entity\Factory\DataModelFactory: ~
+    App\Entity\Factory\DataModelFactoryInterface: '@App\Entity\Factory\DataModelFactory'
 
     # define task manager as a service
     App\Entity\Manager\TaskManager: ~
