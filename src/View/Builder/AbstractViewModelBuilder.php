@@ -46,7 +46,7 @@ abstract class AbstractViewModelBuilder implements ViewModelBuilderInterface
     /**
      * {@inheritdoc}
      *
-     * @return object
+     * @return object|\StdClass
      */
     public function create(string $viewReference = null, array $mergedData = []): object
     {

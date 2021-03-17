@@ -34,19 +34,19 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     {
         switch ($viewReference) {
             case self::VIEW_NAMES['taskList']:
-                $this->viewModel = $this->prepareTaskListData();
+                $this->prepareTaskListData();
                 break;
             case self::VIEW_NAMES['createTask']:
-                $this->viewModel = $this->prepareCreateTaskData();
+                $this->prepareCreateTaskData();
                 break;
             case self::VIEW_NAMES['editTask']:
-                $this->viewModel = $this->prepareEditTaskData();
+                $this->prepareEditTaskData();
                 break;
             case self::VIEW_NAMES['toggleTask']:
-                $this->viewModel = $this->prepareToggleTaskData();
+                $this->prepareToggleTaskData();
                 break;
             case self::VIEW_NAMES['deleteTask']:
-                $this->viewModel = $this->prepareDeleteTaskData();
+                $this->prepareDeleteTaskData();
                 break;
             default:
                 if (null !== $viewReference) {
@@ -95,9 +95,9 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     /**
      * Prepare "task list" particular view data.
      *
-     * @return \StdClass
+     * @return void
      */
-    private function prepareTaskListData(): \StdClass
+    private function prepareTaskListData(): void
     {
         // IMPORTANT: optimize query for performance later!
         $tasks = $this->entityManager->getRepository(Task::class)->findAll();
@@ -107,57 +107,52 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
             $this->viewModel->form ?? null
         );
         // IMPORTANT: add delete form views later here!
-        return $this->viewModel;
     }
 
     /**
      * Prepare "create task" particular view data.
      *
-     * @return \StdClass
+     * @return void
      */
-    private function prepareCreateTaskData(): \StdClass
+    private function prepareCreateTaskData(): void
     {
         $this->viewModel->createTaskFormView = $this->viewModel->form->createView();
         // Delete unnecessary property
         unset($this->viewModel->{'form'});
-
-        return $this->viewModel;
     }
 
     /**
      * Prepare "edit task" particular view data.
      *
-     * @return \StdClass
+     * @return void
      */
-    private function prepareEditTaskData(): \StdClass
+    private function prepareEditTaskData(): void
     {
         $this->viewModel->editTaskFormView = $this->viewModel->form->createView();
         $this->viewModel->taskId = $this->viewModel->task->getId();
         // Delete unnecessary properties
         unset($this->viewModel->{'form'});
         unset($this->viewModel->{'task'});
-
-        return $this->viewModel;
     }
 
     /**
      * Prepare "toggle task" particular view data.
      *
-     * @return \StdClass
+     * @return void
      */
-    private function prepareToggleTaskData(): \StdClass
+    private function prepareToggleTaskData(): void
     {
-        return $this->prepareTaskListData();
+        $this->prepareTaskListData();
     }
 
     /**
      * Prepare "delete task" particular view data.
      *
-     * @return \StdClass
+     * @return void
      */
-    private function prepareDeleteTaskData(): \StdClass
+    private function prepareDeleteTaskData(): void
     {
         // IMPORTANT: change this method script here later if necessary!
-        return $this->prepareTaskListData();
+        $this->prepareTaskListData();
     }
 }
