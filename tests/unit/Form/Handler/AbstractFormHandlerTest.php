@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\unit\Form\Handler;
+namespace App\Tests\Unit\Form\Handler;
 
 use App\Entity\Task;
 use App\Form\Handler\AbstractFormHandler;
