@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class AbstractDataModelManagerTest
  *
- * Manage unit tests for task manager.
+ * Manage unit tests for data model managers common logic declared in AbstractDataModelManager class.
  */
 class AbstractDataModelManagerTest extends TestCase
 {
