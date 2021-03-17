@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\unit\Entity\Manager;
 
-use App\Entity\Manager\TaskManager;
+use App\Entity\Manager\TaskDataModelManager;
 use App\Entity\Task;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,11 +13,11 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class TaskManagerTest
+ * Class TaskDataModelManagerTest
  *
  * Manage unit tests for task manager.
  */
-class TaskManagerTest extends TestCase
+class TaskDataModelManagerTest extends TestCase
 {
     /**
      * @var MockObject|EntityManagerInterface|null
@@ -30,9 +30,9 @@ class TaskManagerTest extends TestCase
     private ?LoggerInterface $logger;
 
     /**
-     * @var TaskManager|null
+     * @var TaskDataModelManager|null
      */
-    private ?TaskManager $taskManager;
+    private ?TaskDataModelManager $taskDataModelManager;
 
     /**
      * Setup needed instance(s).
@@ -45,7 +45,7 @@ class TaskManagerTest extends TestCase
     {
         $this->entityManager = static::createMock(EntityManagerInterface::class);
         $this->logger = static::createMock(LoggerInterface::class);
-        $this->taskManager = new TaskManager($this->entityManager, $this->logger);
+        $this->taskDataModelManager = new TaskDataModelManager($this->entityManager, $this->logger);
     }
 
     /**
@@ -64,7 +64,7 @@ class TaskManagerTest extends TestCase
             ->expects($this->any())
             ->method('getId')
             ->willReturn(1);
-        $this->taskManager->create($taskModel, $user);
+        $this->taskDataModelManager->create($taskModel, $user);
         static::assertEquals(1, $taskModel->getAuthor()->getId());
     }
 
@@ -91,7 +91,7 @@ class TaskManagerTest extends TestCase
             ->willReturn(2);
         // Set author (permitted without id set) first, which will fake a task creation result.
         $taskModel->setAuthor($author);
-        $this->taskManager->update($taskModel, $authenticatedUser);
+        $this->taskDataModelManager->update($taskModel, $authenticatedUser);
         // Ensure no change was made on author and authenticated user is set as last editor
         static::assertEquals(1, $taskModel->getAuthor()->getId());
         static::assertEquals(2, $taskModel->getLastEditor()->getId());
@@ -116,7 +116,7 @@ class TaskManagerTest extends TestCase
             ->method('getId')
             ->willReturn(2);
         // Set author (permitted without id set) first, which will fake a task creation result.
-        $this->taskManager->update($taskModel, $authenticatedUser);
+        $this->taskDataModelManager->update($taskModel, $authenticatedUser);
         // Ensure task date of update is set
         static::assertTrue($previousDateOfUpdate < $taskModel->getUpdatedAt());
     }
@@ -133,9 +133,9 @@ class TaskManagerTest extends TestCase
         // "IsDone" is set to false by default in constructor.
         $taskModel = new Task();
         // Inverse two times "isDone" state in order to expect a true toggle feature
-        $this->taskManager->toggle($taskModel);
+        $this->taskDataModelManager->toggle($taskModel);
         static::assertTrue($taskModel->isDone());
-        $this->taskManager->toggle($taskModel);
+        $this->taskDataModelManager->toggle($taskModel);
         static::assertFalse($taskModel->isDone());
     }
 
@@ -151,7 +151,7 @@ class TaskManagerTest extends TestCase
         // Dates of creation and update are set in constructor automatically with the same value.
         $taskModel = new Task();
         $previousDateOfUpdate = $taskModel->getUpdatedAt();
-        $this->taskManager->toggle($taskModel);
+        $this->taskDataModelManager->toggle($taskModel);
         // Ensure task date of update is set
         static::assertTrue($previousDateOfUpdate < $taskModel->getUpdatedAt());
     }
@@ -165,6 +165,6 @@ class TaskManagerTest extends TestCase
     {
         $this->entityManager = null;
         $this->logger = null;
-        $this->taskManager = null;
+        $this->taskDataModelManager = null;
     }
 }

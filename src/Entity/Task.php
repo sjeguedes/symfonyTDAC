@@ -112,7 +112,7 @@ class Task
     }
 
     /**
-     * Please note this setter is an optional since data is set in constructor.
+     * Please note this setter is optional since data is set in constructor.
      * This allows to keep control on date of creation.
      *
      * @codeCoverageIgnore
@@ -197,6 +197,20 @@ class Task
     public function isDone(): bool
     {
         return $this->isDone;
+    }
+
+    /**
+     * This was added to distinct a real setter and toggle action which inverses a particular value.
+     *
+     * @param bool $flag
+     *
+     * @return Task
+     */
+    public function setIsDone(bool $flag): self
+    {
+        $this->isDone = $flag;
+
+        return $this;
     }
 
     /**

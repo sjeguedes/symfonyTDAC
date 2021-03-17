@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Form\Handler\Helpers;
 
-use App\Entity\Manager\ModelManagerInterface;
-use App\Entity\Manager\TaskManager;
+use App\Entity\Manager\DataModelManagerInterface;
+use App\Entity\Manager\TaskDataModelManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -21,13 +21,13 @@ abstract class AbstractTaskFormHandlerTestCase extends AbstractFormHandlerTestCa
      *
      * @param EntityManagerInterface $entityManager
      *
-     * @return ModelManagerInterface|TaskManager
+     * @return DataModelManagerInterface|TaskDataModelManager
      */
-    protected function setTaskManager(EntityManagerInterface $entityManager): ModelManagerInterface
+    protected function setTaskDataModelManager(EntityManagerInterface $entityManager): DataModelManagerInterface
     {
         // Use a task manager instance to be able to make entity manager throwing an exception
         $logger = static::createMock(LoggerInterface::class);
 
-        return new TaskManager($entityManager, $logger);
+        return new TaskDataModelManager($entityManager, $logger);
     }
 }

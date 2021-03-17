@@ -33,17 +33,19 @@ services:
     # please note that last definitions always *replace* previous ones
 
     App\Controller\TaskController:
+        arguments:
+            $viewModelBuilder: '@App\View\Builder\TaskViewModelBuilder'
         bind:
             $createTaskHandler: '@App\Form\Handler\CreateTaskFormHandler'
             $editTaskHandler: '@App\Form\Handler\EditTaskFormHandler'
             $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
 
-    # define model factory as a generic lazy service for corresponding custom interface
+    # define data (entity) model factory as a generic service for corresponding custom interface
     App\Entity\Factory\DataModelFactory: ~
     App\Entity\Factory\DataModelFactoryInterface: '@App\Entity\Factory\DataModelFactory'
 
-    # define task manager as a service
-    App\Entity\Manager\TaskManager: ~
+    # define task data model manager as a service
+    App\Entity\Manager\TaskDataModelManager: ~
 
     # define services in this directory as Doctrine fixtures
     App\DataFixtures\:
@@ -53,17 +55,20 @@ services:
     # define task creation form handler as a service with concrete dependencies
     App\Form\Handler\CreateTaskFormHandler:
         arguments:
-            $taskManager: '@App\Entity\Manager\TaskManager'
+            $taskManager: '@App\Entity\Manager\TaskDataModelManager'
 
     # define task update form handler as a service with concrete dependencies
     App\Form\Handler\EditTaskFormHandler:
         arguments:
-            $taskManager: '@App\Entity\Manager\TaskManager'
+            $taskManager: '@App\Entity\Manager\TaskDataModelManager'
 
     # define task toggle form handler as a service with concrete dependencies
     App\Form\Handler\ToggleTaskFormHandler:
         arguments:
-            $taskManager: '@App\Entity\Manager\TaskManager'
+            $taskManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define task actions view model builder as a service
+    App\View\Builder\TaskViewModelBuilder: ~
 
     # define flash bag as lazy service
     Symfony\Component\HttpFoundation\Session\Flash\FlashBag:

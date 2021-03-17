@@ -8,11 +8,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class AbstractModelManager
+ * Class AbstractDataModelManager
  *
- * Manage all model manager common actions.
+ * Manage all data model manager common actions.
  */
-abstract class AbstractModelManager implements ModelManagerInterface
+abstract class AbstractDataModelManager implements DataModelManagerInterface
 {
     /**
      * @var EntityManagerInterface
@@ -25,7 +25,7 @@ abstract class AbstractModelManager implements ModelManagerInterface
     protected LoggerInterface $logger;
 
     /**
-     * AbstractModelManager constructor.
+     * AbstractDataModelManager constructor.
      *
      * @param EntityManagerInterface $entityManager
      * @param LoggerInterface        $logger

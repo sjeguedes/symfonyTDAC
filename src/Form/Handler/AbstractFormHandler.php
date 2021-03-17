@@ -21,14 +21,14 @@ abstract class AbstractFormHandler implements FormHandlerInterface
     protected FormFactoryInterface $formFactory;
 
     /**
-     * @var object|null
+     * @var string
      */
-    private ?object $clonedOriginalModel;
+    protected string $formName;
 
     /**
-     * @var FormInterface|null
+     * @var bool
      */
-    private ?FormInterface $form;
+    protected bool $isFormNameIndexed;
 
     /**
      * @var string
@@ -39,6 +39,16 @@ abstract class AbstractFormHandler implements FormHandlerInterface
      * @var FlashBagInterface
      */
     protected FlashBagInterface $flashBag;
+
+    /**
+     * @var object|null
+     */
+    private ?object $clonedOriginalModel;
+
+    /**
+     * @var FormInterface|null
+     */
+    private ?FormInterface $form;
 
     /**
      * @var bool|null
@@ -54,15 +64,19 @@ abstract class AbstractFormHandler implements FormHandlerInterface
      * CreateTaskFormHandler constructor.
      *
      * @param FormFactoryInterface $formFactory
+     * @param string               $formName          a name to identify the current processed form
      * @param string               $formTypeClassName a Fully Qualified Class Name (F.Q.C.N)
      * @param FlashBagInterface    $flashBag
      */
     public function __construct(
         FormFactoryInterface $formFactory,
+        string $formName,
         string $formTypeClassName,
         FlashBagInterface $flashBag
     ) {
         $this->formFactory = $formFactory;
+        $this->formName = $formName;
+        $this->isFormNameIndexed = false;
         $this->formTypeClassName = $formTypeClassName;
         $this->flashBag = $flashBag;
         $this->clonedOriginalModel = null;
@@ -117,8 +131,13 @@ abstract class AbstractFormHandler implements FormHandlerInterface
         }
         // Get a clone of original passed model for later comparison
         $this->clonedOriginalModel = clone $data['dataModel'];
-        // Create a form based on a form type reference (Symfony way)
-        $this->form = $this->formFactory->create($this->formTypeClassName, $data['dataModel'], $formOptions);
+        // Create a named form (e.g. "edit_task", "toggle_task_1", ...) based on a form type reference (Symfony way)
+        $this->form = $this->formFactory->createNamed(
+            $this->formName . (!$this->isFormNameIndexed ? '' : '_' . $data['dataModel']->getId()),
+            $this->formTypeClassName,
+            $data['dataModel'],
+            $formOptions
+        );
         // Handle a request to evaluate form state
         $this->form->handleRequest($request);
         // Set success state

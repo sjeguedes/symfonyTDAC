@@ -9,7 +9,7 @@ namespace App\Entity\Manager;
  *
  * Define a contract to implement a model manager.
  */
-interface ModelManagerInterface
+interface DataModelManagerInterface
 {
     /**
      * Get a persistence service layer instance to ease storage in database

@@ -5,7 +5,7 @@
 {% block body %}
     <a href="{{ path('task_create') }}" class="btn btn-info pull-right">Créer une tâche</a>
     <div class="row">
-        {% for task in tasks %}
+        {% for task in view_model.tasks %}
         <div class="col-sm-4 col-lg-4 col-md-4">
             <div class="thumbnail">
                 <div class="caption">
@@ -17,10 +17,13 @@
                 </div>
                 <div>
                     {# Added toggle form managed by Symfony as a better practice! #}
+                    {% set toggle_form = view_model.toggleTaskFormViews[task.id] %}
                     {{ form_start(toggle_form, {'action' : path('task_toggle', {'id' : task.id })}) }}
-                    <button class="btn btn-success btn-sm pull-right">
-                        Marquer {{ false == task.isDone ? 'comme faite ': 'non terminée' }}
-                    </button>
+                        {# No field to display at this time but maybe errors #}
+                        {{ form_widget(toggle_form) }}
+                        <button type="submit" id="toggle-task-{{ task.id }}" class="btn btn-success btn-sm pull-right">
+                            Marquer {{ false == task.isDone ? 'comme faite': 'comme non terminée' }}
+                        </button>
                     {{ form_end(toggle_form) }}
                     <form action="{{ path('task_delete', {'id' : task.id }) }}">
                         <button class="btn btn-danger btn-sm pull-right">Supprimer</button>

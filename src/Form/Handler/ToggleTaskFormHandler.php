@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Handler;
 
-use App\Entity\Manager\ModelManagerInterface;
+use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
 use App\Form\Type\ToggleTaskType;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -18,23 +18,25 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
 {
     /**
-     * @var ModelManagerInterface
+     * @var DataModelManagerInterface
      */
-    private ModelManagerInterface $taskManager;
+    private DataModelManagerInterface $taskManager;
 
     /**
      * EditTaskFormHandler constructor.
      *
-     * @param FormFactoryInterface  $formFactory
-     * @param ModelManagerInterface $taskManager
-     * @param FlashBagInterface     $flashBag
+     * @param FormFactoryInterface      $formFactory
+     * @param DataModelManagerInterface $taskManager
+     * @param FlashBagInterface         $flashBag
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        ModelManagerInterface $taskManager,
+        DataModelManagerInterface $taskManager,
         FlashBagInterface $flashBag
     ) {
-        parent::__construct($formFactory, ToggleTaskType::class, $flashBag);
+        parent::__construct($formFactory, 'toggle_task', ToggleTaskType::class, $flashBag);
+        // Multiple identical forms of same type will be displayed!
+        $this->isFormNameIndexed = true;
         $this->taskManager = $taskManager;
     }
 

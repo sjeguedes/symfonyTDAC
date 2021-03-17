@@ -9,6 +9,7 @@ use App\Form\Handler\AbstractFormHandler;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Type\CreateTaskType;
 use App\Form\Type\EditTaskType;
+use App\Form\Type\ToggleTaskType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
@@ -46,7 +47,7 @@ class AbstractFormHandlerTest extends TestCase
     /**
      * Assert that an instance implements a particular interface.
      *
-     * Please note this is a custom assertion.
+     * Please note that this is a custom assertion.
      *
      * @param string $expectedInterface
      * @param object $testObject
@@ -72,10 +73,11 @@ class AbstractFormHandlerTest extends TestCase
         $this->formFactory = static::createMock(FormFactoryInterface::class);
         $this->flashBag = static::createMock(FlashBagInterface::class);
         // Use an anonymous class to represent a concrete form handler
-        // "TypeTest" is a fake form type name by default.
+        // "fake_form_name" and "FakeFormType" are fake form name and type name by default.
         $this->formHandler = new class (
             $this->formFactory,
-            'TypeTest',
+            'fake_form_name',
+            'FakeFormType',
             $this->flashBag
         ) extends AbstractFormHandler {};
     }
@@ -118,8 +120,9 @@ class AbstractFormHandlerTest extends TestCase
     public function provideFormTypeNames(): array
     {
         return [
-            'Uses task creation form type' => [CreateTaskType::class, Task::class],
-            'Uses task update form type'   => [EditTaskType::class, Task::class]
+            'Uses task creation form type' => ['create_task', CreateTaskType::class, Task::class],
+            'Uses task update form type'   => ['edit_task', EditTaskType::class, Task::class],
+            'Uses task toggle form type'   => ['toggle_task_1', ToggleTaskType::class, Task::class]
             // IMPORTANT: complete other existing types here later!
         ];
     }
@@ -140,6 +143,7 @@ class AbstractFormHandlerTest extends TestCase
      *
      * @dataProvider provideFormTypeNames
      *
+     * @param string $formName
      * @param string $formTypeName
      * @param string $modelName
      *
@@ -147,8 +151,11 @@ class AbstractFormHandlerTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testProcessReturnsAFormInstanceCorrectImplementation(string $formTypeName, string $modelName): void
-    {
+    public function testProcessReturnsAFormInstanceWithCorrectImplementation(
+        string $formName,
+        string $formTypeName,
+        string $modelName
+    ): void {
         // Use a concrete form factory with Http foundation extension to be able to handle a Request.
         $this->formFactory = Forms::createFormFactoryBuilder()
             ->addExtension(new HttpFoundationExtension())
@@ -156,6 +163,7 @@ class AbstractFormHandlerTest extends TestCase
         // Use anonymous class
         $this->formHandler = new class (
             $this->formFactory,
+            $formName,
             $formTypeName,
             $this->flashBag
         ) extends AbstractFormHandler {};
@@ -179,19 +187,19 @@ class AbstractFormHandlerTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testProcessSetsCorrectSuccessStateDependingOnFormSubmissionAndValidation(array $data): void
+    public function testProcessSetsCorrectSuccessStateOnFormSubmissionAndValidation(array $data): void
     {
         // Use an abstract class mock instead of anonymous class for this simple case
         $this->formHandler = static::getMockForAbstractClass(
             AbstractFormHandler::class,
-            [$this->formFactory, 'TypeTest', $this->flashBag],
+            [$this->formFactory, 'form_name', 'FakeFormType', $this->flashBag],
             '',
             true
         );
         $form = static::createMock(FormInterface::class);
         $this->formFactory
             ->expects($this->once())
-            ->method('create')
+            ->method('createNamed')
             ->willReturn($form);
         $form
             ->expects($data['isSubmitted'] ? $this->once() : $this->any())

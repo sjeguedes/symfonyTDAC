@@ -8,11 +8,11 @@ use App\Entity\Task;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Class TaskManager
+ * Class TaskDataModelManager
  *
  * Manage Task entity operations as a service layer.
  */
-class TaskManager extends AbstractModelManager
+class TaskDataModelManager extends AbstractDataModelManager
 {
     /**
      * Add a new task associated to authenticated user as author.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Form\Handler;
 
-use App\Entity\Manager\ModelManagerInterface;
+use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Handler\ToggleTaskFormHandler;
@@ -40,9 +40,9 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     private ?EntityManagerInterface $entityManager;
 
     /**
-     * @var MockObject|ModelManagerInterface|null
+     * @var MockObject|DataModelManagerInterface|null
      */
-    private ?ModelManagerInterface $taskManager;
+    private ?DataModelManagerInterface $taskManager;
 
     /**
      * @var FormHandlerInterface|null
@@ -65,7 +65,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     ): Request {
         // Define default data as valid
         $defaultFormData = [
-            'toggle_task' => [
+            'toggle_task_1' => [
                 // No fields are set at this time!
             ]
         ];
@@ -102,9 +102,30 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $existingTask = (new Task())
             ->setTitle('Titre de tâche existante')
             ->setContent('Description de tâche existante');
+        // Use reflection to create a form name as expected with task id
+        $existingTask = $this->setTaskIdByReflection($existingTask);
         $form = $this->toggleTaskHandler->process($request, ['dataModel' => $existingTask]);
-
         return $form;
+    }
+
+    /**
+     * Set Task id property by reflection to fake a entity provided from database.
+     *
+     * @param Task $existingTask
+     *
+     * @return Task
+     *
+     * @throws \ReflectionException
+     */
+    private function setTaskIdByReflection(Task $existingTask): Task
+    {
+        $taskReflection = new \ReflectionObject($existingTask);
+        $idPropertyReflection = $taskReflection->getProperty('id');
+        $idPropertyReflection->setAccessible(true);
+        $idPropertyReflection->setValue($existingTask, 1);
+        $idPropertyReflection->setAccessible(false);
+
+        return $existingTask;
     }
 
     /**
@@ -120,7 +141,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = $this->buildFormFactory($this->createRequest());
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
-        $this->taskManager = $this->setTaskManager($this->entityManager);
+        $this->taskManager = $this->setTaskDataModelManager($this->entityManager);
         $this->toggleTaskHandler = new ToggleTaskFormHandler(
             $this->formFactory,
             $this->taskManager,
@@ -138,8 +159,9 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     public function testExecuteReturnsFalseWhenInvalidFormIsProcessed(): void
     {
         // Process a real submitted form with invalid data thanks to helper method.
+        // No field is set, and no data is expected at this time!
         $this->processForm(
-            ['toggle_task' => ['unexpected' => 'Test']] // No field is set, and no data is expected at this time!
+            ['toggle_task_1' => ['unexpected' => 'Test']] // Use real field(s) later if needed
         );
         $isExecuted = $this->toggleTaskHandler->execute();
         static::assertFalse($isExecuted);
@@ -155,7 +177,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     public function testExecuteMethodReturnsTrueWhenTaskToggleFlushIsOk(): void
     {
         // Process a real submitted form first with default valid data thanks to helper method.
-        $form = $this->processForm();
+        $this->processForm();
         $isTaskToggleFlushed = $this->toggleTaskHandler->execute();
         static::assertTrue($isTaskToggleFlushed);
     }

@@ -83,7 +83,8 @@ class FixturesLoader implements FixtureInterface
                     )
                 )
                 ->setUpdatedAt($tasks[$i]->getCreatedAt())
-                ->toggle((bool) rand(0, 1));
+                // Set "even" values to true
+                ->setIsDone(0 === $i % 2 ? true : false);
             // Persist data
             $manager->persist($tasks[$i]);
         }

@@ -43,21 +43,52 @@ class TaskControllerTest extends AbstractControllerTestCase
     {
         yield 'Form data to create a task' => [
             'data' => [
-                'uri'                 => '/tasks/create',
-                'form_name'           => 'create_task',
-                'csrf_token_id'       => 'create_task_action',
-                'submit_button_label' => 'Ajouter'
+                'uri'              => '/tasks/create',
+                'form_name'        => 'create_task',
+                'csrf_token_id'    => 'create_task_action',
+                'submit_button_id' => 'create-task'
             ]
         ];
         yield 'Form data to edit a task' => [
             'data' => [
-                'uri'                 => '/tasks/1/edit',
-                'form_name'           => 'edit_task',
-                'csrf_token_id'       => 'edit_task_action',
-                'submit_button_label' => 'Modifier'
+                'uri'              => '/tasks/1/edit',
+                'form_name'        => 'edit_task',
+                'csrf_token_id'    => 'edit_task_action',
+                'submit_button_id' => 'edit-task'
+            ]
+        ];
+        yield 'Form data to toggle a task' => [
+            'data' => [
+                'uri'              => '/tasks',
+                'form_name'        => 'toggle_task_1',
+                'csrf_token_id'    => 'toggle_task_action',
+                'submit_button_id' => 'toggle-task-1'
             ]
         ];
         // Add other forms here
+    }
+
+    /**
+     * Provide controller methods forms data.
+     *
+     * @return \Generator
+     */
+    public function provideToggleActionData(): \Generator
+    {
+        yield 'Task with id 1 was done before toggle' => [
+            'data' => [
+                'task_id'                 => 1,
+                'success_message'         => 'non terminée',
+                'new_toggle_button_label' => 'faite'
+            ]
+        ];
+        yield 'Task with id 2 was undone before toggle' => [
+            'data' => [
+                'task_id'                 => 2,
+                'success_message'         => 'faite',
+                'new_toggle_button_label' => 'non terminée'
+            ]
+        ];
     }
 
     /**
@@ -92,7 +123,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         $crawler = $this->client->request('GET', $data['uri']);
         /** @var CsrfToken $csrfToken */
         $csrfToken = static::$container->get('security.csrf.token_manager')->getToken($data['csrf_token_id']);
-        $buttonCrawlerNode = $crawler->selectButton($data['submit_button_label']);
+        $buttonCrawlerNode = $crawler->selectButton($data['submit_button_id']);
         $form = $buttonCrawlerNode->form();
         // Check that CSRF token value is present among form values
         static::assertTrue(\in_array($csrfToken->getValue(), $form->getValues()));
@@ -101,7 +132,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         // Pass a wrong token
         $form[$data['form_name'] . '[_token]'] = 'Wrong CSRF token';
         $crawler = $this->client->submit($form);
-        // Check that CSRF token cannot be tampered!
+         // Check that CSRF token cannot be tampered!
         static::assertCount(1, $crawler->filter('div.alert-danger'));
     }
 
@@ -156,7 +187,7 @@ class TaskControllerTest extends AbstractControllerTestCase
     {
         $this->loginUser();
         $this->client->request('GET', '/tasks/1/edit');
-        $crawler = $this->client->submitForm('Modifier', [
+        $this->client->submitForm('Modifier', [
             'edit_task[title]'   => 'Tâche modifiée',
             'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
         ], 'POST');
@@ -165,6 +196,69 @@ class TaskControllerTest extends AbstractControllerTestCase
         static::assertSame(
             'Superbe ! La tâche a bien été modifiée.',
             trim($crawler->filter('div.alert-success')->text(null, false))
+        );
+    }
+
+    /**
+     * Check that an existing task is correctly toggled (marked as done or not).
+     *
+     * @dataProvider provideToggleActionData
+     *
+     * @param array $data
+     *
+     * @return void
+     */
+    public function testExistingTaskCanBeToggled(array $data): void
+    {
+        $this->loginUser();
+        $crawler = $this->client->request('GET', '/tasks');
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        $existingTask = $taskRepository->find($data['task_id']);
+        // Get task "isDone" state before toggle
+        $previousIsDoneValue = $existingTask->isDone();
+        // No data is submitted during toggle action, only the task id is taken into account!
+        $form = $crawler->selectButton('toggle-task-' . $data['task_id'])->form();
+        $this->client->submit($form);
+        $toggledTask = $taskRepository->find($data['task_id']);
+        // Check that isDone" state is inverse after toggle
+        static::assertSame(!$previousIsDoneValue, $toggledTask->isDone());
+    }
+
+    /**
+     * Check that "toggle" action reverses texts status correctly depending on "isDone" state.
+     *
+     * @dataProvider provideToggleActionData
+     *
+     * @param array $data
+     *
+     * @return void
+     */
+    public function testExistingTaskWasToggledWithCorrectTextsStatus(array $data): void
+    {
+        $this->loginUser();
+        $crawler = $this->client->request('GET', '/tasks');
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        $existingTask = $taskRepository->find($data['task_id']);
+        // No data is submitted during toggle action, only the task id is taken into account!
+        $form = $crawler->selectButton('toggle-task-' . $data['task_id'])->form();
+        $this->client->submit($form);
+        static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
+        $crawler = $this->client->followRedirect();
+        // Check flash success message content
+        static::assertSame(
+            sprintf(
+                'Superbe ! La tâche "%s" a bien été marquée comme %s.',
+                $existingTask->getTitle(),
+                $data['success_message']
+            ),
+            trim($crawler->filter('div.alert-success')->text(null, false))
+        );
+        // Check corresponding toggle button correct label
+        static::assertSame(
+            'Marquer comme ' . $data['new_toggle_button_label'],
+            trim($crawler->filter('#toggle-task-' . $data['task_id'])->text())
         );
     }
 

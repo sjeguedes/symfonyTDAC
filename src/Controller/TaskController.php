@@ -7,7 +7,7 @@ namespace App\Controller;
 use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
-use App\Form\Type\ToggleTaskType;
+use App\View\Builder\ViewModelBuilderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +22,16 @@ use Symfony\Component\Routing\Annotation\Route;
 class TaskController extends AbstractController
 {
     /**
+     * @var ViewModelBuilderInterface
+     */
+    private ViewModelBuilderInterface $viewModelBuilder;
+
+    public function __construct(ViewModelBuilderInterface $viewModelBuilder)
+    {
+        $this->viewModelBuilder = $viewModelBuilder;
+    }
+
+    /**
      * List all tasks.
      *
      * @return Response
@@ -31,9 +41,7 @@ class TaskController extends AbstractController
     public function listAction(): Response
     {
         return $this->render('task/list.html.twig', [
-            'toggle_form' => $this->createForm(ToggleTaskType::class)->createView(),
-            // IMPORTANT: add delete form later here!
-            'tasks'       => $this->getDoctrine()->getRepository(Task::class)->findAll()
+            'view_model' => $this->viewModelBuilder->create('task_list')
         ]);
     }
 
@@ -67,7 +75,9 @@ class TaskController extends AbstractController
         }
 
         return $this->render('task/create.html.twig', [
-            'form' => $form->createView()
+            'view_model' => $this->viewModelBuilder->create('create_task', [
+                'form' => $form
+            ])
         ]);
     }
 
@@ -99,8 +109,10 @@ class TaskController extends AbstractController
         }
 
         return $this->render('task/edit.html.twig', [
-            'form' => $form->createView(),
-            'task' => $task,
+            'view_model' => $this->viewModelBuilder->create('edit_task', [
+                'form' => $form,
+                'task' => $task
+            ])
         ]);
     }
 
@@ -132,9 +144,9 @@ class TaskController extends AbstractController
         }
 
         return $this->render('task/list.html.twig', [
-            'toggle_form' => $form->createView(),
-            // IMPORTANT: add delete form later here!
-            'tasks'       => $this->getDoctrine()->getRepository(Task::class)->findAll()
+            'view_model' => $this->viewModelBuilder->create('toggle_task', [
+                'form' => $form
+            ])
         ]);
     }
 

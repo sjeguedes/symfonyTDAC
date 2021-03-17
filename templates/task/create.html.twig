@@ -2,10 +2,10 @@
 
 {% block body %}
     <div class="row">
-        {{ form_start(form, {'action' : path('task_create')}) }}
-            {{ form_widget(form) }}
-            <button type="submit" class="btn btn-success pull-right">Ajouter</button>
-        {{ form_end(form) }}
+        {{ form_start(view_model.createTaskFormView, {'action' : path('task_create')}) }}
+            {{ form_widget(view_model.createTaskFormView) }}
+            <button type="submit" id="create-task" class="btn btn-success pull-right">Ajouter</button>
+        {{ form_end(view_model.createTaskFormView) }}
 
         <a href="{{ path('task_list') }}" class="btn btn-primary">Retour à la liste des tâches</a>
     </div>

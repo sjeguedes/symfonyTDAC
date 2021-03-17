@@ -2,10 +2,9 @@
 
 {% block body %}
     <div class="row">
-        {{ form_start(form, {'action' : path('task_edit', { 'id' : task.id })}) }}
-            {{ form_widget(form) }}
-
-            <button type="submit" class="btn btn-success pull-right">Modifier</button>
-        {{ form_end(form) }}
+        {{ form_start(view_model.editTaskFormView, {'action' : path('task_edit', { 'id' : view_model.taskId })}) }}
+            {{ form_widget(view_model.editTaskFormView) }}
+            <button type="submit" id="edit-task" class="btn btn-success pull-right">Modifier</button>
+        {{ form_end(view_model.editTaskFormView) }}
     </div>
 {% endblock %}

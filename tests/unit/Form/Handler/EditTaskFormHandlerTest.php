@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Form\Handler;
 
-use App\Entity\Manager\ModelManagerInterface;
+use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
 use App\Form\Handler\EditTaskFormHandler;
 use App\Form\Handler\FormHandlerInterface;
@@ -41,9 +41,9 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     private ?EntityManagerInterface $entityManager;
 
     /**
-     * @var MockObject|ModelManagerInterface|null
+     * @var MockObject|DataModelManagerInterface|null
      */
-    private ?ModelManagerInterface $taskManager;
+    private ?DataModelManagerInterface $taskManager;
 
     /**
      * @var MockObject|TokenStorageInterface|null
@@ -128,7 +128,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = $this->buildFormFactory($this->createRequest());
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
-        $this->taskManager = $this->setTaskManager($this->entityManager);
+        $this->taskManager = $this->setTaskDataModelManager($this->entityManager);
         $this->tokenStorage = static::createMock(TokenStorageInterface::class);
         $this->editTaskHandler = new EditTaskFormHandler(
             $this->formFactory,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Handler;
 
-use App\Entity\Manager\ModelManagerInterface;
+use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
 use App\Form\Type\EditTaskType;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -19,9 +19,9 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class EditTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
 {
     /**
-     * @var ModelManagerInterface
+     * @var DataModelManagerInterface
      */
-    private ModelManagerInterface $taskManager;
+    private DataModelManagerInterface $taskManager;
 
     /**
      * @var TokenStorageInterface
@@ -31,18 +31,18 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
     /**
      * EditTaskFormHandler constructor.
      *
-     * @param FormFactoryInterface  $formFactory
-     * @param ModelManagerInterface $taskManager
-     * @param FlashBagInterface     $flashBag
-     * @param TokenStorageInterface $tokenStorage
+     * @param FormFactoryInterface      $formFactory
+     * @param DataModelManagerInterface $taskManager
+     * @param FlashBagInterface         $flashBag
+     * @param TokenStorageInterface     $tokenStorage
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        ModelManagerInterface $taskManager,
+        DataModelManagerInterface $taskManager,
         FlashBagInterface $flashBag,
         TokenStorageInterface $tokenStorage
     ) {
-        parent::__construct($formFactory, EditTaskType::class, $flashBag);
+        parent::__construct($formFactory, 'edit_task', EditTaskType::class, $flashBag);
         $this->taskManager = $taskManager;
         $this->tokenStorage = $tokenStorage;
     }
