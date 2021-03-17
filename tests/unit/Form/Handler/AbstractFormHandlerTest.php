@@ -10,6 +10,7 @@ use App\Form\Handler\FormHandlerInterface;
 use App\Form\Type\CreateTaskType;
 use App\Form\Type\EditTaskType;
 use App\Form\Type\ToggleTaskType;
+use App\Tests\Unit\Helpers\CustomAssertionsTestCaseTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
@@ -29,6 +30,8 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
  */
 class AbstractFormHandlerTest extends TestCase
 {
+    use CustomAssertionsTestCaseTrait;
+
     /**
      * @var MockObject|FormFactoryInterface|null
      */
@@ -43,25 +46,6 @@ class AbstractFormHandlerTest extends TestCase
      * @var MockObject|FlashBagInterface
      */
     private ?FlashBagInterface $flashBag;
-
-    /**
-     * Assert that an instance implements a particular interface.
-     *
-     * Please note that this is a custom assertion.
-     *
-     * @param string $expectedInterface
-     * @param object $testObject
-     * @param string $message
-     *
-     * @return void
-     */
-    private static function assertImplements(string $expectedInterface, object $testObject, string $message = ''): void
-    {
-        // If "false" is returned, an error happened with this native function.
-        $interfacesNames = class_implements($testObject);
-        $value = false !== $interfacesNames ? \in_array($expectedInterface, $interfacesNames) : false;
-        self::assertThat($value, self::isTrue(), $message);
-    }
 
     /**
      * Setup needed instance(s).

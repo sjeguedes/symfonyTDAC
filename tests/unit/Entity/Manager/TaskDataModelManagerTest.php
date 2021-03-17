@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\unit\Entity\Manager;
+namespace App\Tests\Unit\Entity\Manager;
 
 use App\Entity\Manager\TaskDataModelManager;
 use App\Entity\Task;
