@@ -50,9 +50,9 @@ abstract class AbstractViewModelBuilder implements ViewModelBuilderInterface
      */
     public function create(string $viewReference = null, array $mergedData = []): object
     {
-        // Jump loop if it is unnecessary
+        // Jump loop if it is unnecessary.
         if (empty($mergedData)) goto jumpedLoop;
-        // Add merged data to those which are expected in each case
+        // Add merged data to those which are expected in each case.
         foreach ($mergedData as $key => $value) {
             if ('string' !== \gettype($key)) {
                 throw new \InvalidArgumentException('Merged data keys are expected to be a string!');
@@ -68,9 +68,9 @@ abstract class AbstractViewModelBuilder implements ViewModelBuilderInterface
     /**
      * Add particular expected data to each view.
      *
-     * @param string $viewReference a label to determine which view is concerned
+     * @param string $viewReference|null a label to determine which view is concerned
      *
      * @return \Stdclass
      */
-    abstract protected function addViewData(string $viewReference): \Stdclass;
+    abstract protected function addViewData(string $viewReference = null): \Stdclass;
 }

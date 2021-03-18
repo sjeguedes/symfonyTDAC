@@ -47,7 +47,7 @@ class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidatio
      */
     public function execute(array $data = [], bool $isSuccess = null): bool
     {
-        // Stop execution if form is not valid (kept not needed at this time!)
+        // Stop execution if form is not valid (kept but not needed at this time!)
         if (!$isSuccess = $isSuccess ?? $this->isSuccess()) {
             return false;
         }

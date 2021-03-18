@@ -258,7 +258,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         // Check corresponding toggle button correct label
         static::assertSame(
             'Marquer comme ' . $data['new_toggle_button_label'],
-            trim($crawler->filter('#toggle-task-' . $data['task_id'])->text())
+            trim($crawler->filter('#toggle-task-' . $data['task_id'])->text(null, false))
         );
     }
 

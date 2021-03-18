@@ -30,7 +30,7 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     /**
      * {@inheritdoc}
      */
-    protected function addViewData(string $viewReference): \Stdclass
+    protected function addViewData(string $viewReference = null): \Stdclass
     {
         switch ($viewReference) {
             case self::VIEW_NAMES['taskList']:
@@ -68,16 +68,17 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     private function generateToggleTaskFormViews(array $tasks, FormInterface $currentForm = null): array
     {
         $toggleFormViews = [];
-        $length = count($tasks);
+        $length = \count($tasks);
         $formNamePrefix = self::VIEW_NAMES['toggleTask'] . '_';
         // Current (submitted) task toggle form name does not contain an integer as suffix!
         if (null !== $currentForm && !preg_match('/(\d+)$/', $currentForm->getName(), $matches)) {
             throw new \RuntimeException("Current form name suffix is expected to be an integer as index!");
         }
+        $suffixIdAsInt = isset($matches) && 2 === \count($matches) ? $matches[1] : null;
         for ($i = 0; $i < $length; $i++) {
             $taskId = $tasks[$i]->getId();
             // Create current (submitted) form view if not null with its actual state!
-            if (isset($matches) && $i === ($matches[1] - 1)) {
+            if (null !== $suffixIdAsInt && $taskId === \intval($suffixIdAsInt)) {
                 $toggleFormViews[$taskId] = $currentForm->createView();
                 continue;
             }
@@ -88,7 +89,6 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
             );
             $toggleFormViews[$taskId] = $formView->createView();
         }
-
         return $toggleFormViews;
     }
 
@@ -102,9 +102,12 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         // IMPORTANT: optimize query for performance later!
         $tasks = $this->entityManager->getRepository(Task::class)->findAll();
         $this->viewModel->tasks = $tasks;
+        // Native function "property_exists" must be used with an instance (not the class due to generic \StdClass)
+        $currentForm = property_exists($this->viewModel, 'form') ? $this->viewModel->form : null;
+        // A current form instance exists when "toggle task" action is called!
         $this->viewModel->toggleTaskFormViews = $this->generateToggleTaskFormViews(
             $tasks,
-            $this->viewModel->form ?? null
+            $currentForm
         );
         // IMPORTANT: add delete form views later here!
     }
@@ -143,6 +146,8 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     private function prepareToggleTaskData(): void
     {
         $this->prepareTaskListData();
+        // Delete unnecessary property (since only form view is useful)
+        unset($this->viewModel->{'form'});
     }
 
     /**
