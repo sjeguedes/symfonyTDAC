@@ -126,7 +126,7 @@ class ToggleTaskTypeTest extends TypeTestCase
      *
      * @throws \Exception
      */
-    public function testSubmittedNewTaskDataTransformation(): void
+    public function testSubmittedToggledTaskDataTransformation(): void
     {
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
