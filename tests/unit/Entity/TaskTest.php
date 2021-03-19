@@ -116,6 +116,7 @@ class TaskTest extends TestCase
         $idProperty->setAccessible(true);
         // "Simulate" an already persisted object by setting id
         $idProperty->setValue($this->task, 1);
+        $idProperty->setAccessible(false);
         static::expectException(\RuntimeException::class);
         $this->task->setAuthor($user);
     }

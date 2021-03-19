@@ -42,7 +42,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     /**
      * @var MockObject|DataModelManagerInterface|null
      */
-    private ?DataModelManagerInterface $taskManager;
+    private ?DataModelManagerInterface $taskDataModelManager;
 
     /**
      * @var FormHandlerInterface|null
@@ -95,7 +95,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
             $this->formFactory = $this->buildFormFactory($request);
             $this->toggleTaskHandler = new ToggleTaskFormHandler(
                 $this->formFactory,
-                $this->taskManager,
+                $this->taskDataModelManager,
                 $this->flashBag
             );
         }
@@ -141,10 +141,10 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = $this->buildFormFactory($this->createRequest());
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
-        $this->taskManager = $this->setTaskDataModelManager($this->entityManager);
+        $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);
         $this->toggleTaskHandler = new ToggleTaskFormHandler(
             $this->formFactory,
-            $this->taskManager,
+            $this->taskDataModelManager,
             $this->flashBag
         );
     }
@@ -213,7 +213,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = null;
         $this->flashBag = null;
         $this->entityManager = null;
-        $this->taskManager = null;
+        $this->taskDataModelManager = null;
         $this->toggleTaskHandler = null;
         parent::tearDown();
     }

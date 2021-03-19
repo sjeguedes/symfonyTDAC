@@ -39,6 +39,7 @@ services:
             $createTaskHandler: '@App\Form\Handler\CreateTaskFormHandler'
             $editTaskHandler: '@App\Form\Handler\EditTaskFormHandler'
             $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
+            $deleteTaskHandler: '@App\Form\Handler\DeleteTaskFormHandler'
 
     # define data (entity) model factory as a generic service for corresponding custom interface
     App\Entity\Factory\DataModelFactory: ~
@@ -55,17 +56,22 @@ services:
     # define task creation form handler as a service with concrete dependencies
     App\Form\Handler\CreateTaskFormHandler:
         arguments:
-            $taskManager: '@App\Entity\Manager\TaskDataModelManager'
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
 
     # define task update form handler as a service with concrete dependencies
     App\Form\Handler\EditTaskFormHandler:
         arguments:
-            $taskManager: '@App\Entity\Manager\TaskDataModelManager'
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
 
     # define task toggle form handler as a service with concrete dependencies
     App\Form\Handler\ToggleTaskFormHandler:
         arguments:
-            $taskManager: '@App\Entity\Manager\TaskDataModelManager'
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define task deletion form handler as a service with concrete dependencies
+    App\Form\Handler\DeleteTaskFormHandler:
+        arguments:
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
 
     # define task actions view model builder as a service
     App\View\Builder\TaskViewModelBuilder: ~

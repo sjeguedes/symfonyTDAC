@@ -21,7 +21,7 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
     /**
      * @var DataModelManagerInterface
      */
-    private DataModelManagerInterface $taskManager;
+    private DataModelManagerInterface $taskDataModelManager;
 
     /**
      * @var TokenStorageInterface
@@ -32,18 +32,18 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
      * EditTaskFormHandler constructor.
      *
      * @param FormFactoryInterface      $formFactory
-     * @param DataModelManagerInterface $taskManager
+     * @param DataModelManagerInterface $taskDataModelManager
      * @param FlashBagInterface         $flashBag
      * @param TokenStorageInterface     $tokenStorage
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        DataModelManagerInterface $taskManager,
+        DataModelManagerInterface $taskDataModelManager,
         FlashBagInterface $flashBag,
         TokenStorageInterface $tokenStorage
     ) {
         parent::__construct($formFactory, 'edit_task', EditTaskType::class, $flashBag);
-        $this->taskManager = $taskManager;
+        $this->taskDataModelManager = $taskDataModelManager;
         $this->tokenStorage = $tokenStorage;
     }
 
@@ -85,7 +85,7 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
         $task = $this->getDataModel();
         $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         // Task was updated correctly!
-        if ($this->taskManager->update($task, $authenticatedUser)) {
+        if ($this->taskDataModelManager->update($task, $authenticatedUser)) {
             // Store success message in session before redirection
             $this->flashBag->add('success', 'La tâche a bien été modifiée.');
 

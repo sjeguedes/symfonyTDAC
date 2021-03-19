@@ -68,4 +68,26 @@ abstract class AbstractDataModelManager implements DataModelManagerInterface
             return false;
         }
     }
+
+    /**
+     * Remove entity data.
+     *
+     * @param object $entity
+     * @param string $errorMessageIntro
+     *
+     * @return bool
+     */
+    protected function remove(object $entity, string $errorMessageIntro): bool
+    {
+        try {
+            $this->getPersistenceLayer()->remove($entity);
+            $this->getPersistenceLayer()->flush();
+
+            return true;
+        } catch (\Exception $exception) {
+            $this->logger->error($errorMessageIntro . ': ' . $exception->getMessage());
+
+            return false;
+        }
+    }
 }

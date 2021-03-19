@@ -21,7 +21,7 @@ class CreateTaskFormHandler extends AbstractFormHandler implements FormValidatio
     /**
      * @var DataModelManagerInterface
      */
-    private DataModelManagerInterface $taskManager;
+    private DataModelManagerInterface $taskDataModelManager;
 
     /**
      * @var TokenStorageInterface
@@ -32,18 +32,18 @@ class CreateTaskFormHandler extends AbstractFormHandler implements FormValidatio
      * CreateTaskFormHandler constructor.
      *
      * @param FormFactoryInterface      $formFactory
-     * @param DataModelManagerInterface $taskManager
+     * @param DataModelManagerInterface $taskDataModelManager
      * @param FlashBagInterface         $flashBag
      * @param TokenStorageInterface     $tokenStorage
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        DataModelManagerInterface $taskManager,
+        DataModelManagerInterface $taskDataModelManager,
         FlashBagInterface $flashBag,
         TokenStorageInterface $tokenStorage
     ) {
         parent::__construct($formFactory, 'create_task', CreateTaskType::class, $flashBag);
-        $this->taskManager = $taskManager;
+        $this->taskDataModelManager = $taskDataModelManager;
         $this->tokenStorage = $tokenStorage;
     }
 
@@ -63,7 +63,7 @@ class CreateTaskFormHandler extends AbstractFormHandler implements FormValidatio
         $task = $this->getDataModel();
         $authenticatedUser = $this->tokenStorage->getToken()->getUser();
         // Task was saved correctly!
-        if ($this->taskManager->create($task, $authenticatedUser)) {
+        if ($this->taskDataModelManager->create($task, $authenticatedUser)) {
             // Store success message in session before redirection
             $this->flashBag->add('success', 'La tâche a bien été ajoutée.');
 

@@ -68,4 +68,19 @@ class TaskDataModelManager extends AbstractDataModelManager
         // Save the change(s) made on task
         return $this->save($task, 'Task toggle error');
     }
+
+    /**
+     * Delete an existing task.
+     *
+     * @param Task $task
+     *
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function delete(Task $task): bool
+    {
+        // Remove task and save deletion
+        return $this->remove($task, 'Task removal error');
+    }
 }

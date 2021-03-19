@@ -15,7 +15,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\FormView;
@@ -110,8 +109,11 @@ class TaskViewModelBuilderTest extends TestCase
      */
     public function testToggleTaskFormNameShouldBeSuffixedWithAIntegerIndex(): void
     {
-        $currentForm = static::createPartialMock(Form::class, ['getName']);
         $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $task = $this->getTaskCollection()[0];
+        // Create a real toggle form with a wrong name (without index as suffix)
+        // to ease test with "task 1" as data model
+        $currentForm = $this->formFactory->createNamed('toggle_task', ToggleTaskType::class, $task);
         $this->entityManager
             ->expects($this->once())
             ->method('getRepository')
@@ -122,10 +124,6 @@ class TaskViewModelBuilderTest extends TestCase
             ->expects($this->once())
             ->method('findAll')
             ->willReturn([]);
-        $currentForm
-            ->expects($this->once())
-            ->method('getName')
-            ->willReturn('toggle_task');
         static::expectException(\RuntimeException::class);
         static::expectExceptionMessage('Current form name suffix is expected to be an integer as index!');
         $this->viewModelBuilder->create('toggle_task', ['form' => $currentForm]);
@@ -138,9 +136,9 @@ class TaskViewModelBuilderTest extends TestCase
      */
     public function testTaskCreationActionViewModelBuildIsOk(): void
     {
-        $testTaskList = $this->getTaskCollection();
-        // Create a real form to ease test with "task 2" as data model
-        $currentForm = $this->formFactory->createNamed('create_task', CreateTaskType::class, $testTaskList[0]);
+        $task = $this->getTaskCollection()[0];
+        // Create a real form to ease test with "task 1" as data model
+        $currentForm = $this->formFactory->createNamed('create_task', CreateTaskType::class, $task);
         $viewModel = $this->viewModelBuilder->create('create_task', ['form' => $currentForm]);
         static::assertObjectNotHasAttribute('form', $viewModel);
         static::assertObjectHasAttribute('createTaskFormView', $viewModel);
@@ -155,9 +153,10 @@ class TaskViewModelBuilderTest extends TestCase
     public function testTaskUpdateActionViewModelBuildIsOk(): void
     {
         $testTaskList = $this->getTaskCollection();
-        // Create a real form to ease test with "task 2" as data model
-        $currentForm = $this->formFactory->createNamed('edit_task', EditTaskType::class, $testTaskList[0]);
-        $viewModel = $this->viewModelBuilder->create('edit_task', ['form' => $currentForm, 'task' => $testTaskList[0]]);
+        $task = $testTaskList[0];
+        // Create a real form to ease test with "task 1" as data model
+        $currentForm = $this->formFactory->createNamed('edit_task', EditTaskType::class, $task);
+        $viewModel = $this->viewModelBuilder->create('edit_task', ['form' => $currentForm, 'task' => $task]);
         static::assertObjectNotHasAttribute('form', $viewModel);
         static::assertObjectHasAttribute('editTaskFormView', $viewModel);
         static::assertInstanceOf(FormView::class, $viewModel->editTaskFormView);
@@ -174,8 +173,9 @@ class TaskViewModelBuilderTest extends TestCase
     {
         $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
         $testTaskList = $this->getTaskCollection();
+        $task = $testTaskList[1];
         // Create a real form to ease test with "task 2" as data model
-        $currentForm = $this->formFactory->createNamed('toggle_task_2', ToggleTaskType::class, $testTaskList[1]);
+        $currentForm = $this->formFactory->createNamed('toggle_task_2', ToggleTaskType::class, $task);
         $this->entityManager
             ->expects($this->once())
             ->method('getRepository')

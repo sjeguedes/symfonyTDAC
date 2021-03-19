@@ -6,16 +6,16 @@ namespace App\Form\Handler;
 
 use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
-use App\Form\Type\ToggleTaskType;
+use App\Form\Type\DeleteTaskType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
- * Class ToggleTaskFormHandler
+ * Class DeleteTaskFormHandler
  *
  * Handle a form in order to update a task.
  */
-class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
+class DeleteTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
 {
     /**
      * @var DataModelManagerInterface
@@ -34,7 +34,7 @@ class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidatio
         DataModelManagerInterface $taskDataModelManager,
         FlashBagInterface $flashBag
     ) {
-        parent::__construct($formFactory, 'toggle_task', ToggleTaskType::class, $flashBag);
+        parent::__construct($formFactory, 'delete_task', DeleteTaskType::class, $flashBag);
         // Multiple identical forms of same type will be displayed!
         $this->isFormNameIndexed = true;
         $this->taskDataModelManager = $taskDataModelManager;
@@ -51,19 +51,13 @@ class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidatio
         if (!$isSuccess = $isSuccess ?? $this->isSuccess()) {
             return false;
         }
-        // Change existing task "isDone" state as expected, and save form data
+        // Remove existing task as expected, and save form data
         /** @var Task $task */
         $task = $this->getDataModel();
-        // Task was updated correctly!
-        if ($this->taskDataModelManager->toggle($task)) {
+        // Task was deleted correctly!
+        if ($this->taskDataModelManager->delete($task)) {
             // Store success message in session before redirection
-            $this->flashBag->add(
-                'success',
-                sprintf(
-                    'La tâche "%s" a bien été marquée comme ' . ($task->isDone() ? 'faite.' : 'non terminée.'),
-                    $task->getTitle()
-                )
-            );
+            $this->flashBag->add('success', 'La tâche a bien été supprimée.');
 
             return true;
         }

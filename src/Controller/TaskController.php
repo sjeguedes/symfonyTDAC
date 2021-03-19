@@ -153,20 +153,34 @@ class TaskController extends AbstractController
     /**
      * Delete a Task entity and remove data.
      *
-     * @param Task $task
+     * @param Task                 $task
+     * @param Request              $request
+     * @param FormHandlerInterface $deleteTaskHandler
      *
-     * @return RedirectResponse
+     * @return RedirectResponse|Response
      *
-     * @Route("/tasks/{id}/delete", name="task_delete")
+     * @Route("/tasks/{id}/delete", name="task_delete", methods={"DELETE"})
      */
-    public function deleteTaskAction(Task $task)
-    {
-        $em = $this->getDoctrine()->getManager();
-        $em->remove($task);
-        $em->flush();
+    public function deleteTaskAction(
+        Task $task,
+        Request $request,
+        FormHandlerInterface $deleteTaskHandler
+    ): Response {
+        // Handle (and validate) corresponding form
+        $form = $deleteTaskHandler->process($request, [
+            'dataModel' => $task
+        ]);
+        // Perform action(s) on handling success state
+        if ($deleteTaskHandler->execute()) {
+            // Save deletion, and add a successful flash message
+            // Then, redirect to tasks list
+            return $this->redirectToRoute('task_list');
+        }
 
-        $this->addFlash('success', 'La tâche a bien été supprimée.');
-
-        return $this->redirectToRoute('task_list');
+        return $this->render('task/list.html.twig', [
+            'view_model' => $this->viewModelBuilder->create('delete_task', [
+                'form' => $form
+            ])
+        ]);
     }
 }

@@ -43,7 +43,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     /**
      * @var MockObject|DataModelManagerInterface|null
      */
-    private ?DataModelManagerInterface $taskManager;
+    private ?DataModelManagerInterface $taskDataModelManager;
 
     /**
      * @var MockObject|TokenStorageInterface|null
@@ -102,7 +102,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
             $this->formFactory = $this->buildFormFactory($request);
             $this->editTaskHandler = new EditTaskFormHandler(
                 $this->formFactory,
-                $this->taskManager,
+                $this->taskDataModelManager,
                 $this->flashBag,
                 $this->tokenStorage
             );
@@ -128,11 +128,11 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = $this->buildFormFactory($this->createRequest());
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
-        $this->taskManager = $this->setTaskDataModelManager($this->entityManager);
+        $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);
         $this->tokenStorage = static::createMock(TokenStorageInterface::class);
         $this->editTaskHandler = new EditTaskFormHandler(
             $this->formFactory,
-            $this->taskManager,
+            $this->taskDataModelManager,
             $this->flashBag,
             $this->tokenStorage
         );
@@ -250,7 +250,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = null;
         $this->flashBag = null;
         $this->entityManager = null;
-        $this->taskManager = null;
+        $this->taskDataModelManager = null;
         $this->tokenStorage = null;
         $this->editTaskHandler = null;
         parent::tearDown();
