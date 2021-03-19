@@ -19,11 +19,14 @@
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
         </testsuite>
-        <testsuite name="Project Functional Tests Suite">
-            <directory>tests/functional</directory>
-        </testsuite>
         <testsuite name="Project Unit Tests Suite">
             <directory>tests/unit</directory>
+        </testsuite>
+        <testsuite name="Project Integration Tests Suite">
+            <directory>tests/integration</directory>
+        </testsuite>
+        <testsuite name="Project Functional Tests Suite">
+            <directory>tests/functional</directory>
         </testsuite>
     </testsuites>
 
