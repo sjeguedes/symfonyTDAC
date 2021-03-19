@@ -41,7 +41,7 @@ class TaskControllerTest extends AbstractControllerTestCase
      */
     public function provideFormsConfigurations(): \Generator
     {
-        yield 'Form data to create a task' => [
+        yield 'Gets form data to create a task' => [
             'data' => [
                 'uri'              => '/tasks/create',
                 'form_name'        => 'create_task',
@@ -49,7 +49,7 @@ class TaskControllerTest extends AbstractControllerTestCase
                 'submit_button_id' => 'create-task'
             ]
         ];
-        yield 'Form data to edit a task' => [
+        yield 'Gets form data to edit a task' => [
             'data' => [
                 'uri'              => '/tasks/1/edit',
                 'form_name'        => 'edit_task',
@@ -57,7 +57,7 @@ class TaskControllerTest extends AbstractControllerTestCase
                 'submit_button_id' => 'edit-task'
             ]
         ];
-        yield 'Form data to toggle a task' => [
+        yield 'Gets form data to toggle a task' => [
             'data' => [
                 'uri'              => '/tasks',
                 'form_name'        => 'toggle_task_1',
@@ -65,30 +65,15 @@ class TaskControllerTest extends AbstractControllerTestCase
                 'submit_button_id' => 'toggle-task-1'
             ]
         ];
+        yield 'Gets form data to delete a task' => [
+            'data' => [
+                'uri'              => '/tasks',
+                'form_name'        => 'delete_task_1',
+                'csrf_token_id'    => 'delete_task_action',
+                'submit_button_id' => 'delete-task-1'
+            ]
+        ];
         // Add other forms here
-    }
-
-    /**
-     * Provide controller methods forms data.
-     *
-     * @return \Generator
-     */
-    public function provideToggleActionData(): \Generator
-    {
-        yield 'Task with id 1 was done before toggle' => [
-            'data' => [
-                'task_id'                 => 1,
-                'success_message'         => 'non terminée',
-                'new_toggle_button_label' => 'faite'
-            ]
-        ];
-        yield 'Task with id 2 was undone before toggle' => [
-            'data' => [
-                'task_id'                 => 2,
-                'success_message'         => 'faite',
-                'new_toggle_button_label' => 'non terminée'
-            ]
-        ];
     }
 
     /**
@@ -186,7 +171,9 @@ class TaskControllerTest extends AbstractControllerTestCase
     public function testExistingTaskCanBeUpdated(): void
     {
         $this->loginUser();
-        $this->client->request('GET', '/tasks/1/edit');
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
         $this->client->submitForm('Modifier', [
             'edit_task[title]'   => 'Tâche modifiée',
             'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
@@ -202,63 +189,83 @@ class TaskControllerTest extends AbstractControllerTestCase
     /**
      * Check that an existing task is correctly toggled (marked as done or not).
      *
-     * @dataProvider provideToggleActionData
-     *
-     * @param array $data
-     *
      * @return void
      */
-    public function testExistingTaskCanBeToggled(array $data): void
+    public function testExistingTaskCanBeToggled(): void
     {
         $this->loginUser();
         $crawler = $this->client->request('GET', '/tasks');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        $existingTask = $taskRepository->find($data['task_id']);
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        $existingTask = $taskRepository->find($randomId);
         // Get task "isDone" state before toggle
         $previousIsDoneValue = $existingTask->isDone();
         // No data is submitted during toggle action, only the task id is taken into account!
-        $form = $crawler->selectButton('toggle-task-' . $data['task_id'])->form();
+        $form = $crawler->selectButton('toggle-task-' . $randomId)->form();
         $this->client->submit($form);
-        $toggledTask = $taskRepository->find($data['task_id']);
+        $toggledTask = $taskRepository->find($randomId);
         // Check that isDone" state is inverse after toggle
         static::assertSame(!$previousIsDoneValue, $toggledTask->isDone());
     }
 
     /**
-     * Check that "toggle" action reverses texts status correctly depending on "isDone" state.
-     *
-     * @dataProvider provideToggleActionData
-     *
-     * @param array $data
+     * Check that an existing task is correctly deleted.
      *
      * @return void
      */
-    public function testExistingTaskWasToggledWithCorrectTextsStatus(array $data): void
+    public function testExistingTaskCanBeDeleted(): void
     {
         $this->loginUser();
         $crawler = $this->client->request('GET', '/tasks');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        $existingTask = $taskRepository->find($data['task_id']);
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        $existingTask = $taskRepository->find($randomId);
+        static::assertInstanceOf(Task::class, $existingTask);
         // No data is submitted during toggle action, only the task id is taken into account!
-        $form = $crawler->selectButton('toggle-task-' . $data['task_id'])->form();
+        $form = $crawler->selectButton('delete-task-' . $randomId)->form();
+        $this->client->submit($form);
+        $deletedTask = $taskRepository->find($randomId);
+        // Check that task with id "1" does not exist anymore
+        static::assertSame(null, $deletedTask);
+    }
+
+    /**
+     * Check that "toggle" action reverses texts status correctly depending on "isDone" state.
+     *
+     * @return void
+     */
+    public function testExistingTaskWasToggledWithCorrectTextsStatus(): void
+    {
+        $this->loginUser();
+        $crawler = $this->client->request('GET', '/tasks');
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        $existingTask = $taskRepository->find($randomId);
+        // No data is submitted during toggle action, only the task id is taken into account!
+        $form = $crawler->selectButton('toggle-task-' . $randomId)->form();
         $this->client->submit($form);
         static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
         $crawler = $this->client->followRedirect();
+        $toggledTask = $taskRepository->find($randomId);
         // Check flash success message content
         static::assertSame(
             sprintf(
                 'Superbe ! La tâche "%s" a bien été marquée comme %s.',
                 $existingTask->getTitle(),
-                $data['success_message']
+                $toggledTask->isDone() ? 'faite' : 'non terminée'
             ),
             trim($crawler->filter('div.alert-success')->text(null, false))
         );
         // Check corresponding toggle button correct label
         static::assertSame(
-            'Marquer comme ' . $data['new_toggle_button_label'],
-            trim($crawler->filter('#toggle-task-' . $data['task_id'])->text(null, false))
+            'Marquer comme ' . ($toggledTask->isDone() ? 'non terminée' : 'faite'),
+            trim($crawler->filter('#toggle-task-' . $randomId)->text(null, false))
         );
     }
 
@@ -270,10 +277,12 @@ class TaskControllerTest extends AbstractControllerTestCase
     public function testExistingTaskCannotBeUpdatedWithoutFormInputsChanges(): void
     {
         $this->loginUser();
-        $this->client->request('GET', '/tasks/1/edit');
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        $existingTask = $taskRepository->find(1);
+        $existingTask = $taskRepository->find($randomId);
         $crawler =$this->client->submitForm('Modifier', [
             'edit_task[title]'   => $existingTask->getTitle(),
             'edit_task[content]' => $existingTask->getContent()
@@ -295,17 +304,19 @@ class TaskControllerTest extends AbstractControllerTestCase
     public function testExistingTaskWasUpdatedByAuthenticatedUserAsLastEditor(): void
     {
         $testUser = $this->loginUser();
-        $this->client->request('GET', '/tasks/1/edit');
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
         $this->client->submitForm('Modifier', [
             'edit_task[title]'   => 'Tâche modifiée',
             'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
         ], 'POST');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        $newTask = $taskRepository->find(1);
+        $existingTask = $taskRepository->find($randomId);
         // Check that author remained unchanged after update ("null" since defined without author by default)
-        static::assertSame(null, $newTask->getAuthor());
+        static::assertSame(null, $existingTask->getAuthor());
         // Check that authenticated user is set as the last editor
-        static::assertEquals($testUser->getId(), $newTask->getLastEditor()->getId());
+        static::assertEquals($testUser->getId(), $existingTask->getLastEditor()->getId());
     }
 }
