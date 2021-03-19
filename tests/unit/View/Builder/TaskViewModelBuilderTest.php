@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Entity\Manager;
 
 use App\Entity\Task;
 use App\Form\Type\CreateTaskType;
+use App\Form\Type\DeleteTaskType;
 use App\Form\Type\EditTaskType;
 use App\Form\Type\ToggleTaskType;
 use App\Tests\Unit\Helpers\CustomAssertionsTestCaseTrait;
@@ -16,6 +17,7 @@ use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\FormView;
 
@@ -90,14 +92,59 @@ class TaskViewModelBuilderTest extends TestCase
     }
 
     /**
+     * Provide a set of view references to check "form" parameter instance type passed to merged data.
+     *
+     * @return array
+     */
+    public function provideViewReferenceToCheckFormInstanceTypeInMergedData(): array
+    {
+        return [
+            'Uses "task toggle" view'   => ['toggle_task'],
+            'Uses "task deletion" view' => ['delete_task']
+        ];
+    }
+
+    /**
      * Check that task view model builder cannot create an instance using a view reference.
      *
      * @return void
      */
-    public function testViewModelCannotCreateInstanceUsingViewReference(): void
+    public function testTaskViewModelCannotCreateInstanceUsingViewReference(): void
     {
         static::expectException(\RuntimeException::class);
         $this->viewModelBuilder->create('unexpected_view_reference');
+    }
+
+    /**
+     * Check that task view model builder cannot create an instance using wrong "form" merged data instance.
+     *
+     * Please note that this "form" data is used in "toggle" and "deletion" views.
+     *
+     * @dataProvider provideViewReferenceToCheckFormInstanceTypeInMergedData
+     *
+     * @param string $viewReference
+     *
+     * @return void
+     */
+    public function testTaskViewModelCannotCreateInstanceUsingWrongFormMergedData(string $viewReference): void
+    {
+        $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $this->entityManager
+            ->expects($this->any())
+            ->method('getRepository')
+            ->willReturn($entityRepository);
+        // IMPORTANT: maybe use a custom query method with scalar result instead of "findAll" later!
+        // An empty array is sufficient: a Task collection is unneeded due to tested exception!
+        $entityRepository
+            ->expects($this->any())
+            ->method('findAll')
+            ->willReturn([]);
+        $testObject = new \stdClass();
+        static::expectException(\RuntimeException::class);
+        static::expectExceptionMessage(
+            sprintf('"form" merged data must implement %s',FormInterface::class)
+        );
+        $this->viewModelBuilder->create($viewReference, ['form' => $testObject]);
     }
 
     /**
@@ -134,7 +181,7 @@ class TaskViewModelBuilderTest extends TestCase
      *
      * @return void
      */
-    public function testTaskCreationActionViewModelBuildIsOk(): void
+    public function testTaskCreationActionTaskViewModelBuildIsOk(): void
     {
         $task = $this->getTaskCollection()[0];
         // Create a real form to ease test with "task 1" as data model
@@ -150,7 +197,7 @@ class TaskViewModelBuilderTest extends TestCase
      *
      * @return void
      */
-    public function testTaskUpdateActionViewModelBuildIsOk(): void
+    public function testTaskUpdateActionTaskViewModelBuildIsOk(): void
     {
         $testTaskList = $this->getTaskCollection();
         $task = $testTaskList[0];
@@ -169,7 +216,7 @@ class TaskViewModelBuilderTest extends TestCase
      *
      * @return void
      */
-    public function testTaskToggleActionViewModelBuildIsOk(): void
+    public function testTaskToggleActionTaskViewModelBuildIsOk(): void
     {
         $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
         $testTaskList = $this->getTaskCollection();
@@ -196,11 +243,42 @@ class TaskViewModelBuilderTest extends TestCase
     }
 
     /**
+     * Check that "task deletion" view model is correctly built.
+     *
+     * @return void
+     */
+    public function testTaskDeletionActionTaskViewModelBuildIsOk(): void
+    {
+        $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $testTaskList = $this->getTaskCollection();
+        $task = $testTaskList[1];
+        // Create a real form to ease test with "task 2" as data model
+        $currentForm = $this->formFactory->createNamed('delete_task_2', DeleteTaskType::class, $task);
+        $this->entityManager
+            ->expects($this->once())
+            ->method('getRepository')
+            ->willReturn($entityRepository);
+        // IMPORTANT: maybe use a custom query method with scalar result instead of "findAll" later!
+        $entityRepository
+            ->expects($this->once())
+            ->method('findAll')
+            ->willReturn($testTaskList);
+        $viewModel = $this->viewModelBuilder->create('delete_task', ['form' => $currentForm]);
+        static::assertObjectNotHasAttribute('form', $viewModel);
+        static::assertObjectHasAttribute('tasks', $viewModel);
+        static::assertCount(3, $viewModel->tasks);
+        static::assertContainsOnlyInstancesOf(Task::class, $viewModel->tasks);
+        static::assertObjectHasAttribute('deleteTaskFormViews', $viewModel);
+        static::assertCount(3, $viewModel->deleteTaskFormViews);
+        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteTaskFormViews);
+    }
+
+    /**
      * Check that view model build fails if at least one merged data key is not of string type.
      *
      * @return void
      */
-    public function testViewModelCreationIsNotOkWhenMergedDataKeyIsNotOfStringType(): void
+    public function testTaskViewModelCreationIsNotOkWhenMergedDataKeyIsNotOfStringType(): void
     {
         static::expectException(\InvalidArgumentException::class);
         $this->viewModelBuilder->create(null, ['string' => 'value1', 0 => 'value2']);
