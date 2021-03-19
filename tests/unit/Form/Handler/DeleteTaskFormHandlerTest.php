@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Form\Handler;
 use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
-use App\Form\Handler\ToggleTaskFormHandler;
+use App\Form\Handler\DeleteTaskFormHandler;
 use App\Tests\Unit\Form\Handler\Helpers\AbstractTaskFormHandlerTestCase;
 use App\Tests\Unit\Helpers\TaskReflectionTestCaseTrait;
 use Doctrine\ORM\EntityManager;
@@ -19,11 +19,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
- * Class ToggleTaskFormHandlerTest
+ * Class DeleteTaskFormHandlerTest
  *
- * Manage unit tests for task toggle form handler.
+ * Manage unit tests for task deletion form handler.
  */
-class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
+class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
 {
     use TaskReflectionTestCaseTrait;
 
@@ -50,7 +50,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     /**
      * @var FormHandlerInterface|null
      */
-    private ?FormHandlerInterface $toggleTaskHandler;
+    private ?FormHandlerInterface $deleteTaskHandler;
 
     /**
      * Create a request instance with expected parameters.
@@ -63,17 +63,17 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
      */
     private function createRequest(
         array $formData = [],
-        string $uri = '/tasks/1/toggle',
-        string $method = 'POST'
+        string $uri = '/tasks/1/delete',
+        string $method = 'DELETE'
     ): Request {
         // Define default data as valid
         $defaultFormData = [
-            'toggle_task_1' => [
+            'delete_task_1' => [
                 // No fields are set at this time!
             ]
         ];
         $formData = empty($formData) ? $defaultFormData : $formData;
-        $request = Request::create(empty($formData) ? '/tasks/1/toggle' : $uri, $method, $formData);
+        $request = Request::create(empty($formData) ? '/tasks/1/delete' : $uri, $method, $formData);
 
         return $request;
     }
@@ -96,7 +96,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Create a new form handler instance if default request is not used!
         if (null !== $request) {
             $this->formFactory = $this->buildFormFactory($request);
-            $this->toggleTaskHandler = new ToggleTaskFormHandler(
+            $this->deleteTaskHandler = new DeleteTaskFormHandler(
                 $this->formFactory,
                 $this->taskDataModelManager,
                 $this->flashBag
@@ -107,7 +107,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
             ->setContent('Description de tâche existante');
         // Use reflection to create a form name as expected with task id
         $existingTask = $this->setTaskIdByReflection($existingTask);
-        $form = $this->toggleTaskHandler->process($request, ['dataModel' => $existingTask]);
+        $form = $this->deleteTaskHandler->process($request, ['dataModel' => $existingTask]);
         return $form;
     }
 
@@ -123,9 +123,9 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         parent::setUp();
         $this->formFactory = $this->buildFormFactory($this->createRequest());
         $this->flashBag = static::createMock(FlashBagInterface::class);
-        $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
+        $this->entityManager = static::createPartialMock(EntityManager::class, ['remove', 'flush']);
         $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);
-        $this->toggleTaskHandler = new ToggleTaskFormHandler(
+        $this->deleteTaskHandler = new DeleteTaskFormHandler(
             $this->formFactory,
             $this->taskDataModelManager,
             $this->flashBag
@@ -133,7 +133,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     }
 
     /**
-     * Check that "toggle" method returns false when submitted form is invalid.
+     * Check that "delete" method returns false when submitted form is invalid.
      *
      * @return void
      *
@@ -144,35 +144,35 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Process a real submitted form with invalid data thanks to helper method.
         // No field is set, and no data is expected at this time!
         $this->processForm(
-            ['toggle_task_1' => ['unexpected' => 'Test']] // Use real field(s) later if needed
+            ['delete_task_1' => ['unexpected' => 'Test']] // Use real field(s) later if needed
         );
-        $isExecuted = $this->toggleTaskHandler->execute();
+        $isExecuted = $this->deleteTaskHandler->execute();
         static::assertFalse($isExecuted);
     }
 
     /**
-     * Check that "execute" method returns true when task update succeeded.
+     * Check that "execute" method returns true when task deletion succeeded.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testExecuteMethodReturnsTrueWhenTaskToggleFlushIsOk(): void
+    public function testExecuteMethodReturnsTrueWhenTaskDeletionFlushIsOk(): void
     {
         // Process a real submitted form first with default valid data thanks to helper method.
         $this->processForm();
-        $isTaskToggleFlushed = $this->toggleTaskHandler->execute();
-        static::assertTrue($isTaskToggleFlushed);
+        $isTaskDeletionFlushed = $this->deleteTaskHandler->execute();
+        static::assertTrue($isTaskDeletionFlushed);
     }
 
     /**
-     * Check that "execute" method returns false when task update failed.
+     * Check that "execute" method returns false when task deletion failed.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testExecuteReturnsFalseWhenTaskTaskToggleFlushIsNotOk(): void
+    public function testExecuteReturnsFalseWhenTaskTaskDeletionFlushIsNotOk(): void
     {
         // Process a real submitted form first with default valid data thanks to helper method.
         $this->processForm();
@@ -182,8 +182,8 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
             ->expects($this->once())
             ->method('flush')
             ->willThrowException(new \Exception());
-        $isTaskToggleFlushed = $this->toggleTaskHandler->execute();
-        static::assertFalse($isTaskToggleFlushed);
+        $isTaskDeletionFlushed = $this->deleteTaskHandler->execute();
+        static::assertFalse($isTaskDeletionFlushed);
     }
 
     /**
@@ -197,7 +197,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->flashBag = null;
         $this->entityManager = null;
         $this->taskDataModelManager = null;
-        $this->toggleTaskHandler = null;
+        $this->deleteTaskHandler = null;
         parent::tearDown();
     }
 }
