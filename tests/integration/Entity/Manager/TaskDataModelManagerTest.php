@@ -17,7 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * Class TaskDataModelManagerTest
  *
- * Manage unit tests for task manager.
+ * Manage integration tests for task data model manager.
  */
 class TaskDataModelManagerTest extends KernelTestCase
 {

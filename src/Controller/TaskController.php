@@ -26,6 +26,11 @@ class TaskController extends AbstractController
      */
     private ViewModelBuilderInterface $viewModelBuilder;
 
+    /**
+     * TaskController constructor.
+     *
+     * @param ViewModelBuilderInterface $viewModelBuilder
+     */
     public function __construct(ViewModelBuilderInterface $viewModelBuilder)
     {
         $this->viewModelBuilder = $viewModelBuilder;
@@ -34,22 +39,27 @@ class TaskController extends AbstractController
     /**
      * List all tasks.
      *
+     * @param Request $request
+     *
      * @return Response
      *
      * @Route("/tasks", name="task_list", methods={"GET"})
      */
-    public function listAction(): Response
+    public function listAction(Request $request): Response
     {
+        // In order to select tasks, "isDone" status filter may exist!
         return $this->render('task/list.html.twig', [
-            'view_model' => $this->viewModelBuilder->create('task_list')
+            'view_model' => $this->viewModelBuilder->create('task_list', [
+                'listStatus' => $request->query->get('listStatus')
+            ])
         ]);
     }
 
     /**
      * Create a Task entity ans save data.
      *
-     * @param Request               $request
-     * @param FormHandlerInterface  $createTaskHandler
+     * @param Request                   $request
+     * @param FormHandlerInterface      $createTaskHandler
      * @param DataModelFactoryInterface $dataModelFactory
      *
      * @return RedirectResponse|Response
@@ -125,7 +135,7 @@ class TaskController extends AbstractController
      *
      * @return RedirectResponse|Response
      *
-     * @Route("/tasks/{id}/toggle", name="task_toggle", methods={"POST"})
+     * @Route("/tasks/{id}/toggle", name="task_toggle", methods={"PATCH"})
      */
     public function toggleTaskAction(
         Task $task,
@@ -139,13 +149,16 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($toggleTaskHandler->execute()) {
             // Save state change, and add a successful flash message
-            // Then, redirect to tasks list
-            return $this->redirectToRoute('task_list');
+            // Then, redirect to tasks list ("isDone" status filter may exist!)
+            return $this->redirectToRoute('task_list', [
+                'listStatus' => $request->query->get('listStatus')
+            ]);
         }
 
         return $this->render('task/list.html.twig', [
             'view_model' => $this->viewModelBuilder->create('toggle_task', [
-                'form' => $form
+                'form' => $form,
+                'listStatus' => $request->query->get('listStatus')
             ])
         ]);
     }
@@ -173,13 +186,16 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($deleteTaskHandler->execute()) {
             // Save deletion, and add a successful flash message
-            // Then, redirect to tasks list
-            return $this->redirectToRoute('task_list');
+            // Then, redirect to tasks list ("isDone" status filter may exist!)
+            return $this->redirectToRoute('task_list', [
+                'listStatus' => $request->query->get('listStatus')
+            ]);
         }
 
         return $this->render('task/list.html.twig', [
             'view_model' => $this->viewModelBuilder->create('delete_task', [
-                'form' => $form
+                'form' => $form,
+                'listStatus' => $request->query->get('listStatus')
             ])
         ]);
     }

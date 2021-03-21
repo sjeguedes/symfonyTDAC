@@ -26,6 +26,8 @@ class ToggleTaskType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Enforce "PATCH" HTTP method
+        $builder->setMethod('PATCH');
         // No concrete form to build at this time!
     }
 

@@ -29,7 +29,7 @@ class TaskControllerTest extends AbstractControllerTestCase
             'Create a task'        => ['POST', '/tasks/create'],
             'Access task update'   => ['GET', '/tasks/1/edit'],
             'Update (Edit) a task' => ['POST', '/tasks/1/edit'],
-            'Toggle a task state'  => ['POST', '/tasks/1/toggle'],
+            'Toggle a task state'  => ['PATCH', '/tasks/1/toggle'],
             'Delete a task state'  => ['DELETE', '/tasks/1/delete']
         ];
     }
@@ -119,6 +119,26 @@ class TaskControllerTest extends AbstractControllerTestCase
         $crawler = $this->client->submit($form);
          // Check that CSRF token cannot be tampered!
         static::assertCount(1, $crawler->filter('div.alert-danger'));
+    }
+
+    /**
+     * Check that tasks can be correctly listed.
+     *
+     * @return void
+     */
+    public function testTasksCanBeListed(): void
+    {
+        $this->loginUser();
+        // Access full task list
+        $crawler = $this->client->request('GET', '/tasks');
+        static::assertSame(20, $crawler->filter('div.task')->count());
+        // Click on filter buttons to check CTA existence and list results and go back to full list
+        $crawler = $this->client->clickLink('Consulter les tâches à faire');
+        static::assertSame(10, $crawler->filter('div.task')->count());
+        $crawler = $this->client->clickLink('Consulter la liste des tâches');
+        static::assertSame(20, $crawler->filter('div.task')->count());
+        $crawler = $this->client->clickLink('Consulter les tâches terminées');
+        static::assertSame(10, $crawler->filter('div.task')->count());
     }
 
     /**

@@ -76,7 +76,7 @@ class DataModelFactoryTest extends TestCase
     public function testModelCannotBeCreatedWithWrongReference(): void
     {
         static::expectException(\RuntimeException::class);
-        $this->dataModelFactory->create('inexistant');
+        $this->dataModelFactory->create('unexpected');
     }
 
     /**

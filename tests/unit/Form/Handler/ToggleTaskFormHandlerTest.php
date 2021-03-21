@@ -64,7 +64,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     private function createRequest(
         array $formData = [],
         string $uri = '/tasks/1/toggle',
-        string $method = 'POST'
+        string $method = 'PATCH'
     ): Request {
         // Define default data as valid
         $defaultFormData = [
@@ -144,7 +144,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Process a real submitted form with invalid data thanks to helper method.
         // No field is set, and no data is expected at this time!
         $this->processForm(
-            ['toggle_task_1' => ['unexpected' => 'Test']] // Use real field(s) later if needed
+            ['toggle_task_1' => ['unexpected' => 'Test']] // use real field(s) later if needed
         );
         $isExecuted = $this->toggleTaskHandler->execute();
         static::assertFalse($isExecuted);

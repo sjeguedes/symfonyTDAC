@@ -1,64 +1,136 @@
 {% extends 'base.html.twig' %}
 
-{% block header_img %}<img class="slide-image" src="{{ asset('img/todolist_content.jpg') }}" alt="todo list">{% endblock %}
+{% set list_status = app.request.get('listStatus') %}
+{% block header_title %}
+    <h1>
+        Consulter la liste des tâches
+        {% if list_status is not null %}
+         {{ list_status == 'undone' ? 'à faire': 'terminées'}}
+        {% endif %}
+    </h1>
+{% endblock %}
+
+{% block header_img %}<img class="slide-image mb-0" src="{{ asset('img/todolist_content.jpg') }}" alt="todo list">{% endblock %}
 
 {% block body %}
-    <div class="row">
-        <div class="col-sm-12">
-            <a href="{{ path('task_create') }}" class="btn btn-info pull-right">Créer une tâche</a>
+    <div class="row mb">
+        <div class="col-xs-6 col-sm-9">
+            {% if list_status is null %}
+            <a href="{{ path('task_list', {'listStatus' : 'undone'}) }}"
+               title="Consulter la liste des tâches à faire"
+               class="btn btn-info pull-left mr mb"
+            >
+                Consulter les tâches à faire
+            </a>
+
+            <a href="{{ path('task_list', {'listStatus' : 'done'}) }}"
+               title="Consulter la liste des tâches terminées"
+               class="btn btn-warning pull-left mb"
+            >
+                Consulter les tâches terminées
+            </a>
+            {% else %}
+            <a href="{{ path('task_list') }}" title="Consulter toutes les tâches"
+               class="btn btn-default mb"
+            >
+                Consulter la liste des tâches
+            </a>
+            {% endif %}
+        </div>
+        <div class="col-sx-6 col-sm-3">
+            {# Task creation CTA #}
+            <a href="{{ path('task_create') }}" title="Ajouter une nouvelle tâche"
+               class="btn btn-info pull-right"
+            >
+                Créer une tâche
+            </a>
         </div>
     </div>
-    <div class="row">
+    <div class="row m-t">
         {% for task in view_model.tasks %}
-        <div class="col-sm-4 col-lg-4 col-md-4 mb">
-            <div class="thumbnail mt">
+        <div class="col-sm-6 col-md-6 col-lg-4 mb">
+            <div id="task-{{ task.id }}" class="task thumbnail mb-0">
                 <div class="caption">
-                    <h4 class="pull-right">
-                        <span class="glyphicon glyphicon-{{ task.isDone ? 'ok': 'remove' }}"></span>
+                    <h4 class="">
+                        <a href="{{ path('task_edit', {'id' : task.id }) }}">
+                            {{ task.title }}
+                        </a>
+                        <span class="glyphicon glyphicon-{{ task.isDone ? 'ok': 'remove' }} pull-right"></span>
+
                     </h4>
-                    <h4><a href="{{ path('task_edit', {'id' : task.id }) }}">{{ task.title }}</a></h4>
-                    <p>{{ task.content }}</p>
+                    <p class="mh-100">{{ task.content|u.truncate(255, '...') }}</p>
+                    <small class="text-info db mh-35">
+                        <em>
+                            Créé par <strong>{{ task.author ?? 'utilisateur anonyme' }}</strong> le {{ task.createdAt }}<br>
+                            {% if task.lastEditor is not null %}
+                                Édité par <strong>{{ task.lastEditor }}</strong> le {{ task.updatedAt }}
+                            {% endif %}
+                        </em>
+                    </small>
                 </div>
-                <div id="task-{{ task.id }}-forms">
-                    {# Added task toggle and deletion forms errors managed by Symfony as a better practice! #}
-                    {% set toggle_form = view_model.toggleTaskFormViews[task.id] %}
-                    {% set delete_form = view_model.deleteTaskFormViews[task.id] %}
-                    <div id="task-{{ task.id }}-forms-errors" class="ml mr">
-                        {{ form_errors(toggle_form) }}
-                        {{ form_errors(delete_form) }}
-                    </div>
-                    {# Added toggle form managed by Symfony as a better practice! #}
-                    <div id="task-{{ task.id }}-toggle-form">
-                        {{ form_start(toggle_form, {'action' : path('task_toggle', {'id' : task.id }) }) }}
-                            {# No field to display at this time but maybe errors #}
-                            {{ form_rest(toggle_form) }}
-                            <button type="submit" id="toggle-task-{{ task.id }}" class="btn btn-success btn-sm pull-right">
-                                Marquer {{ false == task.isDone ? 'comme faite': 'comme non terminée' }}
-                            </button>
-                        {{ form_end(toggle_form) }}
-                    </div>
-                    {# Added deletion form managed by Symfony as a better practice! #}
-                    <div id="task-{{ task.id }}-deletion-form">
-                        {{ form_start(delete_form, {'action' : path('task_delete', {'id' : task.id }) }) }}
-                            {# No field to display at this time but maybe errors #}
-                            {{ form_rest(delete_form) }}
-                            <button type="submit" id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-right">
-                                Supprimer
-                            </button>
-                        {{ form_end(delete_form) }}
-                    </div>
+            </div>
+            <div id="task-{{ task.id }}-forms" class="clearfix">
+                {# Added task toggle and deletion forms errors managed by Symfony as a better practice! #}
+                {% set toggle_form = view_model.toggleTaskFormViews[task.id] %}
+                {% set delete_form = view_model.deleteTaskFormViews[task.id] %}
+                <div id="task-{{ task.id }}-forms-errors"
+                    {{ (toggle_form.vars.errors is not empty) or (delete_form.vars.errors is not empty)  ? 'class="m-b-20"' : '' }}>
+                    {{ form_errors(toggle_form) }}
+                    {{ form_errors(delete_form) }}
+                </div>
+                {# Added toggle form managed by Symfony as a better practice! #}
+                <div id="task-{{ task.id }}-toggle-form">
+                    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
+                    {{ form_start(toggle_form, {
+                        'action' : path(
+                            'task_toggle', {'id' : task.id, 'listStatus' : toggle_form.vars.list_status ?? null}
+                        )
+                    }) }}
+                    {# No field to display at this time but maybe errors #}
+                    {{ form_rest(toggle_form) }}
+                    <button type="submit" title="Changer l'état de réalisation de la tâche"
+                            id="toggle-task-{{ task.id }}" class="btn btn-success btn-sm pull-right"
+                    >
+                        Marquer {{ false == task.isDone ? 'comme faite': 'comme non terminée' }}
+                    </button>
+                    {{ form_end(toggle_form) }}
+                </div>
+                {# Added deletion form managed by Symfony as a better practice! #}
+                <div id="task-{{ task.id }}-deletion-form">
+                    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
+                    {{ form_start(delete_form, {
+                        'action' : path(
+                            'task_delete',
+                            {'id' : task.id, 'listStatus' : delete_form.vars.with_status ?? null}
+                        )
+                    }) }}
+                    {# No field to display at this time but maybe errors #}
+                    {{ form_rest(delete_form) }}
+                    <button type="submit" title="Supprimer la tâche définitivement"
+                            id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-right"
+                    >
+                        Supprimer
+                    </button>
+                    {{ form_end(delete_form) }}
                 </div>
             </div>
         </div>
-        {# Clean closing row with lines of 3 tasks #}
+
+        {# Clean closing row with lines of 3 tasks on large screen #}
         {% if loop.index % 3 == 0 %}
-    </div>
-    <div class="row">
+        <div class="hidden visible-lg clearfix"></div>
+        {# Clean closing row with lines of 2 tasks on small and medium screens #}
+        {% elseif loop.index % 2 == 0 %}
+        <div class="hidden visible-sm visible-md clearfix"></div>
         {% endif %}
+
         {# No task to show #}
         {% else %}
-        <div class="alert alert-warning" role="alert">
-            Il n'y a pas encore de tâche enregistrée. <a href="{{ path('task_create') }}" class="btn btn-warning pull-right">Créer une tâche</a>
+        <div class="col-lg-12 alert alert-warning clearfix mt" role="alert">
+            Il n'y a pas encore de tâche enregistrée.
+            <a href="{{ path('task_create') }}" title="Ajouter une nouvelle tâche" class="btn btn-warning pull-right">
+                Créer une tâche
+            </a>
         </div>
         {% endfor %}
     </div>

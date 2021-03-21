@@ -9,11 +9,11 @@ use App\Form\Type\CreateTaskType;
 use App\Form\Type\DeleteTaskType;
 use App\Form\Type\EditTaskType;
 use App\Form\Type\ToggleTaskType;
+use App\Repository\TaskRepository;
 use App\Tests\Unit\Helpers\CustomAssertionsTestCaseTrait;
 use App\View\Builder\TaskViewModelBuilder;
 use App\View\Builder\ViewModelBuilderInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -74,6 +74,22 @@ class TaskViewModelBuilderTest extends TestCase
     }
 
     /**
+     * Get a test task collection scalar set of data.
+     *
+     * @return array an array of Tasks data without objects hydrating
+     */
+    private function getTaskCollectionScalarData(): array
+    {
+        $taskList = $this->getTaskCollection();
+        // Put at least tasks "id" values to be more realistic but other data exist!
+        return [
+            0 => ['id' => $taskList[0]->getId()],
+            1 => ['id' => $taskList[1]->getId()],
+            2 => ['id' => $taskList[2]->getId()]
+        ];
+    }
+
+    /**
      * Setup needed instance(s).
      *
      * @return void
@@ -105,7 +121,7 @@ class TaskViewModelBuilderTest extends TestCase
     }
 
     /**
-     * Check that task view model builder cannot create an instance using a view reference.
+     * Check that task view model builder cannot create an instance using an unexpected view reference.
      *
      * @return void
      */
@@ -113,6 +129,17 @@ class TaskViewModelBuilderTest extends TestCase
     {
         static::expectException(\RuntimeException::class);
         $this->viewModelBuilder->create('unexpected_view_reference');
+    }
+
+    /**
+     * Check that view model build fails if at least one merged data key is not of string type.
+     *
+     * @return void
+     */
+    public function testTaskViewModelCreationIsNotOkWhenMergedDataKeyIsNotOfStringType(): void
+    {
+        static::expectException(\InvalidArgumentException::class);
+        $this->viewModelBuilder->create(null, ['string' => 'value1', 0 => 'value2']);
     }
 
     /**
@@ -128,16 +155,16 @@ class TaskViewModelBuilderTest extends TestCase
      */
     public function testTaskViewModelCannotCreateInstanceUsingWrongFormMergedData(string $viewReference): void
     {
-        $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $entityRepository = static::createPartialMock(TaskRepository::class, ['findList']);
         $this->entityManager
             ->expects($this->any())
             ->method('getRepository')
             ->willReturn($entityRepository);
-        // IMPORTANT: maybe use a custom query method with scalar result instead of "findAll" later!
+        // Use a custom query method "findList" with scalar result instead of "findAll"!
         // An empty array is sufficient: a Task collection is unneeded due to tested exception!
         $entityRepository
             ->expects($this->any())
-            ->method('findAll')
+            ->method('findList')
             ->willReturn([]);
         $testObject = new \stdClass();
         static::expectException(\RuntimeException::class);
@@ -156,7 +183,7 @@ class TaskViewModelBuilderTest extends TestCase
      */
     public function testToggleTaskFormNameShouldBeSuffixedWithAIntegerIndex(): void
     {
-        $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $entityRepository = static::createPartialMock(TaskRepository::class, ['findList']);
         $task = $this->getTaskCollection()[0];
         // Create a real toggle form with a wrong name (without index as suffix)
         // to ease test with "task 1" as data model
@@ -165,11 +192,11 @@ class TaskViewModelBuilderTest extends TestCase
             ->expects($this->once())
             ->method('getRepository')
             ->willReturn($entityRepository);
-        // IMPORTANT: maybe use a custom query method with scalar result instead of "findAll" later!
+        // Use a custom query method "findList" with scalar result instead of "findAll"!
         // An empty array is sufficient: a Task collection is unneeded due to tested exception!
         $entityRepository
             ->expects($this->once())
-            ->method('findAll')
+            ->method('findList')
             ->willReturn([]);
         static::expectException(\RuntimeException::class);
         static::expectExceptionMessage('Current form name suffix is expected to be an integer as index!');
@@ -177,11 +204,42 @@ class TaskViewModelBuilderTest extends TestCase
     }
 
     /**
+     * Check that "task list" view model is correctly built.
+     *
+     * @return void
+     */
+    public function testTaskListActionViewModelBuildIsOk(): void
+    {
+        $entityRepository = static::createPartialMock(TaskRepository::class, ['findList']);
+        $this->entityManager
+            ->expects($this->once())
+            ->method('getRepository')
+            ->willReturn($entityRepository);
+        // Use a custom query method "findList" with scalar result instead of "findAll"!
+        $entityRepository
+            ->expects($this->once())
+            ->method('findList')
+            ->willReturn($this->getTaskCollectionScalarData());
+        $listStatus = array_rand(array_flip(['done', 'undone']), 1);
+        $viewModel = $this->viewModelBuilder->create('task_list', ['listStatus' => $listStatus]);
+        static::assertObjectHasAttribute('listStatus', $viewModel);
+        static::assertSame($viewModel->listStatus, $listStatus);
+        static::assertObjectHasAttribute('tasks', $viewModel);
+        static::assertCount(3, $viewModel->tasks);
+        static::assertObjectHasAttribute('toggleTaskFormViews', $viewModel);
+        static::assertCount(3, $viewModel->toggleTaskFormViews);
+        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->toggleTaskFormViews);
+        static::assertObjectHasAttribute('deleteTaskFormViews', $viewModel);
+        static::assertCount(3, $viewModel->deleteTaskFormViews);
+        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteTaskFormViews);
+    }
+
+    /**
      * Check that "task creation" view model is correctly built.
      *
      * @return void
      */
-    public function testTaskCreationActionTaskViewModelBuildIsOk(): void
+    public function testTaskCreationActionViewModelBuildIsOk(): void
     {
         $task = $this->getTaskCollection()[0];
         // Create a real form to ease test with "task 1" as data model
@@ -197,7 +255,7 @@ class TaskViewModelBuilderTest extends TestCase
      *
      * @return void
      */
-    public function testTaskUpdateActionTaskViewModelBuildIsOk(): void
+    public function testTaskUpdateActionViewModelBuildIsOk(): void
     {
         $testTaskList = $this->getTaskCollection();
         $task = $testTaskList[0];
@@ -216,9 +274,9 @@ class TaskViewModelBuilderTest extends TestCase
      *
      * @return void
      */
-    public function testTaskToggleActionTaskViewModelBuildIsOk(): void
+    public function testTaskToggleActionViewModelBuildIsOk(): void
     {
-        $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $entityRepository = static::createPartialMock(TaskRepository::class, ['findList']);
         $testTaskList = $this->getTaskCollection();
         $task = $testTaskList[1];
         // Create a real form to ease test with "task 2" as data model
@@ -227,19 +285,18 @@ class TaskViewModelBuilderTest extends TestCase
             ->expects($this->once())
             ->method('getRepository')
             ->willReturn($entityRepository);
-        // IMPORTANT: maybe use a custom query method with scalar result instead of "findAll" later!
+        // Use a custom query method "findList" with scalar result instead of "findAll"!
         $entityRepository
             ->expects($this->once())
-            ->method('findAll')
-            ->willReturn($testTaskList);
+            ->method('findList')
+            ->willReturn($this->getTaskCollectionScalarData());
+        // Submit form manually without data pass to it
+        $currentForm->submit([]);
         $viewModel = $this->viewModelBuilder->create('toggle_task', ['form' => $currentForm]);
+        // Other common assertions are already checked in task list view model test!
         static::assertObjectNotHasAttribute('form', $viewModel);
-        static::assertObjectHasAttribute('tasks', $viewModel);
-        static::assertCount(3, $viewModel->tasks);
-        static::assertContainsOnlyInstancesOf(Task::class, $viewModel->tasks);
-        static::assertObjectHasAttribute('toggleTaskFormViews', $viewModel);
-        static::assertCount(3, $viewModel->toggleTaskFormViews);
-        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->toggleTaskFormViews);
+        // Check that submitted toggle form with id "2" had its state preserved in view model
+        static::assertTrue($viewModel->toggleTaskFormViews[2]->vars['submitted']);
     }
 
     /**
@@ -247,9 +304,9 @@ class TaskViewModelBuilderTest extends TestCase
      *
      * @return void
      */
-    public function testTaskDeletionActionTaskViewModelBuildIsOk(): void
+    public function testTaskDeletionActionViewModelBuildIsOk(): void
     {
-        $entityRepository = static::createPartialMock(EntityRepository::class, ['findAll']);
+        $entityRepository = static::createPartialMock(TaskRepository::class, ['findList']);
         $testTaskList = $this->getTaskCollection();
         $task = $testTaskList[1];
         // Create a real form to ease test with "task 2" as data model
@@ -258,30 +315,18 @@ class TaskViewModelBuilderTest extends TestCase
             ->expects($this->once())
             ->method('getRepository')
             ->willReturn($entityRepository);
-        // IMPORTANT: maybe use a custom query method with scalar result instead of "findAll" later!
+        // Use a custom query method "findList" with scalar result instead of "findAll"!
         $entityRepository
             ->expects($this->once())
-            ->method('findAll')
-            ->willReturn($testTaskList);
+            ->method('findList')
+            ->willReturn($this->getTaskCollectionScalarData());
+        // Submit form manually without data pass to it
+        $currentForm->submit([]);
         $viewModel = $this->viewModelBuilder->create('delete_task', ['form' => $currentForm]);
+        // Other common assertions are already checked in task list view model test!
         static::assertObjectNotHasAttribute('form', $viewModel);
-        static::assertObjectHasAttribute('tasks', $viewModel);
-        static::assertCount(3, $viewModel->tasks);
-        static::assertContainsOnlyInstancesOf(Task::class, $viewModel->tasks);
-        static::assertObjectHasAttribute('deleteTaskFormViews', $viewModel);
-        static::assertCount(3, $viewModel->deleteTaskFormViews);
-        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteTaskFormViews);
-    }
-
-    /**
-     * Check that view model build fails if at least one merged data key is not of string type.
-     *
-     * @return void
-     */
-    public function testTaskViewModelCreationIsNotOkWhenMergedDataKeyIsNotOfStringType(): void
-    {
-        static::expectException(\InvalidArgumentException::class);
-        $this->viewModelBuilder->create(null, ['string' => 'value1', 0 => 'value2']);
+        // Check that submitted deletion form with id "2" had its state preserved in view model
+        static::assertTrue($viewModel->deleteTaskFormViews[2]->vars['submitted']);
     }
 
     /**

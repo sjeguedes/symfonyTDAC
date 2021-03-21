@@ -30,6 +30,14 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     ];
 
     /**
+     * Define form types.
+     */
+    private const FORM_TYPES = [
+        'toggle_task' => ToggleTaskType::class,
+        'delete_task' => DeleteTaskType::class
+    ];
+
+    /**
      * {@inheritdoc}
      *
      * @throws \Exception
@@ -64,17 +72,17 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     /**
      * Generate multiple identical form views and optionally keep submitted current form state.
      *
-     * @param array              $tasks             a Task collection
-     * @param string             $viewReference     a label to select the associated view
-     * @param string             $formTypeClassName a F.Q.C.N to select the type of form views
-     * @param FormInterface|null $currentForm       a form already in use among the other ones (with form views)
+     * @param array              $tasks         a Task collection
+     * @param string             $viewReference a label to select the associated view
+     * @param string             $withStatus    a task list "isDone" status to filter and render it
+     * @param FormInterface|null $currentForm   a form already in use among the other ones (with form views)
      *
      * @return array|FormView[]
      */
     private function generateMultipleFormViews(
         array $tasks,
         string $viewReference,
-        string $formTypeClassName,
+        string $withStatus = null,
         FormInterface $currentForm = null
     ): array {
         $multipleFormViews = [];
@@ -86,72 +94,40 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         }
         $suffixIdAsInt = isset($matches) && 2 === \count($matches) ? $matches[1] : null;
         for ($i = 0; $i < $length; $i++) {
-            $taskId = $tasks[$i]->getId();
+            // CAUTION: "id" is returned as string value!
+            $taskId = $tasks[$i]['id'];
             // Create current (submitted) form view if not null with its actual state!
-            if (null !== $suffixIdAsInt && $taskId === \intval($suffixIdAsInt)) {
-                $multipleFormViews[$taskId] = $currentForm->createView();
-                continue;
+            if (null !== $suffixIdAsInt && \intval($taskId) === \intval($suffixIdAsInt)) {
+                $form = $currentForm;
+            } else {
+                // Create other identical forms views
+                $formTypeClassName = self::FORM_TYPES[$viewReference];
+                $form = $this->formFactory->createNamed(
+                    $formNamePrefix . $taskId,
+                    $formTypeClassName
+                );
             }
-            // Create other identical forms views
-            $formView = $this->formFactory->createNamed(
-                $formNamePrefix . $taskId,
-                $formTypeClassName
-            );
-            $multipleFormViews[$taskId] = $formView->createView();
+            $formView = $form->createView();
+            // Pass "withStatus" data to form view
+            null === $withStatus ?: $formView->vars['list_status'] = $withStatus;
+            $multipleFormViews[$taskId] = $formView;
         }
 
         return $multipleFormViews;
     }
 
     /**
-     * Generate all "toggle" form views.
-     *
-     * @param array              $tasks
-     * @param FormInterface|null $currentForm
-     *
-     * @return array|FormView[]
-     */
-    private function generateToggleTaskFormViews(array $tasks, FormInterface $currentForm = null): array
-    {
-        return $this->generateMultipleFormViews(
-            $tasks,
-            self::VIEW_NAMES['toggleTask'],
-            ToggleTaskType::class,
-            $currentForm
-        );
-    }
-
-    /**
-     * Generate all "deletion" form views.
-     *
-     * @param array              $tasks
-     * @param FormInterface|null $currentForm
-     *
-     * @return array|FormView[]
-     */
-    private function generateDeleteTaskFormViews(array $tasks, FormInterface $currentForm = null): array
-    {
-        return $this->generateMultipleFormViews(
-            $tasks,
-            self::VIEW_NAMES['deleteTask'],
-            DeleteTaskType::class,
-            $currentForm
-        );
-    }
-
-    /**
      * Get current submitted form type instance.
      *
-     * @param object|null $currentForm
+     * @param object $currentForm
      *
-     * @return FormTypeInterface|null
+     * @return FormTypeInterface
      *
      * @throws \Exception
      */
-    private function getCurrentFormType(?object $currentForm): ?FormTypeInterface
+    private function getCurrentFormType(object $currentForm): FormTypeInterface
     {
-        if (null === $currentForm) return null;
-
+        // Check form expected instance
         /** @var  FormInterface $currentForm */
         if (!$currentForm instanceof FormInterface) {
             throw new \RuntimeException(
@@ -160,6 +136,22 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         }
 
         return $currentForm->getConfig()->getType()->getInnerType();
+    }
+
+    /**
+     * Get task list essential view data.
+     *
+     * @param bool $isStatusFilterSet
+     *
+     * @return array
+     */
+    private function getTaskListViewData(bool $isStatusFilterSet = false): array
+    {
+        // IMPORTANT: optimize query for performance later!
+        $taskListStatus = $isStatusFilterSet ? $this->viewModel->listStatus : null;
+        $tasks = $this->entityManager->getRepository(Task::class)->findList($taskListStatus);
+
+        return $tasks;
     }
 
     /**
@@ -173,22 +165,28 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     {
         // Native function "property_exists" must be used with an instance (not the class due to generic \StdClass)
         $currentForm = property_exists($this->viewModel, 'form') ? $this->viewModel->form : null;
-        $currentFormType = $this->getCurrentFormType($currentForm);
+        $currentFormType = null !== $currentForm ? $this->getCurrentFormType($currentForm) : null;
         // Filter form type class name
         $isCurrentToggleForm = null !== $currentFormType && $currentFormType instanceof ToggleTaskType;
-        $isCurrentDeleteForm = null !== $currentFormType && $currentFormType instanceof DeleteTaskType;
-        // IMPORTANT: optimize query for performance later!
-        $tasks = $this->entityManager->getRepository(Task::class)->findAll();
+        $isCurrentDeletionForm = null !== $currentFormType && $currentFormType instanceof DeleteTaskType;
+        $listStatus = property_exists($this->viewModel, 'listStatus') ? $this->viewModel->listStatus : null;
+        $isListStatus = null !== $listStatus ? true : false;
+        // Get task list
+        $tasks = $this->getTaskListViewData($isListStatus);
         $this->viewModel->tasks = $tasks;
         // A current form instance may exist when "toggle task" action is called!
-        $this->viewModel->toggleTaskFormViews = $this->generateToggleTaskFormViews(
+        $this->viewModel->toggleTaskFormViews = $this->generateMultipleFormViews(
             $tasks,
+            self::VIEW_NAMES['toggleTask'],
+            $isListStatus ? $listStatus : null,
             $isCurrentToggleForm ? $currentForm : null
         );
         // A current form instance may exist when "delete task" action is called!
-        $this->viewModel->deleteTaskFormViews = $this->generateDeleteTaskFormViews(
+        $this->viewModel->deleteTaskFormViews = $this->generateMultipleFormViews(
             $tasks,
-            $isCurrentDeleteForm ? $currentForm : null
+            self::VIEW_NAMES['deleteTask'],
+            $isListStatus ? $listStatus : null,
+            $isCurrentDeletionForm ? $currentForm : null
         );
     }
 
