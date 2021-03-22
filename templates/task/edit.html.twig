@@ -1,10 +1,20 @@
 {% extends 'base.html.twig' %}
 
+{% block header_title %}
+    <h1>Modifier le contenu d'une tâche</h1>
+{% endblock %}
+
 {% block body %}
-    <div class="row">
-        {{ form_start(view_model.editTaskFormView, {'action' : path('task_edit', { 'id' : view_model.taskId })}) }}
-            {{ form_widget(view_model.editTaskFormView) }}
-            <button type="submit" id="edit-task" class="btn btn-success pull-right">Modifier</button>
-        {{ form_end(view_model.editTaskFormView) }}
+    <div class="row mb">
+        <div class="col-sm-12">
+            {{ form_start(view_model.editTaskFormView, {'action' : path('task_edit', { 'id' : view_model.taskId })}) }}
+                {{ form_widget(view_model.editTaskFormView) }}
+                <button type="submit" title="Modifier" id="edit-task" class="btn btn-success pull-right">Modifier</button>
+            {{ form_end(view_model.editTaskFormView) }}
+
+            <a href="{{ path('task_list') }}" title="Revenir à la consultation des tâches" class="btn btn-primary">
+                Retour à la liste des tâches
+            </a>
+        </div>
     </div>
 {% endblock %}

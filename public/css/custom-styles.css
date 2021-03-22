@@ -73,4 +73,7 @@ footer {
 .ml-0 { margin-left: 0; }
 
 .mh-35 { min-height: 35px; }
-.mh-100 { min-height: 80px; }
+.mh-100 { min-height: 100px; }
+
+/* Override Bootstrap collapse for task content */
+.task .collapse.in { display: inline; }

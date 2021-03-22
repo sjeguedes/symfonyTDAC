@@ -1,12 +1,20 @@
 {% extends 'base.html.twig' %}
 
-{% block body %}
-    <div class="row">
-        {{ form_start(view_model.createTaskFormView, {'action' : path('task_create')}) }}
-            {{ form_widget(view_model.createTaskFormView) }}
-            <button type="submit" id="create-task" class="btn btn-success pull-right">Ajouter</button>
-        {{ form_end(view_model.createTaskFormView) }}
+{% block header_title %}
+    <h1>Créer une nouvelle tâche</h1>
+{% endblock %}
 
-        <a href="{{ path('task_list') }}" class="btn btn-primary">Retour à la liste des tâches</a>
+{% block body %}
+    <div class="row mb">
+        <div class="col-sm-12">
+            {{ form_start(view_model.createTaskFormView, {'action' : path('task_create')}) }}
+                {{ form_widget(view_model.createTaskFormView) }}
+                <button type="submit" title="Ajouter" id="create-task" class="btn btn-success pull-right">Ajouter</button>
+            {{ form_end(view_model.createTaskFormView) }}
+
+            <a href="{{ path('task_list') }}" title="Revenir à la consultation des tâches" class="btn btn-primary">
+                Retour à la liste des tâches
+            </a>
+        </div>
     </div>
 {% endblock %}
