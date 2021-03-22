@@ -23,13 +23,12 @@ class TaskRepositoryTest extends KernelTestCase
      * Setup needed instance(s).
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function setUp(): void
     {
         parent::setUp();
         static::bootKernel();
+        // Access task repository private service using "static::$container"
         $this->taskRepository = static::$container->get(TaskRepository::class);
     }
 

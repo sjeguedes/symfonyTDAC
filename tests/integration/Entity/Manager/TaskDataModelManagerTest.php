@@ -40,17 +40,20 @@ class TaskDataModelManagerTest extends KernelTestCase
      * Setup needed instance(s).
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function setUp(): void
     {
         parent::setUp();
         $kernel = static::bootKernel();
+        // Access entity manager public service using the kernel
         $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
-        // Create logger mock (or access private "logger" service via static::$container if needed)
-        $this->logger = static::createMock(LoggerInterface::class);
-        $this->taskDataModelManager = new TaskDataModelManager($this->entityManager, $this->logger);
+        // Access task data model manager private service using static::$container
+        $this->logger = static::$container->get('logger');
+        // Set task data model manager instance
+        $this->taskDataModelManager = new TaskDataModelManager(
+            $this->entityManager,
+            $this->logger
+        );
     }
 
     /**
