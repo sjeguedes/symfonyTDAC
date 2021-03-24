@@ -14,6 +14,8 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 /**
  * Class FixturesLoader
  *
+ * @codeCoverageIgnore
+ *
  * Load Faker fixtures thanks to Doctrine bundle.
  */
 class FixturesLoader implements FixtureInterface
@@ -82,9 +84,9 @@ class FixturesLoader implements FixtureInterface
                         $this->faker->dateTimeBetween('-30 days', 'now', 'Europe/Paris')
                     )
                 )
-                ->setUpdatedAt($tasks[$i]->getCreatedAt())
-                // Set "even" values to true
-                ->setIsDone(0 === $i % 2 ? true : false);
+                ->setUpdatedAt($tasks[$i]->getCreatedAt());
+            // Set task with "even" iteration "isDone" property to true
+            0 !== $i % 2 ?: $tasks[$i]->toggle();
             // Persist data
             $manager->persist($tasks[$i]);
         }
@@ -96,20 +98,28 @@ class FixturesLoader implements FixtureInterface
      * @param ObjectManager $manager
      *
      * @return void
+     *
+     * @throws \Exception
      */
     private function createUsers(ObjectManager $manager): void
     {
         $users = [];
         for ($i = 0; $i < 5; $i++) {
             $users[$i] = new User();
-            // Set user properties
-            $userName = $this->faker->userName;
+            // Set user properties (A default role as "ROLE_USER" is defined by default in constructor!)
+            $userName = strtolower($this->faker->firstName . '.' . $this->faker->lastName);
             $users[$i]
                 ->setUserName($userName . '_' . ($i + 1) )
                 ->setPassword(
                     $this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1))
                 )
-                ->setEmail($userName. '@' . $this->faker->freeEmailDomain);
+                ->setEmail($userName . '@' . $this->faker->freeEmailDomain)
+                ->setCreatedAt(
+                    \DateTimeImmutable::createFromMutable(
+                        $this->faker->dateTimeBetween('-30 days', 'now', 'Europe/Paris')
+                    )
+                )
+                ->setUpdatedAt($users[$i]->getCreatedAt());
             // Persist data
             $manager->persist($users[$i]);
         }

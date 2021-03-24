@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Form\UserType;
+use App\Form\Type\Base\BaseUserType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -39,7 +39,7 @@ class UserController extends AbstractController
     public function createAction(Request $request, UserPasswordEncoderInterface $userPasswordEncoder)
     {
         $user = new User();
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(BaseUserType::class, $user);
 
         $form->handleRequest($request);
 
@@ -72,7 +72,7 @@ class UserController extends AbstractController
      */
     public function editAction(Request $request, User $user, UserPasswordEncoderInterface $userPasswordEncoder)
     {
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(BaseUserType::class, $user);
 
         $form->handleRequest($request);
 

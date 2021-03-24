@@ -72,8 +72,10 @@ class CreateTaskHandlerTest extends AbstractTaskFormHandlerTestCase
         // Define default data as valid
         $defaultFormData = [
             'create_task' => [
-                'title' => 'Titre de nouvelle tâche',
-                'content' => 'Description de nouvelle tâche'
+                'task' => [
+                    'title'   => 'Titre de nouvelle tâche',
+                    'content' => 'Description de nouvelle tâche'
+                ]
             ]
         ];
         $formData = empty($formData) ? $defaultFormData : $formData;
@@ -181,7 +183,14 @@ class CreateTaskHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->getMockedUserWithExpectations($this->tokenStorage);
         // Process a real submitted form with invalid data thanks to helper method.
         $this->processForm(
-            ['create_task' => ['title' => 'Titre de nouvelle tâche', 'content' => 'Description de nouvelle tâche']]
+            [
+                'create_task' => [
+                    'task' => [
+                        'title'   => 'Titre de nouvelle tâche',
+                        'content' => 'Description de nouvelle tâche'
+                    ]
+                ]
+            ]
         );
         $isExecuted = $this->createTaskHandler->execute();
         static::assertTrue($isExecuted);
@@ -198,7 +207,14 @@ class CreateTaskHandlerTest extends AbstractTaskFormHandlerTestCase
     {
         // Process a real submitted form with invalid data thanks to helper method.
         $this->processForm(
-            ['create_task' => ['title' => '', 'content' => '']]
+            [
+                'create_task' => [
+                    'task' => [
+                        'title'   => '',
+                        'content' => ''
+                    ]
+                ]
+            ]
         );
         $isExecuted = $this->createTaskHandler->execute();
         static::assertFalse($isExecuted);

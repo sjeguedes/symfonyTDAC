@@ -41,7 +41,7 @@ class ToggleTaskType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Task::class,
+            'data_class'    => Task::class,
             'csrf_token_id' => 'toggle_task_action'
         ]);
     }

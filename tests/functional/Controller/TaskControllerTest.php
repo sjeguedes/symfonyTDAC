@@ -17,6 +17,16 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 class TaskControllerTest extends AbstractControllerTestCase
 {
     /**
+     * Define form fields base names.
+     */
+    private const BASE_FORM_FIELDS_NAMES = [
+        'task_creation' => 'create_task[task]', // compound form
+        'task_update'   => 'edit_task[task]', // compound form
+        'task_toggle'   => 'toggle_task',
+        'task_deletion' => 'delete_task',
+    ];
+
+    /**
      * Provide controller methods URIs.
      *
      * @return array
@@ -44,7 +54,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         yield 'Gets form data to create a task' => [
             'data' => [
                 'uri'              => '/tasks/create',
-                'form_name'        => 'create_task',
+                'form_name'        => self::BASE_FORM_FIELDS_NAMES['task_creation'],
                 'csrf_token_id'    => 'create_task_action',
                 'submit_button_id' => 'create-task'
             ]
@@ -52,7 +62,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         yield 'Gets form data to edit a task' => [
             'data' => [
                 'uri'              => '/tasks/1/edit',
-                'form_name'        => 'edit_task',
+                'form_name'        => self::BASE_FORM_FIELDS_NAMES['task_update'],
                 'csrf_token_id'    => 'edit_task_action',
                 'submit_button_id' => 'edit-task'
             ]
@@ -60,7 +70,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         yield 'Gets form data to toggle a task' => [
             'data' => [
                 'uri'              => '/tasks',
-                'form_name'        => 'toggle_task_1',
+                'form_name'        => self::BASE_FORM_FIELDS_NAMES['task_toggle'] . '_1',
                 'csrf_token_id'    => 'toggle_task_action',
                 'submit_button_id' => 'toggle-task-1'
             ]
@@ -68,7 +78,7 @@ class TaskControllerTest extends AbstractControllerTestCase
         yield 'Gets form data to delete a task' => [
             'data' => [
                 'uri'              => '/tasks',
-                'form_name'        => 'delete_task_1',
+                'form_name'        => self::BASE_FORM_FIELDS_NAMES['task_deletion']. '_1',
                 'csrf_token_id'    => 'delete_task_action',
                 'submit_button_id' => 'delete-task-1'
             ]
@@ -108,14 +118,16 @@ class TaskControllerTest extends AbstractControllerTestCase
         $crawler = $this->client->request('GET', $data['uri']);
         /** @var CsrfToken $csrfToken */
         $csrfToken = static::$container->get('security.csrf.token_manager')->getToken($data['csrf_token_id']);
+        // Csrf token form is outside nested "task" form type!
+        $csrfTokenFieldNameAttribute = str_replace('[task]', '', $data['form_name']) . '[_token]';
         $buttonCrawlerNode = $crawler->selectButton($data['submit_button_id']);
         $form = $buttonCrawlerNode->form();
         // Check that CSRF token value is present among form values
         static::assertTrue(\in_array($csrfToken->getValue(), $form->getValues()));
         // Get consistency by keeping the same CSRF token name for all forms
-        static::assertTrue($form->has($data['form_name'] . '[_token]'));
+        static::assertTrue($form->has($csrfTokenFieldNameAttribute));
         // Pass a wrong token
-        $form[$data['form_name'] . '[_token]'] = 'Wrong CSRF token';
+        $form[$csrfTokenFieldNameAttribute] = 'Wrong CSRF token';
         $crawler = $this->client->submit($form);
          // Check that CSRF token cannot be tampered!
         static::assertCount(1, $crawler->filter('div.alert-danger'));
@@ -151,8 +163,8 @@ class TaskControllerTest extends AbstractControllerTestCase
         $this->loginUser();
         $this->client->request('GET', '/tasks/create');
         $this->client->submitForm('Ajouter', [
-            'create_task[title]'   => 'Nouvelle tâche',
-            'create_task[content]' => 'Ceci est un contenu de nouvelle tâche.'
+            self::BASE_FORM_FIELDS_NAMES['task_creation'] . '[title]'   => 'Nouvelle tâche',
+            self::BASE_FORM_FIELDS_NAMES['task_creation'] . '[content]' => 'Ceci est un contenu de nouvelle tâche.'
         ], 'POST');
         static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
         $crawler = $this->client->followRedirect();
@@ -173,8 +185,8 @@ class TaskControllerTest extends AbstractControllerTestCase
         $this->client->request('GET', '/tasks/create');
         $uniqueID = time();
         $this->client->submitForm('Ajouter', [
-            'create_task[title]' => 'Nouvelle tâche ' . $uniqueID,
-            'create_task[content]' => 'Ceci est un contenu de nouvelle tâche.'
+            self::BASE_FORM_FIELDS_NAMES['task_creation'] . '[title]' => 'Nouvelle tâche ' . $uniqueID,
+            self::BASE_FORM_FIELDS_NAMES['task_creation'] . '[content]' => 'Ceci est un contenu de nouvelle tâche.'
         ], 'POST');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
@@ -195,8 +207,8 @@ class TaskControllerTest extends AbstractControllerTestCase
         $randomId = rand(1, 20);
         $this->client->request('GET', '/tasks/' . $randomId . '/edit');
         $this->client->submitForm('Modifier', [
-            'edit_task[title]'   => 'Tâche modifiée',
-            'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
+            self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => 'Tâche modifiée',
+            self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => 'Ceci est un changement de contenu de la tâche.'
         ], 'POST');
         static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
         $crawler = $this->client->followRedirect();
@@ -304,8 +316,8 @@ class TaskControllerTest extends AbstractControllerTestCase
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
         $existingTask = $taskRepository->find($randomId);
         $crawler =$this->client->submitForm('Modifier', [
-            'edit_task[title]'   => $existingTask->getTitle(),
-            'edit_task[content]' => $existingTask->getContent()
+            self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => $existingTask->getTitle(),
+            self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => $existingTask->getContent()
         ], 'POST');
         static::assertFalse($this->client->getResponse()->isRedirect('/tasks'));
         static::assertSame(
@@ -328,8 +340,8 @@ class TaskControllerTest extends AbstractControllerTestCase
         $randomId = rand(1, 20);
         $this->client->request('GET', '/tasks/' . $randomId . '/edit');
         $this->client->submitForm('Modifier', [
-            'edit_task[title]'   => 'Tâche modifiée',
-            'edit_task[content]' => 'Ceci est un changement de contenu de la tâche.'
+            self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => 'Tâche modifiée',
+            self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => 'Ceci est un changement de contenu de la tâche.'
         ], 'POST');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);

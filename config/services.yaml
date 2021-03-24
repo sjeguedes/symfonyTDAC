@@ -41,17 +41,17 @@ services:
             $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
             $deleteTaskHandler: '@App\Form\Handler\DeleteTaskFormHandler'
 
+    # define services in this directory as Doctrine fixtures
+    App\DataFixtures\:
+        resource: '%kernel.project_dir%/src/DataFixtures/*'
+        tags: ['doctrine.fixture.orm']
+
     # define data (entity) model factory as a generic service for corresponding custom interface
     App\Entity\Factory\DataModelFactory: ~
     App\Entity\Factory\DataModelFactoryInterface: '@App\Entity\Factory\DataModelFactory'
 
     # define task data model manager as a service
     App\Entity\Manager\TaskDataModelManager: ~
-
-    # define services in this directory as Doctrine fixtures
-    App\DataFixtures\:
-        resource: '%kernel.project_dir%/src/DataFixtures/*'
-        tags: ['doctrine.fixture.orm']
 
     # define task creation form handler as a service with concrete dependencies
     App\Form\Handler\CreateTaskFormHandler:
@@ -72,6 +72,11 @@ services:
     App\Form\Handler\DeleteTaskFormHandler:
         arguments:
             $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define user base form type as a service with concrete dependencies
+    App\Form\Type\Base\BaseUserType:
+        arguments:
+            $dataTransformer: '@App\Form\Transformer\ArrayToExplodedStringModelTransformer'
 
     # define task actions view model builder as a service
     App\View\Builder\TaskViewModelBuilder: ~

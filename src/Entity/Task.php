@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * Define a Task entity.
  *
- * @ORM\Entity(repositoryClass="App\Repository\TaskRepository")
+ * @ORM\Entity(repositoryClass=TaskRepository::class)
  * @ORM\Table
  */
 class Task
@@ -161,11 +161,11 @@ class Task
     }
 
     /**
-     * @param string|null $title
+     * @param string $title
      *
      * @return Task
      */
-    public function setTitle(?string $title): self
+    public function setTitle(string $title): self
     {
         $this->title = $title;
 
@@ -181,11 +181,11 @@ class Task
     }
 
     /**
-     * @param string|null $content
+     * @param string $content
      *
      * @return Task
      */
-    public function setContent(?string $content): self
+    public function setContent(string $content): self
     {
         $this->content = $content;
 
@@ -198,20 +198,6 @@ class Task
     public function isDone(): bool
     {
         return $this->isDone;
-    }
-
-    /**
-     * This was added to distinct a real setter and toggle action which inverses a particular value.
-     *
-     * @param bool $flag
-     *
-     * @return Task
-     */
-    public function setIsDone(bool $flag): self
-    {
-        $this->isDone = $flag;
-
-        return $this;
     }
 
     /**

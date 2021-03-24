@@ -4,22 +4,35 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Form\Transformer\ArrayToExplodedStringModelTransformer;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Form\DataTransformerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Class User
  *
  * Define a User entity.
  *
+ * @DoctrineAssert\UniqueEntity("username", message="Un utilisateur enregistré utilise déjà ce nom.")
+ * @DoctrineAssert\UniqueEntity("email", message="Un utilisateur enregistré utilise déjà cette adresse.")
+ *
  * @ORM\Table("user")
  * @ORM\Entity
- * @UniqueEntity("email")
  */
 class User implements UserInterface
 {
+    /**
+     * Define roles representation.
+     */
+    const ROLES = [
+        'admin' => 'ROLE_ADMIN, ROLE_USER',
+        'user'  => 'ROLE_USER'
+    ];
+
     /**
      * @var int|null
      *
@@ -30,28 +43,48 @@ class User implements UserInterface
     private ?int $id = null;
 
     /**
-     * @var string
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private \DateTimeImmutable $createdAt;
+
+    /**
+     * @var \DateTimeImmutable
+     *
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private \DateTimeImmutable $updatedAt;
+
+    /**
+     * @var string|null
      *
      * @ORM\Column(type="string", length=25, unique=true)
      * @Assert\NotBlank(message="Vous devez saisir un nom d'utilisateur.")
      */
-    private string $username;
+    private ?string $username;
 
     /**
-     * @var string
+     * @var string|null
      *
+     * @Assert\NotBlank(message="Vous devez saisir un mot de passe.")
+     * @Assert\Regex(
+     *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,20}$/",
+     *     message="Le format attendu n'est pas respecté. (voir aide)"
+     * )
      * @ORM\Column(type="string", length=98)
      */
-    private string $password;
+    private ?string $password;
 
     /**
-     * @var string
+     * @var string|null
      *
-     * @ORM\Column(type="string", length=60, unique=true)
      * @Assert\NotBlank(message="Vous devez saisir une adresse email.")
      * @Assert\Email(message="Le format de l'adresse n'est pas correct.")
+     *
+     * @ORM\Column(type="string", length=60, unique=true)
      */
-    private string $email;
+    private ?string $email;
 
     /**
      * @var string|null
@@ -59,17 +92,89 @@ class User implements UserInterface
     private ?string $salt = null;
 
     /**
-     * @return int
+     * @see User::validate() method to have a look at applied custom constraint
+     *
+     * @var array<string>
+     *
+     * @ORM\Column(type="simple_array")
      */
-    public function getId(): int
+    private array $roles;
+
+    /**
+     * User constructor.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = $this->createdAt;
+        // Define at least "ROLE_USER" default user role
+        $this->roles = ['ROLE_USER'];
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @return string
+     * @return \DateTimeImmutable
      */
-    public function getUsername(): string
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * Please note this setter is optional since data is set in constructor.
+     * This allows to keep control on date of creation.
+     *
+     * @codeCoverageIgnore
+     *
+     * @param \DateTimeImmutable $createdAt
+     *
+     * @return User
+     */
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getUpdatedAt(): \DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @param \DateTimeImmutable $updatedAt
+     *
+     * @return User
+     */
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
+    {
+        if ($this->createdAt > $updatedAt) {
+            throw new \LogicException('Update date is not logical: Task cannot be modified before creation!');
+        }
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUsername(): ?string
     {
         return $this->username;
     }
@@ -95,9 +200,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -115,9 +220,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -135,11 +240,23 @@ class User implements UserInterface
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getRoles(): array
     {
-        return array('ROLE_USER');
+        return $this->roles;
+    }
+
+    /**
+     * @param array $roles
+     *
+     * @return User
+     */
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
     }
 
     /**
@@ -148,5 +265,34 @@ class User implements UserInterface
     public function eraseCredentials(): void
     {
         // This is not used.
+    }
+
+    /**
+     * Add custom constraints to User instance validation.
+     *
+     * @Assert\Callback
+     *
+     * @param ExecutionContextInterface $context
+     * @param $payload
+     *
+     * @return void
+     */
+    public function validate(ExecutionContextInterface $context, $payload): void
+    {
+        // Check "roles" value with a constraint depending on expected possible choices
+        // TODO: change access to "roles" child form when compound forms will be used later!
+        foreach ($context->getRoot()->get('roles')->getConfig()->getModelTransformers() as $dataTransformer) {
+            if ($dataTransformer instanceof ArrayToExplodedStringModelTransformer) {
+                // Get a string from array due to data transformation
+                $rolesAsString = implode($dataTransformer->getDelimiter(), $this->getRoles());
+                // Add violation if data are tampered!
+                if (!\in_array($rolesAsString, self::ROLES)) {
+                    $context->buildViolation('Inutile d\'altérer les données définies !')
+                        ->atPath('roles')
+                        ->addViolation();
+                }
+                break;
+            }
+        }
     }
 }

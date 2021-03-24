@@ -13,6 +13,9 @@
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
         <server name="SYMFONY_PHPUNIT_VERSION" value="8.5" />
+        <!-- Disable Sf deprecations -->
+        <!-- https://symfony.com/doc/current/components/phpunit_bridge.html#disabling-the-deprecation-helper -->
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled=1"/>
     </php>
 
     <testsuites>

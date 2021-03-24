@@ -106,7 +106,12 @@ class CreateTaskTypeTest extends TypeTestCase
         $expectedObject = (clone $dataModel)
             ->setTitle($title)
             ->setContent($content);
-        $formData = ['title' => $title, 'content' => $content];
+        $formData = [
+            'task' => [
+                'title'   => $title,
+                'content' => $content
+            ]
+        ];
         $form = $this->factory->create(CreateTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
@@ -135,7 +140,7 @@ class CreateTaskTypeTest extends TypeTestCase
         $formData = array_filter($data, fn ($key) => 'isValid' !== $key, ARRAY_FILTER_USE_KEY);
         $form = $this->factory->create(CreateTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
-        $form->submit($formData);
+        $form->submit(['task' => $formData]);
         static::assertSame($isValid, $form->isValid());
     }
 
@@ -149,7 +154,12 @@ class CreateTaskTypeTest extends TypeTestCase
     public function testSubmittedNewTaskDataTransformation(): void
     {
         $dataModel = new Task();
-        $formData = ['title' => 'Titre de tâche', 'content' => 'Description de tâche'];
+        $formData = [
+            'task' => [
+                'title'   => 'Titre de tâche',
+                'content' => 'Description de tâche'
+            ]
+        ];
         $form = $this->factory->create(CreateTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);

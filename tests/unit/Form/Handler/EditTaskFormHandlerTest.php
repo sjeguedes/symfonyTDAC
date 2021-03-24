@@ -72,8 +72,10 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Define default data as valid
         $defaultFormData = [
             'edit_task' => [
-                'title' => 'Titre de tâche modifiée',
-                'content' => 'Description de tâche modifiée'
+                'task' => [
+                    'title'   => 'Titre de tâche modifiée',
+                    'content' => 'Description de tâche modifiée'
+                ]
             ]
         ];
         $formData = empty($formData) ? $defaultFormData : $formData;
@@ -94,7 +96,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
      *
      * @throws \Exception
      */
-    private function processForm(array $formData, Request $request = null): FormInterface
+    private function processForm(array $formData = [], Request $request = null): FormInterface
     {
         $request = $request ?? $this->createRequest($formData);
         // Create a new form handler instance if default request is not used!
@@ -150,9 +152,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Get an authenticated user for scenario
         $this->getMockedUserWithExpectations($this->tokenStorage);
         // Process a real submitted form with invalid data thanks to helper method.
-        $this->processForm(
-            ['edit_task' => ['title' => 'Titre de tâche modifiée', 'content' => 'Description de tâche modifiée']]
-        );
+        $this->processForm();
         $isExecuted = $this->editTaskHandler->execute();
         static::assertTrue($isExecuted);
     }
@@ -168,7 +168,14 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     {
         // Process a real submitted form with invalid data thanks to helper method.
         $this->processForm(
-            ['edit_task' => ['title' => '', 'content' => '']]
+            [
+                'edit_task' => [
+                    'task' => [
+                        'title'   => '',
+                        'content' => ''
+                    ]
+                ]
+            ]
         );
         $isExecuted = $this->editTaskHandler->execute();
         static::assertFalse($isExecuted);
@@ -187,7 +194,14 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->getMockedUserWithExpectations($this->tokenStorage);
         // Process a real submitted form first with default valid data thanks to helper method.
         $this->processForm(
-            ['edit_task' => ['title' => 'Titre de tâche modifiée', 'content' => 'Description de tâche modifiée']]
+            [
+                'edit_task' => [
+                    'task' => [
+                        'title'   => 'Titre de tâche modifiée',
+                        'content' => 'Description de tâche modifiée'
+                    ]
+                ]
+            ]
         );
         $isTaskUpdateFlushed = $this->editTaskHandler->execute();
         static::assertTrue($isTaskUpdateFlushed);
@@ -200,14 +214,12 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
      *
      * @throws \Exception
      */
-    public function testExecuteReturnsFalseWhenTaskTaskUpdateFlushIsNotOk(): void
+    public function testExecuteReturnsFalseWhenTaskUpdateFlushIsNotOk(): void
     {
         // Get an authenticated user for scenario
         $this->getMockedUserWithExpectations($this->tokenStorage);
         // Process a real submitted form first with default valid data thanks to helper method.
-        $this->processForm(
-            ['edit_task' => ['title' => 'Titre de tâche modifiée', 'content' => 'Description de tâche modifiée']]
-        );
+        $this->processForm();
         // Throw an exception to be more realistic (when database persistence fails)
         // in order to make the test behave as expected
         $this->entityManager
@@ -233,7 +245,14 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Process a real submitted form with invalid data thanks to helper method.
         // No data change is submitted
         $this->processForm(
-            ['edit_task' => ['title' => 'Titre de tâche existante', 'content' => 'Description de tâche existante']]
+            [
+                'edit_task' => [
+                    'task' => [
+                        'title'   => 'Titre de tâche existante',
+                        'content' => 'Description de tâche existante'
+                    ]
+                ]
+            ]
         );
         $request = $this->createRequest();
         $isTaskUpdateFlushed = $this->editTaskHandler->execute();

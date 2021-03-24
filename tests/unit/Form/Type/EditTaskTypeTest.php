@@ -108,7 +108,12 @@ class EditTaskTypeTest extends TypeTestCase
         $expectedObject = (clone $dataModel)
             ->setTitle($title)
             ->setContent($content);
-        $formData = ['title' => $title, 'content' => $content];
+        $formData = [
+            'task' => [
+                'title'   => $title,
+                'content' => $content
+            ]
+        ];
         $form = $this->factory->create(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
@@ -138,7 +143,7 @@ class EditTaskTypeTest extends TypeTestCase
         $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
         $form = $this->factory->create(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
-        $form->submit($formData);
+        $form->submit(['task' => $formData]);
         static::assertSame($data['isValid'], $form->isValid());
     }
 
@@ -154,7 +159,12 @@ class EditTaskTypeTest extends TypeTestCase
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
             ->setContent('Description de tâche existante');
-        $formData = ['title' => 'Titre de tâche modifiée', 'content' => 'Description de tâche modifiée'];
+        $formData = [
+            'task' => [
+                'title'   => 'Titre de tâche modifiée',
+                'content' => 'Description de tâche modifiée'
+            ]
+        ];
         $form = $this->factory->create(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
