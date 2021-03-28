@@ -35,6 +35,8 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
     /**
      * Get defined delimiter.
      *
+     * @codeCoverageIgnore
+     *
      * @return string
      */
     public function getDelimiter(): string
@@ -54,21 +56,23 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
     public function transform($array): string
     {
         // Check value type to transform
-        if (!\is_array($array)) {
+        if (null !== $array && !\is_array($array)) {
             throw new TransformationFailedException('An array is expected to obtain a string!');
         }
-        // Stop transformation by returning an empty string
-        if (null === $array) {
+        // Stop value transformation by returning an empty string
+        if (null === $array || empty($array)) {
             return '';
         }
         // Implode array with defined delimiter
         $string = trim(implode($this->delimiter, $array));
+        // Get a trimmed and cleaned delimited string
+        $string = preg_replace('/(\s*)' . $this->delimiter . '(\s*)/', $this->delimiter, $string);
 
         return $string;
     }
 
     /**
-     * Transform (from view to model) a delimited string into an array.
+     * Reverse-transform (from view to model) a delimited string into an array.
      *
      * @param string $string String to transform
      *
@@ -82,12 +86,17 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
         if (null !== $string && !\is_string($string)) {
             throw new TransformationFailedException('A string is expected to obtain an array!');
         }
-        // Stop transformation if values are empty when delimiter is excluded by returning an empty array
-        if (null === $string || 0 === \strlen(str_replace($this->delimiter, '',  $string = trim($string)))) {
+        // Stop transformation if value is equal to "null" by returning an empty array
+        if (null === $string) {
             return [];
         }
-        // Explode string depending on defined delimiter
-        $array = explode($this->delimiter, $string);
+        // Stop transformation if value is empty when space or delimiter are excluded by returning an empty array
+        if (0 === \strlen(preg_replace('/\s|' . $this->delimiter. '/', '',  $string))) {
+            return [];
+        }
+        // Explode trimmed and cleaned string depending on defined delimiter
+        $string = preg_replace('/(\s*)' . $this->delimiter . '(\s*)/', $this->delimiter, $string);
+        $array = explode($this->delimiter, trim($string));
 
         return $array;
     }
