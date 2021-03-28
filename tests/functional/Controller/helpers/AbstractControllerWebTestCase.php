@@ -10,16 +10,22 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * Class AbstractControllerTestCase
+ * Class AbstractControllerWebTestCase
  *
- * Manage all tests common actions as parent class.
+ * Manage all functional tests common actions as parent class.
  */
-abstract class AbstractControllerTestCase extends WebTestCase
+abstract class AbstractControllerWebTestCase extends WebTestCase
 {
+    /**
+     * @var KernelInterface|null
+     */
+    protected static ?KernelInterface $kernel = null;
+
     /**
      * @var KernelBrowser|null
      */
@@ -32,6 +38,7 @@ abstract class AbstractControllerTestCase extends WebTestCase
      */
     public function setUp(): void
     {
+        static::$kernel = static::bootKernel();
         $this->client = static::createClient();
     }
 
@@ -58,10 +65,10 @@ abstract class AbstractControllerTestCase extends WebTestCase
     protected function loginUser(): UserInterface
     {
         // Get a Session instance
-        $session = static::$container->get('session');
+        $session = static::$kernel->getContainer()->get('session');
         // Get a user from test database
         /* @var ObjectRepository $userRepository */
-        $userRepository = static::$container->get('doctrine')->getRepository(User::class);
+        $userRepository = static::$kernel->getContainer()->get('doctrine')->getRepository(User::class);
         // Retrieve the test user
         /** @var UserInterface $testUser */
         $testUser = $userRepository->findOneBy(['email' => 'daniel.lecomte@club-internet.fr']);
@@ -86,7 +93,8 @@ abstract class AbstractControllerTestCase extends WebTestCase
      */
     public function tearDown(): void
     {
-        $this->client = null;
         static::ensureKernelShutdown();
+        static::$kernel = null;
+        $this->client = null;
     }
 }

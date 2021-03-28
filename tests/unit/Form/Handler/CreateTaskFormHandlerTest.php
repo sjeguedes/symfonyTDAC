@@ -23,7 +23,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  *
  * Manage unit tests for task creation form handler.
  */
-class CreateTaskHandlerTest extends AbstractTaskFormHandlerTestCase
+class CreateTaskHandlerKernelTest extends AbstractTaskFormHandlerTestCase
 {
     /**
      * @var MockObject|FormFactoryInterface|null
@@ -101,7 +101,7 @@ class CreateTaskHandlerTest extends AbstractTaskFormHandlerTestCase
         $request = $request ?? $this->createRequest($formData);
         // Create a new form handler instance if default request is not used!
         if (!empty($formData) || null !== $request) {
-            $this->formFactory = $this->buildFormFactory($request);
+            $this->formFactory = $this->buildFormFactory($request, Task::class);
             $this->createTaskHandler = new createTaskFormHandler(
                 $this->formFactory,
                 $this->taskDataModelManager,
@@ -124,7 +124,7 @@ class CreateTaskHandlerTest extends AbstractTaskFormHandlerTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->formFactory = $this->buildFormFactory($this->createRequest());
+        $this->formFactory = $this->buildFormFactory($this->createRequest(), Task::class);
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['persist', 'flush']);
         $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);

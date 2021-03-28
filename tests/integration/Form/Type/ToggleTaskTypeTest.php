@@ -2,40 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Form\Type;
+namespace App\Tests\Integration\Form\Type;
 
 use App\Entity\Task;
-use App\Form\Type\DeleteTaskType;
-use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
-use Symfony\Component\Form\Test\TypeTestCase;
-use Symfony\Component\Validator\Validation;
+use App\Form\Type\ToggleTaskType;
+use App\Tests\Integration\Form\Type\Helpers\AbstractFormTypeKernelTestCase;
 
 /**
- * Class DeleteTaskTypeTest
+ * Class ToggleTaskTypeTest
  *
- * Manage unit tests for task deletion form type.
- *
- * @see Form type unit testing: https://symfony.com/doc/current/form/unit_testing.html
+ * Manage integration tests for task toggle form type.
  */
-class DeleteTaskTypeTest extends TypeTestCase
+class ToggleTaskTypeTest extends AbstractFormTypeKernelTestCase
 {
-    /**
-     * Get form extensions to use it as expected.
-     *
-     * @return array
-     */
-    protected function getExtensions(): array
-    {
-        // Get validator configured to check annotation constraints
-        $validator = Validation::createValidatorBuilder()
-            ->enableAnnotationMapping()
-            ->getValidator();
-
-        return [
-            new ValidatorExtension($validator)
-        ];
-    }
-
     /**
      * Setup needed instance(s).
      *
@@ -71,13 +50,13 @@ class DeleteTaskTypeTest extends TypeTestCase
     }
 
     /**
-     * Check that data mapping is correctly made when task deletion form is submitted.
+     * Check that data mapping is correctly made when task toggle form is submitted.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testSubmittedDeletedTaskFormMapping(): void
+    public function testSubmittedToggledTaskFormMapping(): void
     {
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
@@ -86,14 +65,14 @@ class DeleteTaskTypeTest extends TypeTestCase
         $expectedObject = clone $dataModel;
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
         $formData = [];
-        $form = $this->factory->create(DeleteTaskType::class, $dataModel);
+        $form = $this->createForm(ToggleTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertEquals($expectedObject, $form->getData());
     }
 
     /**
-     * Check that expected data are validated when task deletion form is submitted.
+     * Check that expected data are validated when task toggle form is submitted.
      *
      * Please note that each validation constraint is already checked
      * in TaskTest::testValidationRulesAreCorrectlySet().
@@ -106,34 +85,34 @@ class DeleteTaskTypeTest extends TypeTestCase
      *
      * @throws \Exception
      */
-    public function testSubmittedDeletedTaskDataValidation(array $data): void
+    public function testSubmittedToggledTaskDataValidation(array $data): void
     {
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
             ->setContent('Description de tâche existante');
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
         $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
-        $form = $this->factory->create(DeleteTaskType::class, $dataModel);
+        $form = $this->createForm(ToggleTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertSame($data['isValid'], $form->isValid());
     }
 
     /**
-     * Check that data transformation is correctly made when task deletion form is submitted.
+     * Check that data transformation is correctly made when task toggle form is submitted.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testSubmittedDeletedTaskDataTransformation(): void
+    public function testSubmittedToggledTaskDataTransformation(): void
     {
         $dataModel = (new Task())
             ->setTitle('Titre de tâche existante')
             ->setContent('Description de tâche existante');
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
         $formData = [];
-        $form = $this->factory->create(DeleteTaskType::class, $dataModel);
+        $form = $this->createForm(ToggleTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
         static::assertTrue($form->isSynchronized());

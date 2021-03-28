@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Repository\TaskRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -13,6 +14,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Class Task
  *
  * Define a Task entity.
+ *
+ * @DoctrineAssert\UniqueEntity("title", message="Une tâche existe déjà avec ce titre.")
  *
  * @ORM\Entity(repositoryClass=TaskRepository::class)
  * @ORM\Table
@@ -45,16 +48,18 @@ class Task
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string")
      * @Assert\NotBlank(message="Vous devez saisir un titre.")
+     *
+     * @ORM\Column(type="string", unique=true)
      */
     private ?string $title;
 
     /**
      * @var string|null
      *
-     * @ORM\Column(type="text")
      * @Assert\NotBlank(message="Vous devez saisir du contenu.")
+     *
+     * @ORM\Column(type="text")
      */
     private ?string $content;
 

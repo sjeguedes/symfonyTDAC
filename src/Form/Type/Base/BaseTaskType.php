@@ -13,6 +13,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 /**
  * Class BaseTaskType
  *
+ * @codeCoverageIgnore
+ *
  * Manage task actions common form data.
  */
 class BaseTaskType extends AbstractType

@@ -8,6 +8,7 @@ use App\Entity\Task;
 use App\Form\Handler\AbstractFormHandler;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Type\CreateTaskType;
+use App\Form\Type\DeleteTaskType;
 use App\Form\Type\EditTaskType;
 use App\Form\Type\ToggleTaskType;
 use App\Tests\Unit\Helpers\CustomAssertionsTestCaseTrait;
@@ -104,10 +105,10 @@ class AbstractFormHandlerTest extends TestCase
     public function provideFormTypeNames(): array
     {
         return [
-            'Uses task creation form type' => ['create_task', CreateTaskType::class, Task::class],
-            'Uses task update form type'   => ['edit_task', EditTaskType::class, Task::class],
-            'Uses task toggle form type'   => ['toggle_task_1', ToggleTaskType::class, Task::class]
-            // IMPORTANT: complete other existing types here later!
+            'Uses task creation form type'       => ['create_task', CreateTaskType::class, Task::class],
+            'Uses task update form type'         => ['edit_task', EditTaskType::class, Task::class],
+            'Uses task toggle first form type'   => ['toggle_task_1', ToggleTaskType::class, Task::class],
+            'Uses task deletion first form type' => ['delete_task_1', DeleteTaskType::class, Task::class]
         ];
     }
 

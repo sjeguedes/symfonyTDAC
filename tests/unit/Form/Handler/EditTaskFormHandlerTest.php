@@ -9,6 +9,7 @@ use App\Entity\Task;
 use App\Form\Handler\EditTaskFormHandler;
 use App\Form\Handler\FormHandlerInterface;
 use App\Tests\Unit\Form\Handler\Helpers\AbstractTaskFormHandlerTestCase;
+use App\Tests\Unit\Helpers\EntityReflectionTestCaseTrait;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -25,6 +26,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
 {
+    use EntityReflectionTestCaseTrait;
+
     /**
      * @var MockObject|FormFactoryInterface|null
      */
@@ -101,7 +104,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $request = $request ?? $this->createRequest($formData);
         // Create a new form handler instance if default request is not used!
         if (null !== $request) {
-            $this->formFactory = $this->buildFormFactory($request);
+            $this->formFactory = $this->buildFormFactory($request, Task::class);
             $this->editTaskHandler = new EditTaskFormHandler(
                 $this->formFactory,
                 $this->taskDataModelManager,
@@ -109,9 +112,11 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
                 $this->tokenStorage
             );
         }
+        // Use reflection to get a fake existing task with id
         $existingTask = (new Task())
             ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
+            ->setContent('Contenu de tâche existante');
+        $existingTask = $this->setEntityIdByReflection($existingTask, 1);
         $form = $this->editTaskHandler->process($request, ['dataModel' => $existingTask]);
 
         return $form;
@@ -127,7 +132,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->formFactory = $this->buildFormFactory($this->createRequest());
+        $this->formFactory = $this->buildFormFactory($this->createRequest(), Task::class);
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
         $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);
@@ -242,19 +247,18 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
      */
     public function testExecuteReturnsFalseWhenTaskUpdateMakesNoChange(): void
     {
-        // Process a real submitted form with invalid data thanks to helper method.
-        // No data change is submitted
+        // Process a real submitted form with valid data thanks to helper method.
+        // No change is submitted since default model data are re-injected!
         $this->processForm(
             [
                 'edit_task' => [
                     'task' => [
                         'title'   => 'Titre de tâche existante',
-                        'content' => 'Description de tâche existante'
+                        'content' => 'Contenu de tâche existante'
                     ]
                 ]
             ]
         );
-        $request = $this->createRequest();
         $isTaskUpdateFlushed = $this->editTaskHandler->execute();
         static::assertFalse($isTaskUpdateFlushed);
     }

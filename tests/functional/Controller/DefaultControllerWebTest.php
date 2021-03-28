@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Functional\Controller;
 
-use App\Tests\Functional\Controller\Helpers\AbstractControllerTestCase;
+use App\Tests\Functional\Controller\Helpers\AbstractControllerWebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Define functional tests.
  */
-class DefaultControllerTest extends AbstractControllerTestCase
+class DefaultControllerWebTest extends AbstractControllerWebTestCase
 {
     /**
      * Check that homepage is accessible only with authentication

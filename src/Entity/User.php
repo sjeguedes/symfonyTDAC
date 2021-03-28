@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Form\Transformer\ArrayToExplodedStringModelTransformer;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Form\DataTransformerInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * Class User
@@ -59,8 +56,9 @@ class User implements UserInterface
     /**
      * @var string|null
      *
-     * @ORM\Column(type="string", length=25, unique=true)
      * @Assert\NotBlank(message="Vous devez saisir un nom d'utilisateur.")
+     *
+     * @ORM\Column(type="string", length=25, unique=true)
      */
     private ?string $username;
 
@@ -92,8 +90,6 @@ class User implements UserInterface
     private ?string $salt = null;
 
     /**
-     * @see User::validate() method to have a look at applied custom constraint
-     *
      * @var array<string>
      *
      * @ORM\Column(type="simple_array")
@@ -265,34 +261,5 @@ class User implements UserInterface
     public function eraseCredentials(): void
     {
         // This is not used.
-    }
-
-    /**
-     * Add custom constraints to User instance validation.
-     *
-     * @Assert\Callback
-     *
-     * @param ExecutionContextInterface $context
-     * @param $payload
-     *
-     * @return void
-     */
-    public function validate(ExecutionContextInterface $context, $payload): void
-    {
-        // Check "roles" value with a constraint depending on expected possible choices
-        // TODO: change access to "roles" child form when compound forms will be used later!
-        foreach ($context->getRoot()->get('roles')->getConfig()->getModelTransformers() as $dataTransformer) {
-            if ($dataTransformer instanceof ArrayToExplodedStringModelTransformer) {
-                // Get a string from array due to data transformation
-                $rolesAsString = implode($dataTransformer->getDelimiter(), $this->getRoles());
-                // Add violation if data are tampered!
-                if (!\in_array($rolesAsString, self::ROLES)) {
-                    $context->buildViolation('Inutile d\'altérer les données définies !')
-                        ->atPath('roles')
-                        ->addViolation();
-                }
-                break;
-            }
-        }
     }
 }

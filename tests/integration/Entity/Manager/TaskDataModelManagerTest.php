@@ -9,9 +9,9 @@ use App\Entity\Task;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
-use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -22,12 +22,17 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class TaskDataModelManagerTest extends KernelTestCase
 {
     /**
-     * @var MockObject|EntityManagerInterface|null
+     * @var KernelInterface|null
+     */
+    protected static ?KernelInterface $kernel = null;
+
+    /**
+     * @var EntityManagerInterface|null
      */
     private ?EntityManagerInterface $entityManager;
 
     /**
-     * @var MockObject|LoggerInterface|null
+     * @var LoggerInterface|null
      */
     private ?LoggerInterface $logger;
 
@@ -44,9 +49,9 @@ class TaskDataModelManagerTest extends KernelTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $kernel = static::bootKernel();
+        static::$kernel = static::bootKernel();
         // Access entity manager public service using the kernel
-        $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
+        $this->entityManager = static::$kernel->getContainer()->get('doctrine')->getManager();
         // Access task data model manager private service using static::$container
         $this->logger = static::$container->get('logger');
         // Set task data model manager instance
@@ -207,6 +212,8 @@ class TaskDataModelManagerTest extends KernelTestCase
      */
     public function tearDown(): void
     {
+        static::ensureKernelShutdown();
+        static::$kernel = null;
         $this->entityManager->close();
         $this->entityManager = null;
         $this->logger = null;

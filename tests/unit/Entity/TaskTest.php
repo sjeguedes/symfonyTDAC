@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Entity;
 
 use App\Entity\Task;
+use App\Tests\Unit\Helpers\EntityReflectionTestCaseTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Validation;
 
 /**
  * Class TaskTest
@@ -16,6 +16,8 @@ use Symfony\Component\Validator\Validation;
  */
 class TaskTest extends TestCase
 {
+    use EntityReflectionTestCaseTrait;
+
     /**
      * @var Task|null
      */
@@ -31,36 +33,6 @@ class TaskTest extends TestCase
     public function setUp(): void
     {
         $this->task = new Task();
-    }
-
-    /**
-     * Provide a set of entity data to check validation rules.
-     *
-     * @return \Generator
-     */
-    public function provideDataToValidate(): \Generator
-    {
-        yield [
-            'Succeeds when data are correct' => [
-                'title'   => 'Nouvelle tâche',
-                'content' => 'Ceci est une description de nouvelle tâche.',
-                'isValid' =>  true
-            ]
-        ];
-        yield [
-            'Fails when title is missing' => [
-                'title'   => '',
-                'content' => 'Ceci est une description de nouvelle tâche.',
-                'isValid' =>  false
-            ]
-        ];
-        yield [
-            'Fails when content is missing' => [
-                'title'   => 'Nouvelle tâche',
-                'content' => '',
-                'isValid' =>  false
-            ]
-        ];
     }
 
     /**
@@ -111,41 +83,11 @@ class TaskTest extends TestCase
     {
         $user = static::createMock(UserInterface::class);
         // Use a fake task object type here would be better than reflection!
-        $reflectionClass = new \ReflectionClass(Task::class);
-        $idProperty = $reflectionClass->getProperty('id');
-        $idProperty->setAccessible(true);
         // "Simulate" an already persisted object by setting id
-        $idProperty->setValue($this->task, 1);
-        $idProperty->setAccessible(false);
+        /** @var object|Task $this->task */
+        $this->task = $this->setEntityIdByReflection($this->task, 1);
         static::expectException(\RuntimeException::class);
         $this->task->setAuthor($user);
-    }
-
-    /**
-     * Check that entity validation rules are correctly set.
-     *
-     * @dataProvider provideDataToValidate
-     *
-     * @param array $data
-     *
-     * @return void
-     *
-     * @throws \Exception
-     */
-    public function testValidationRulesAreCorrectlySet(array $data): void
-    {
-        // Define an instance to validate
-        $entity = $this->task
-            ->setTitle($data['title'])
-            ->setContent($data['content']);
-        // Get validation rules from annotations
-        $validator = Validation::createValidatorBuilder()
-            ->enableAnnotationMapping()
-            ->getValidator();
-        // Validate instance
-        $errors = $validator->validate($entity);
-        // Check correct validation result for each case
-        $this->assertEquals($data['isValid'], count($errors) == 0);
     }
 
     /**

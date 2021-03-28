@@ -87,8 +87,8 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
             return [];
         }
         // Explode string depending on defined delimiter
-        $values = explode($this->delimiter, $string);
+        $array = explode($this->delimiter, $string);
 
-        return $values;
+        return $array;
     }
 }

@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Repository;
 
 use App\Repository\TaskRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class TaskRepositoryTest
@@ -14,6 +15,11 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
  */
 class TaskRepositoryTest extends KernelTestCase
 {
+    /**
+     * @var KernelInterface|null
+     */
+    protected static ?KernelInterface $kernel = null;
+
     /**
      * @var TaskRepository|null
      */
@@ -27,7 +33,7 @@ class TaskRepositoryTest extends KernelTestCase
     public function setUp(): void
     {
         parent::setUp();
-        static::bootKernel();
+        static::$kernel = static::bootKernel();
         // Access task repository private service using "static::$container"
         $this->taskRepository = static::$container->get(TaskRepository::class);
     }
@@ -134,6 +140,8 @@ class TaskRepositoryTest extends KernelTestCase
      */
     public function tearDown(): void
     {
+        static::ensureKernelShutdown();
+        static::$kernel = null;
         $this->taskRepository = null;
         parent::tearDown();
     }

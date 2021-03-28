@@ -6,10 +6,10 @@ namespace App\Tests\Unit\Form\Handler;
 
 use App\Entity\Manager\DataModelManagerInterface;
 use App\Entity\Task;
-use App\Form\Handler\FormHandlerInterface;
 use App\Form\Handler\DeleteTaskFormHandler;
+use App\Form\Handler\FormHandlerInterface;
 use App\Tests\Unit\Form\Handler\Helpers\AbstractTaskFormHandlerTestCase;
-use App\Tests\Unit\Helpers\TaskReflectionTestCaseTrait;
+use App\Tests\Unit\Helpers\EntityReflectionTestCaseTrait;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -25,8 +25,7 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
  */
 class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
 {
-    use TaskReflectionTestCaseTrait;
-
+    use EntityReflectionTestCaseTrait;
     /**
      * @var MockObject|FormFactoryInterface|null
      */
@@ -95,18 +94,18 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $request = $request ?? $this->createRequest($formData);
         // Create a new form handler instance if default request is not used!
         if (null !== $request) {
-            $this->formFactory = $this->buildFormFactory($request);
+            $this->formFactory = $this->buildFormFactory($request, Task::class);
             $this->deleteTaskHandler = new DeleteTaskFormHandler(
                 $this->formFactory,
                 $this->taskDataModelManager,
                 $this->flashBag
             );
         }
+        // Use reflection to get a fake existing task with id
         $existingTask = (new Task())
             ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
-        // Use reflection to create a form name as expected with task id
-        $existingTask = $this->setTaskIdByReflection($existingTask);
+            ->setContent('Contenu de tâche existante');
+        $existingTask = $this->setEntityIdByReflection($existingTask, 1);
         $form = $this->deleteTaskHandler->process($request, ['dataModel' => $existingTask]);
         return $form;
     }
@@ -121,7 +120,7 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->formFactory = $this->buildFormFactory($this->createRequest());
+        $this->formFactory = $this->buildFormFactory($this->createRequest(), Task::class);
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['remove', 'flush']);
         $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);

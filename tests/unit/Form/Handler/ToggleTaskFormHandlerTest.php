@@ -9,7 +9,7 @@ use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Handler\ToggleTaskFormHandler;
 use App\Tests\Unit\Form\Handler\Helpers\AbstractTaskFormHandlerTestCase;
-use App\Tests\Unit\Helpers\TaskReflectionTestCaseTrait;
+use App\Tests\Unit\Helpers\EntityReflectionTestCaseTrait;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
  */
 class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
 {
-    use TaskReflectionTestCaseTrait;
+    use EntityReflectionTestCaseTrait;
 
     /**
      * @var MockObject|FormFactoryInterface|null
@@ -95,18 +95,18 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $request = $request ?? $this->createRequest($formData);
         // Create a new form handler instance if default request is not used!
         if (null !== $request) {
-            $this->formFactory = $this->buildFormFactory($request);
+            $this->formFactory = $this->buildFormFactory($request, Task::class);
             $this->toggleTaskHandler = new ToggleTaskFormHandler(
                 $this->formFactory,
                 $this->taskDataModelManager,
                 $this->flashBag
             );
         }
+        // Use reflection to get a fake existing task with id
         $existingTask = (new Task())
             ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
-        // Use reflection to create a form name as expected with task id
-        $existingTask = $this->setTaskIdByReflection($existingTask);
+            ->setContent('Contenu de tâche existante');
+        $existingTask = $this->setEntityIdByReflection($existingTask, 1);
         $form = $this->toggleTaskHandler->process($request, ['dataModel' => $existingTask]);
         return $form;
     }
@@ -121,7 +121,7 @@ class ToggleTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->formFactory = $this->buildFormFactory($this->createRequest());
+        $this->formFactory = $this->buildFormFactory($this->createRequest(), Task::class);
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['flush']);
         $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);

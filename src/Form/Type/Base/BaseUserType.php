@@ -18,6 +18,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 /**
  * Class BaseUserType
  *
+ * @codeCoverageIgnore
+ *
  * Manage user actions form data.
  */
 class BaseUserType extends AbstractType
@@ -68,12 +70,13 @@ class BaseUserType extends AbstractType
                 'label' => 'Adresse email'
             ])
             ->add('roles', ChoiceType::class, [
-                'label'        => 'Rôle utilisateur (fonction)',
-                'choices'      => [
+                'label'          => 'Rôle utilisateur (fonction)',
+                'choices'        => [
                     'Gestionnaire de tâche' => User::ROLES['user'],
                     'Administrateur'        => User::ROLES['admin']
                 ],
-                'choice_value' => fn (string $value): string => array_search($value, User::ROLES)
+                'invalid_message' => 'Inutile d\'altérer les données autorisées !',
+                'choice_value'    => fn (string $value): string => array_search($value, User::ROLES)
             ]);
         // Transform roles data to get an array of string
         $builder
