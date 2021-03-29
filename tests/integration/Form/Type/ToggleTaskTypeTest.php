@@ -44,7 +44,7 @@ class ToggleTaskTypeTest extends AbstractFormTypeKernelTestCase
             'Fails when unexpected data are set' => [
                 // No data is expected to be submitted at this time!
                 'unexpected' => 'Test',
-                'isValid' => false
+                'isValid'    => false
             ]
         ];
     }

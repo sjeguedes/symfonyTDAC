@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Define functional tests.
  */
-class DefaultControllerWebTest extends AbstractControllerWebTestCase
+class DefaultControllerTest extends AbstractControllerWebTestCase
 {
     /**
      * Check that homepage is accessible only with authentication

@@ -14,7 +14,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
  *
  * Define functional tests for TaskController.
  */
-class TaskControllerWebTest extends AbstractControllerWebTestCase
+class TaskControllerTest extends AbstractControllerWebTestCase
 {
     /**
      * Define form fields base names.

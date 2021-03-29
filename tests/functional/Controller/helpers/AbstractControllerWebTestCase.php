@@ -29,7 +29,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     /**
      * @var KernelBrowser|null
      */
-    protected ?KernelBrowser $client = null;
+    protected ?KernelBrowser $client;
 
     /**
      * Initialize all needed instances before each test.

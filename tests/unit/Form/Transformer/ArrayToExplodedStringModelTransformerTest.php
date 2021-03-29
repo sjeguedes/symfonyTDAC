@@ -17,7 +17,7 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 class ArrayToExplodedStringModelTransformerTest extends TestCase
 {
     /**
-     * @var ArrayToExplodedStringModelTransformer|DataTransformerInterface|null
+     * @var DataTransformerInterface|null
      */
     private ?DataTransformerInterface $modelTransformer;
 
