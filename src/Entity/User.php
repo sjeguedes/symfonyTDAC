@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -17,16 +18,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @DoctrineAssert\UniqueEntity("username", message="Un utilisateur enregistré utilise déjà ce nom.")
  * @DoctrineAssert\UniqueEntity("email", message="Un utilisateur enregistré utilise déjà cette adresse.")
  *
+ * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ORM\Table("user")
- * @ORM\Entity
  */
 class User implements UserInterface
 {
     /**
      * Define roles representation.
+     *
+     * IMPORTANT: don't use space after comma "," due to data transformation logic!
      */
     const ROLES = [
-        'admin' => 'ROLE_ADMIN, ROLE_USER',
+        'admin' => 'ROLE_ADMIN,ROLE_USER',
         'user'  => 'ROLE_USER'
     ];
 
@@ -67,10 +70,12 @@ class User implements UserInterface
      *
      * @Assert\NotBlank(message="Vous devez saisir un mot de passe.")
      * @Assert\Regex(
-     *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,20}$/",
+     *     groups={"user_creation", "user_update"},
+     *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$/",
      *     message="Le format attendu n'est pas respecté. (voir aide)"
      * )
      * @ORM\Column(type="string", length=98)
+     *
      */
     private ?string $password;
 

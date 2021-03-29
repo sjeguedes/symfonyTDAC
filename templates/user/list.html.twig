@@ -5,7 +5,7 @@
 {% block header_title %}<h1>Liste des utilisateurs</h1>{% endblock %}
 
 {% block body %}
-    {% if users|length == 0 %}
+    {% if view_model.users|length == 0 %}
         <div class="alert alert-warning" role="alert">
             Il n'y a pas encore d'utilisateur enregistré. <a href="{{ path('user_create') }}" class="btn btn-warning pull-right">Créer un utilisateur</a>
         </div>
@@ -21,13 +21,42 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for user in users %}
+                {% for user in  view_model.users %}
                     <tr>
                         <th scope="row">{{ loop.index }}</th>
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
                         <td>
-                            <a href="{{ path('user_edit', {'id' : user.id}) }}" class="btn btn-success btn-sm">Edit</a>
+                            {# Added user deletion form errors managed by Symfony as a better practice! #}
+                            {% set delete_form = view_model.deleteUserFormViews[user.id] %}
+                            <div id="user-{{ user.id }}-forms-errors"
+                                    {{ delete_form.vars.errors is not empty  ? 'class="m-b clearfix"' : '' }}
+                            >
+                                {{ form_errors(delete_form) }}
+                            </div>
+                            <a href="{{ path('user_edit', {'id' : user.id}) }}" title="Modifier l'utilisateur"
+                               class="btn btn-info btn-sm pull-left mr"
+                            >
+                                <span class="glyphicon glyphicon-pencil"></span>
+                            </a>
+                            {# Added deletion form managed by Symfony as a better practice! #}
+                            <div id="user-{{ user.id }}-deletion-form" class="pull-left">
+                                {{ form_start(delete_form, {
+                                    'action' : path(
+                                        'user_delete',
+                                        {'id' : user.id}
+                                    )
+                                }) }}
+                                {# No field to display at this time but maybe errors #}
+                                {{ form_rest(delete_form) }}
+                                <button type="submit" title="Supprimer l'utilisateur définitivement"
+                                        id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm"
+                                >
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                    {#Supprimer#}
+                                </button>
+                                {{ form_end(delete_form) }}
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}

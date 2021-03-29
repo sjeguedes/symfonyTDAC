@@ -11,7 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * TaskRepository class
  *
- * Manage queries in database as an entity data layer.
+ * Manage queries in database as a Task entity data layer.
  */
 class TaskRepository extends ServiceEntityRepository
 {
@@ -29,10 +29,11 @@ class TaskRepository extends ServiceEntityRepository
      * Find all the tasks or filter list by status depending on "isDone" state
      * as an array of data.
      *
-     * Please note that no data is an hydrated object (scalar result) for a matter of performance.
+     * Please note that no data is used as hydrated object (scalar result) for a matter of performance.
      * Results have custom selected data to show in a view.
      *
      * @param string|null $withStatus
+     *
      * @return array
      */
     public function findList(string $withStatus = null): array

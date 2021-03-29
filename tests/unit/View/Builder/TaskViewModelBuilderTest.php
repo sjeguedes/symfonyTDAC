@@ -169,7 +169,7 @@ class TaskViewModelBuilderTest extends TestCase
         $testObject = new \stdClass();
         static::expectException(\RuntimeException::class);
         static::expectExceptionMessage(
-            sprintf('"form" merged data must implement %s',FormInterface::class)
+            sprintf('"form" merged view data must implement %s',FormInterface::class)
         );
         $this->viewModelBuilder->create($viewReference, ['form' => $testObject]);
     }

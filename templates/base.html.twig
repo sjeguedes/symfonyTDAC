@@ -44,18 +44,22 @@
         <div class="container">
             <div class="row mb">
                 <div class="col-md-12">
-                    <a href="{{ path('user_create') }}" title="Ajouter un nouvel utilisateur" class="btn btn-primary">
+                    <a href="{{ path('user_create') }}" title="Ajouter un nouvel utilisateur" class="btn btn-primary mr">
                         Créer un utilisateur
                     </a>
-
                     {% if app.user %}
+                    <a href="{{ path('user_list') }}" title="Accéder à l'ensemble des utilisateurs"
+                       class="btn btn-default"
+                    >
+                        Consulter la liste des utilisateurs
+                    </a>
                     <a href="{{ path('logout') }}" title="Ne plus être authentifié" class="pull-right btn btn-danger">
                         Se déconnecter
                     </a>
                     {% endif %}
 
                     {% if not app.user and 'login' != app.request.attributes.get('_route') %}
-                    <a href="{{ path('login') }}" title="S'authentifier" class="btn btn-success">
+                    <a href="{{ path('login') }}" title="S'authentifier" class="pull-right btn btn-success">
                         Se connecter
                     </a>
                     {% endif %}

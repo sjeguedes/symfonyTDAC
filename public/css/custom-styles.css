@@ -64,6 +64,8 @@ footer {
 .mb { margin-bottom: 15px; }
 .ml { margin-left: 15px; }
 
+.mb-8 { margin-bottom: 8px }
+
 .m-t { margin-top: -15px; }
 .m-b { margin-bottom: -15px; }
 .m-b-20 { margin-bottom: -20px; }
@@ -75,7 +77,7 @@ footer {
 .mh-35 { min-height: 35px; }
 .mh-100 { min-height: 100px; }
 
-.ts { font-size:85% }
+.ts { font-size: 85% }
 
 /* Override Bootstrap collapse for task content */
 .task .collapse.in { display: inline; }

@@ -5,39 +5,39 @@ declare(strict_types=1);
 namespace App\Form\Handler;
 
 use App\Entity\Manager\DataModelManagerInterface;
-use App\Entity\Task;
-use App\Form\Type\DeleteTaskType;
+use App\Entity\User;
+use App\Form\Type\DeleteUserType;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
- * Class DeleteTaskFormHandler
+ * Class DeleteUserFormHandler
  *
- * Handle a form in order to delete a task.
+ * Handle a form in order to delete a user.
  */
-class DeleteTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
+class DeleteUserFormHandler extends AbstractFormHandler implements FormValidationStateInterface
 {
     /**
      * @var DataModelManagerInterface
      */
-    private DataModelManagerInterface $taskDataModelManager;
+    private DataModelManagerInterface $userDataModelManager;
 
     /**
-     * DeleteTaskFormHandler constructor.
+     * DeleteUserFormHandler constructor.
      *
      * @param FormFactoryInterface      $formFactory
-     * @param DataModelManagerInterface $taskDataModelManager
+     * @param DataModelManagerInterface $userDataModelManager
      * @param FlashBagInterface         $flashBag
      */
     public function __construct(
         FormFactoryInterface $formFactory,
-        DataModelManagerInterface $taskDataModelManager,
+        DataModelManagerInterface $userDataModelManager,
         FlashBagInterface $flashBag
     ) {
-        parent::__construct($formFactory, 'delete_task', DeleteTaskType::class, $flashBag);
+        parent::__construct($formFactory, 'delete_user', DeleteUserType::class, $flashBag);
         // Multiple identical forms of same type will be displayed!
         $this->isFormNameIndexed = true;
-        $this->taskDataModelManager = $taskDataModelManager;
+        $this->userDataModelManager = $userDataModelManager;
     }
 
     /**
@@ -51,16 +51,18 @@ class DeleteTaskFormHandler extends AbstractFormHandler implements FormValidatio
         if (!$isSuccess = $isSuccess ?? $this->isSuccess()) {
             return false;
         }
-        // Remove existing task as expected, and save form data
-        /** @var Task $task */
-        $task = $this->getDataModel();
-        // Task was deleted correctly!
-        if ($this->taskDataModelManager->delete($task)) {
+        // Remove existing user as expected, and save form data
+        /** @var User $user */
+        $user = $this->getDataModel();
+        // User was deleted correctly!
+        if ($this->userDataModelManager->delete($user)) {
             // Store success message in session before redirection
-            $this->flashBag->add('success', 'La tâche a bien été supprimée.');
+            $this->flashBag->add('success', 'L\'utilisateur a bien été supprimé.');
 
             return true;
         }
+        // Inform that an error happened in process!
+        $this->flashBag->add('error', 'Un problème est survenu !');
 
         return false;
     }

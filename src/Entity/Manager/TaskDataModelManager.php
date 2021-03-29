@@ -75,8 +75,6 @@ class TaskDataModelManager extends AbstractDataModelManager
      * @param Task $task
      *
      * @return bool
-     *
-     * @throws \Exception
      */
     public function delete(Task $task): bool
     {

@@ -9,7 +9,6 @@ use App\Form\Type\DeleteTaskType;
 use App\Form\Type\ToggleTaskType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormTypeInterface;
-use Symfony\Component\Form\FormView;
 
 /**
  * Class TaskViewModelBuilder
@@ -30,9 +29,9 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     ];
 
     /**
-     * Define form types.
+     * Define form types which are multiple on the same view.
      */
-    private const FORM_TYPES = [
+    public const FORM_TYPES = [
         'toggle_task' => ToggleTaskType::class,
         'delete_task' => DeleteTaskType::class
     ];
@@ -70,53 +69,6 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     }
 
     /**
-     * Generate multiple identical form views and optionally keep submitted current form state.
-     *
-     * @param array              $tasks         a Task collection
-     * @param string             $viewReference a label to select the associated view
-     * @param string             $withStatus    a task list "isDone" status to filter and render it
-     * @param FormInterface|null $currentForm   a form already in use among the other ones (with form views)
-     *
-     * @return array|FormView[]
-     */
-    private function generateMultipleFormViews(
-        array $tasks,
-        string $viewReference,
-        string $withStatus = null,
-        FormInterface $currentForm = null
-    ): array {
-        $multipleFormViews = [];
-        $length = \count($tasks);
-        $formNamePrefix = $viewReference . '_';
-        // Current (submitted) task toggle form name does not contain an integer as suffix!
-        if (null !== $currentForm && !preg_match('/(\d+)$/', $currentForm->getName(), $matches)) {
-            throw new \RuntimeException("Current form name suffix is expected to be an integer as index!");
-        }
-        $suffixIdAsInt = isset($matches) && 2 === \count($matches) ? $matches[1] : null;
-        for ($i = 0; $i < $length; $i++) {
-            // CAUTION: "id" is returned as string value!
-            $taskId = $tasks[$i]['id'];
-            // Create current (submitted) form view if not null with its actual state!
-            if (null !== $suffixIdAsInt && \intval($taskId) === \intval($suffixIdAsInt)) {
-                $form = $currentForm;
-            } else {
-                // Create other identical forms views
-                $formTypeClassName = self::FORM_TYPES[$viewReference];
-                $form = $this->formFactory->createNamed(
-                    $formNamePrefix . $taskId,
-                    $formTypeClassName
-                );
-            }
-            $formView = $form->createView();
-            // Pass "withStatus" data to form view
-            null === $withStatus ?: $formView->vars['list_status'] = $withStatus;
-            $multipleFormViews[$taskId] = $formView;
-        }
-
-        return $multipleFormViews;
-    }
-
-    /**
      * Get current submitted form type instance.
      *
      * @param object $currentForm
@@ -131,7 +83,7 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         /** @var  FormInterface $currentForm */
         if (!$currentForm instanceof FormInterface) {
             throw new \RuntimeException(
-                sprintf('"form" merged data must implement %s',FormInterface::class)
+                sprintf('"form" merged view data must implement %s',FormInterface::class)
             );
         }
 

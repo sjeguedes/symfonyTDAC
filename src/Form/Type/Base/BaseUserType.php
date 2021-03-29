@@ -94,8 +94,11 @@ class BaseUserType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class'    => User::class,
-            'csrf_token_id' => 'user_action' // TODO: transfer and modify this later per action!
+            'data_class'        => User::class,
+            'csrf_token_id'     => 'user_action', // TODO: transfer and modify this later per action!
+            // Use validation groups to exclude some fields for other user form types
+            // (e.g. avoid password format validation error for user deletion)
+            'validation_groups' => ['Default', 'user_creation', 'user_update'],
         ]);
     }
 }

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 /**
  * Class ToggleTaskFormHandler
  *
- * Handle a form in order to update a task.
+ * Handle a form in order to toggle a task "isDone" state.
  */
 class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidationStateInterface
 {
@@ -23,7 +23,7 @@ class ToggleTaskFormHandler extends AbstractFormHandler implements FormValidatio
     private DataModelManagerInterface $taskDataModelManager;
 
     /**
-     * EditTaskFormHandler constructor.
+     * ToggleTaskFormHandler constructor.
      *
      * @param FormFactoryInterface      $formFactory
      * @param DataModelManagerInterface $taskDataModelManager

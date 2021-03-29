@@ -32,6 +32,7 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    # define TaskController services
     App\Controller\TaskController:
         arguments:
             $viewModelBuilder: '@App\View\Builder\TaskViewModelBuilder'
@@ -40,6 +41,13 @@ services:
             $editTaskHandler: '@App\Form\Handler\EditTaskFormHandler'
             $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
             $deleteTaskHandler: '@App\Form\Handler\DeleteTaskFormHandler'
+
+    # define UserController services
+    App\Controller\UserController:
+        arguments:
+            $viewModelBuilder: '@App\View\Builder\UserViewModelBuilder'
+        bind:
+            $deleteUserHandler: '@App\Form\Handler\DeleteUserFormHandler'
 
     # define services in this directory as Doctrine fixtures
     App\DataFixtures\:
@@ -52,6 +60,9 @@ services:
 
     # define task data model manager as a service
     App\Entity\Manager\TaskDataModelManager: ~
+
+    # define user data model manager as a service
+    App\Entity\Manager\UserDataModelManager: ~
 
     # define task creation form handler as a service with concrete dependencies
     App\Form\Handler\CreateTaskFormHandler:
@@ -73,6 +84,11 @@ services:
         arguments:
             $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
 
+    # define user deletion form handler as a service with concrete dependencies
+    App\Form\Handler\DeleteUserFormHandler:
+        arguments:
+            $userDataModelManager: '@App\Entity\Manager\UserDataModelManager'
+
     # define user base form type as a service with concrete dependencies
     App\Form\Type\Base\BaseUserType:
         arguments:
@@ -80,6 +96,9 @@ services:
 
     # define task actions view model builder as a service
     App\View\Builder\TaskViewModelBuilder: ~
+
+    # define user actions view model builder as a service
+    App\View\Builder\UserViewModelBuilder: ~
 
     # define flash bag as lazy service
     Symfony\Component\HttpFoundation\Session\Flash\FlashBag:

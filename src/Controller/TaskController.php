@@ -45,7 +45,7 @@ class TaskController extends AbstractController
      *
      * @Route("/tasks", name="task_list", methods={"GET"})
      */
-    public function listAction(Request $request): Response
+    public function listTaskAction(Request $request): Response
     {
         // In order to select tasks, "isDone" status filter may exist!
         return $this->render('task/list.html.twig', [
@@ -68,7 +68,7 @@ class TaskController extends AbstractController
      *
      * @throws \Exception
      */
-    public function createAction(
+    public function createTaskAction(
         Request $request,
         FormHandlerInterface $createTaskHandler,
         DataModelFactoryInterface $dataModelFactory
@@ -102,7 +102,7 @@ class TaskController extends AbstractController
      *
      * @Route("/tasks/{id}/edit", name="task_edit", methods={"GET", "POST"})
      */
-    public function editAction(
+    public function editTaskAction(
         Task $task,
         Request $request,
         FormHandlerInterface $editTaskHandler
