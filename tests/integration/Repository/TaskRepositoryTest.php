@@ -121,6 +121,7 @@ class TaskRepositoryTest extends KernelTestCase
         static::assertArrayHasKey('updatedAt', $tasksData[0]);
         static::assertArrayHasKey('author', $tasksData[0]);
         static::assertArrayHasKey('lastEditor', $tasksData[0]);
+        static::assertCount(8, $tasksData[0]);
         // Check that task data includes dates already formatted thanks to MySQL
         $correspondingTaskInstance = $this->taskRepository->find(1);
         static::assertSame(
