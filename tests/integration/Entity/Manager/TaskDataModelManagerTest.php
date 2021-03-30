@@ -52,7 +52,7 @@ class TaskDataModelManagerTest extends KernelTestCase
         static::$kernel = static::bootKernel();
         // Access entity manager public service using the kernel
         $this->entityManager = static::$kernel->getContainer()->get('doctrine')->getManager();
-        // Access task data model manager private service using static::$container
+        /// Access logger private service using "static::$container"
         $this->logger = static::$container->get('logger');
         // Set task data model manager instance
         $this->taskDataModelManager = new TaskDataModelManager(
@@ -93,6 +93,7 @@ class TaskDataModelManagerTest extends KernelTestCase
      */
     public function testTaskCreationWillSetAUserAsAuthor(): void
     {
+        // Call "create" method
         $data = $this->createTaskInDatabase();
         static::assertEquals($data['newTask'], $data['dataModel']);
         static::assertEquals(1, $data['newTask']->getAuthor()->getId());
@@ -202,7 +203,7 @@ class TaskDataModelManagerTest extends KernelTestCase
         // Remove first task in list
         $this->taskDataModelManager->delete($previousTaskList[0]);
         $nextTaskList = $taskRepository->findAll();
-        static::assertSame(\count($previousTaskList) - 1, \count($nextTaskList) );
+        static::assertSame(\count($previousTaskList) - 1, \count($nextTaskList));
     }
 
     /**
