@@ -117,6 +117,7 @@ class UserViewModelBuilder extends AbstractViewModelBuilder
         $this->viewModel->deleteUserFormViews = $this->generateMultipleFormViews(
             $users,
             self::VIEW_NAMES['deleteUser'],
+            null,
             $isCurrentDeletionForm ? $currentForm : null
         );
     }

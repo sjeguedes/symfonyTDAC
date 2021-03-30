@@ -76,7 +76,7 @@ class TaskViewModelBuilderTest extends TestCase
     /**
      * Get a test task collection scalar set of data.
      *
-     * @return array an array of Tasks data without objects hydrating
+     * @return array an array of tasks data without objects hydrating
      */
     private function getTaskCollectionScalarData(): array
     {
@@ -145,7 +145,7 @@ class TaskViewModelBuilderTest extends TestCase
     /**
      * Check that task view model builder cannot create an instance using wrong "form" merged data instance.
      *
-     * Please note that this "form" data is used in "toggle" and "deletion" views.
+     * Please note that this "form" data is used in task "toggle" and "deletion" views.
      *
      * @dataProvider provideViewReferenceToCheckFormInstanceTypeInMergedData
      *
