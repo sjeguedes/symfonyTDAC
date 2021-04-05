@@ -6,13 +6,14 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\Handler\FormHandlerInterface;
-use App\Form\Type\Base\BaseUserType;
+use App\Form\Type\CreateUserType;
+use App\Form\Type\EditUserType;
 use App\View\Builder\ViewModelBuilderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use \Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
@@ -55,17 +56,21 @@ class UserController extends AbstractController
     /**
      * Create a User entity and save data.
      *
-     * @param Request                      $request
+     * @param Request $request
      * @param UserPasswordEncoderInterface $userPasswordEncoder
      *
      * @return RedirectResponse|Response
      *
-     * @Route("/users/create", name="user_create")
+     * @Route("/users/create", name="user_create", methods={"GET", "POST"})
+     *
+     * @throws \Exception
      */
-    public function createUserAction(Request $request, UserPasswordEncoderInterface $userPasswordEncoder)
-    {
+    public function createUserAction(
+        Request $request,
+        UserPasswordEncoderInterface $userPasswordEncoder
+    ): Response {
         $user = new User();
-        $form = $this->createForm(BaseUserType::class, $user);
+        $form = $this->createForm(CreateUserType::class, $user);
 
         $form->handleRequest($request);
 
@@ -98,7 +103,7 @@ class UserController extends AbstractController
      */
     public function editUserAction(Request $request, User $user, UserPasswordEncoderInterface $userPasswordEncoder)
     {
-        $form = $this->createForm(BaseUserType::class, $user);
+        $form = $this->createForm(EditUserType::class, $user);
 
         $form->handleRequest($request);
 

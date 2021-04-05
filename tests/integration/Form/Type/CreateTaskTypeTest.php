@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integation\Form\Type;
+namespace App\Tests\Integration\Form\Type;
 
 use App\Entity\Task;
 use App\Form\Type\CreateTaskType;
@@ -38,40 +38,46 @@ class CreateTaskTypeTest extends AbstractFormTypeKernelTestCase
             'Succeeds when data are correct' => [
                 'title'   => 'Nouvelle tâche',
                 'content' => 'Ceci est une description de nouvelle tâche.',
-                'isValid' => true
+                'isSynchronized' => true,
+                'isValid'        => true
             ]
         ];
         yield [
             'Fails when title data is not unique (unique entity constraint)' => [
                 'title'   => 'Task 1: et', // Task 1 real title which exists in test database
                 'content' => 'Ceci est une description de nouvelle tâche.',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
             'Fails when title data is blank' => [
                 'title'   => '',
                 'content' => 'Ceci est une description de nouvelle tâche.',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
-            'Fails when content is blank' => [
+            'Fails when content data is blank' => [
                 'title'   => 'Nouvelle tâche',
                 'content' => '',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
             'Fails when title data is not set' => [
                 'content' => 'Ceci est une description de nouvelle tâche.',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
-            'Fails when content is not set' => [
+            'Fails when content data is not set' => [
                 'title'   => 'Nouvelle tâche',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
     }
@@ -98,6 +104,7 @@ class CreateTaskTypeTest extends AbstractFormTypeKernelTestCase
                 'content' => $content
             ]
         ];
+        // Create a real form
         $form = $this->createForm(CreateTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
@@ -106,9 +113,6 @@ class CreateTaskTypeTest extends AbstractFormTypeKernelTestCase
 
     /**
      * Check that expected data are validated when task creation form is submitted.
-     *
-     * Please note that each validation constraint is already checked
-     * in TaskTest::testValidationRulesAreCorrectlySet().
      *
      * @dataProvider provideDataStructureToValidate
      *
@@ -123,34 +127,51 @@ class CreateTaskTypeTest extends AbstractFormTypeKernelTestCase
         $dataModel = new Task();
         $isValid = $data['isValid'];
         // Use arrow function combined to array filtering with flag based on key
-        $formData = array_filter($data, fn ($key) => 'isValid' !== $key, ARRAY_FILTER_USE_KEY);
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(CreateTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit(['task' => $formData]);
-        //dd($form->getErrors());
         static::assertSame($isValid, $form->isValid());
     }
 
     /**
      * Check that data transformation is correctly made when task creation form is submitted.
      *
+     * @dataProvider provideDataStructureToValidate
+     *
+     * @param array $data
+     *
      * @return void
      *
      * @throws \Exception
      */
-    public function testSubmittedNewTaskDataTransformation(): void
+    public function testSubmittedNewTaskDataTransformation(array $data): void
     {
         $dataModel = new Task();
-        $formData = [
-            'task' => [
-                'title'   => 'Titre de tâche',
-                'content' => 'Description de tâche'
-            ]
-        ];
+        $isSynchronized = $data['isSynchronized'];
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(CreateTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
-        $form->submit($formData);
-        static::assertTrue($form->isSynchronized());
+        $form->submit(['task' => $formData]);
+        $transformationFailure = 0;
+        foreach ($form->get('task') as $childForm) {
+            if (null !== $childForm->getTransformationFailure()) {
+                $transformationFailure++;
+                break;
+            }
+        }
+        // Make use of "$form->isSynchronized()" is not adapted and correct!
+        static::assertSame($isSynchronized, 0 === $transformationFailure);
     }
 
     /**

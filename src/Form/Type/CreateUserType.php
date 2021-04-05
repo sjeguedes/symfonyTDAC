@@ -44,7 +44,10 @@ class CreateUserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class'    => User::class,
-            'csrf_token_id' => 'create_user_action'
+            'csrf_token_id' => 'create_user_action',
+            // Use validation groups to exclude some fields for other user form types
+            // (e.g. avoid password format validation error for user deletion)
+            'validation_groups' => ['Default', 'user_creation']
         ]);
     }
 }

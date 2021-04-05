@@ -102,10 +102,10 @@ class ArrayToExplodedStringModelTransformerTest extends TestCase
     {
         $result = $this->modelTransformer->transform(['string1', 'string2', 'string3']);
         // Get a delimited string
-        static::assertSame('string1,string2,string3', $result);
+        static::assertSame('string1, string2, string3', $result);
         // Get a trimmed and cleaned delimited string provided by array values
         $result = $this->modelTransformer->transform(['  string1', '  string2 ', ' string3 ']);
-        static::assertSame('string1,string2,string3', $result);
+        static::assertSame('string1, string2, string3', $result);
     }
 
     /**
@@ -147,7 +147,7 @@ class ArrayToExplodedStringModelTransformerTest extends TestCase
      */
     public function testReverseTransformationIsOkWhenValueIsAString(): void
     {
-        $result = $this->modelTransformer->reverseTransform('string1,string2,string3');
+        $result = $this->modelTransformer->reverseTransform('string1, string2, string3');
         // Get a delimited string
         static::assertSame(['string1', 'string2' , 'string3'], $result);
         // Get an array based on trimmed and cleaned delimited string

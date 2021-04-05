@@ -51,23 +51,8 @@ class BaseUserType extends AbstractType
     {
         $builder
             ->add('username', TextType::class, [
-                'label' => "Nom d'utilisateur"
-            ])
-            ->add('password', RepeatedType::class, [
-                'type'            => PasswordType::class,
-                'invalid_message' => 'Les deux mots de passe doivent correspondre.',
-                'first_options'   => [
-                    'label'     => 'Mot de passe',
-                    'help'      => '8 à 20 caractères sans espace, avec au moins 1 majuscule, 1 minuscule, 
-                                1 chiffre, 1 caractère spécial (exemple : Azerty1$)',
-                    'help_attr' => ['class' => 'ts'] // small typography
-                ],
-                'second_options'  => [
-                    'label' => 'Tapez le mot de passe à nouveau'
-                ]
-            ])
-            ->add('email', EmailType::class, [
-                'label' => 'Adresse email'
+                'label'      => "Nom d'utilisateur",
+                'empty_data' => ''
             ])
             ->add('roles', ChoiceType::class, [
                 'label'          => 'Rôle utilisateur (fonction)',
@@ -75,12 +60,34 @@ class BaseUserType extends AbstractType
                     'Gestionnaire de tâche' => User::ROLES['user'],
                     'Administrateur'        => User::ROLES['admin']
                 ],
-                'invalid_message' => 'Inutile d\'altérer les données autorisées !',
-                'choice_value'    => fn (string $value): string => array_search($value, User::ROLES)
+                'invalid_message' => 'Inutile d\'altérer les données autorisées !'
+                // No "empty_data => ''" option is used here since "ROLE_USER" is set by default (also in constructor)!
+            ])
+            ->add('email', EmailType::class, [
+                'label'      => 'Adresse email',
+                'empty_data' => ''
+            ])
+            ->add('password', RepeatedType::class, [
+                'type'            => PasswordType::class,
+                'options'         => [
+                    'always_empty' => false // keep previous filled in value with repeated type options array
+                ],
+                'invalid_message' => 'Les deux mots de passe doivent correspondre.',
+                'first_options'   => [
+                    'label'     => 'Mot de passe',
+                    'help'      => '8 à 20 caractères sans espace, avec au moins 1 majuscule, 1 minuscule, 
+                                    1 chiffre, 1 caractère spécial (exemple : Azerty1$)',
+                    'help_attr' => ['class' => 'ts'] // small typography
+                ],
+                'second_options'  => [
+                    'label' => 'Tapez le mot de passe à nouveau'
+                ],
+                'empty_data'      => ''
             ]);
         // Transform roles data to get an array of string
         $builder
             ->get('roles')
+            // Add custom data transformer
             ->addModelTransformer($this->dataTransformer);
     }
 
@@ -94,11 +101,8 @@ class BaseUserType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class'        => User::class,
-            'csrf_token_id'     => 'user_action', // TODO: transfer and modify this later per action!
-            // Use validation groups to exclude some fields for other user form types
-            // (e.g. avoid password format validation error for user deletion)
-            'validation_groups' => ['Default', 'user_creation', 'user_update'],
+            // Inherit from parent form type "data_class"
+            'inherit_data' => true
         ]);
     }
 }

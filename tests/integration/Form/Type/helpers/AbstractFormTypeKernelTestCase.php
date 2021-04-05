@@ -16,6 +16,7 @@ use Symfony\Component\Form\Forms;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Validator\ContainerConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class AbstractFormTypeKernelTestCase
@@ -43,6 +44,11 @@ abstract class AbstractFormTypeKernelTestCase extends KernelTestCase
     protected ?ObjectManager $entityManager = null;
 
     /**
+     * @var ValidatorInterface|null
+     */
+    protected ?ValidatorInterface $validator;
+
+    /**
      * Setup needed instance(s).
      *
      * @return void
@@ -60,7 +66,7 @@ abstract class AbstractFormTypeKernelTestCase extends KernelTestCase
         // Set UniqueEntityValidator service in special container.
         $container->set('doctrine.orm.validator.unique', new UniqueEntityValidator($managerRegistry));
         // Get Validator with unique entity constraint and other ones
-        $validator = Validation::createValidatorBuilder()
+        $this->validator = Validation::createValidatorBuilder()
             // Feed UniqueEntityValidator instance thanks to factory
             ->setConstraintValidatorFactory(new ContainerConstraintValidatorFactory($container))
             // Get all entity constraint declared in annotations
@@ -68,7 +74,7 @@ abstract class AbstractFormTypeKernelTestCase extends KernelTestCase
             ->getValidator();
         // Configure and create form factory
         $this->formFactory = Forms::createFormFactoryBuilder()
-            ->addExtension(new ValidatorExtension($validator))
+            ->addExtension(new ValidatorExtension($this->validator))
             ->getFormFactory();
         // Feed entity manager
         $this->entityManager = $managerRegistry->getManager();
@@ -77,20 +83,20 @@ abstract class AbstractFormTypeKernelTestCase extends KernelTestCase
     /**
      * Create a form with form factory service.
      *
-     * @param string $formTypeName
+     * @param string $formTypeClassName a F.Q.C.N
      * @param object $dataModel
      * @param array  $options
      *
      * @return FormInterface
      */
-    protected function createForm(string $formTypeName, object $dataModel, array $options = []): FormInterface
+    protected function createForm(string $formTypeClassName, object $dataModel, array $options = []): FormInterface
     {
         $defaultOptions = [
             // Define common default options here if needed!
         ];
         $options = empty($options) ? $defaultOptions : array_merge($defaultOptions, $options);
 
-        return $this->formFactory->create($formTypeName, $dataModel, $options);
+        return $this->formFactory->create($formTypeClassName, $dataModel, $options);
     }
 
     /**
@@ -102,6 +108,7 @@ abstract class AbstractFormTypeKernelTestCase extends KernelTestCase
     {
         static::ensureKernelShutdown();
         static::$kernel = null;
+        $this->validator = null;
         $this->entityManager->close();
         $this->entityManager = null;
         $this->formFactory = null;

@@ -47,7 +47,7 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
     /**
      * Transform (from model to view) an array into a delimited string.
      *
-     * @param array|null $array Array to transform
+     * @param array|null $array an array to transform
      *
      * @return string
      *
@@ -65,8 +65,12 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
         }
         // Implode array with defined delimiter
         $string = trim(implode($this->delimiter, $array));
-        // Get a trimmed and cleaned delimited string
-        $string = preg_replace('/(\s*)' . $this->delimiter . '(\s*)/', $this->delimiter, $string);
+        // Get a trimmed and cleaned (by keeping one space after delimiter) delimited string
+        $string = preg_replace(
+            '/(\s*)' . $this->delimiter . '(\s*)/',
+            $this->delimiter . ' ', // keep one space
+            $string
+        );
 
         return $string;
     }
@@ -74,7 +78,7 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
     /**
      * Reverse-transform (from view to model) a delimited string into an array.
      *
-     * @param string $string String to transform
+     * @param string|null $string a string to transform
      *
      * @return array
      *
@@ -94,9 +98,13 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
         if (0 === \strlen(preg_replace('/\s|' . $this->delimiter. '/', '',  $string))) {
             return [];
         }
-        // Explode trimmed and cleaned string depending on defined delimiter
-        $string = preg_replace('/(\s*)' . $this->delimiter . '(\s*)/', $this->delimiter, $string);
-        $array = explode($this->delimiter, trim($string));
+        // Explode trimmed and cleaned (by keeping one space after delimiter) string depending on defined delimiter
+        $string = preg_replace(
+            '/(\s*)' . $this->delimiter . '(\s*)/',
+            $this->delimiter . ' ', // keep one space
+            $string
+        );
+        $array = explode($this->delimiter . ' ', trim($string));
 
         return $array;
     }

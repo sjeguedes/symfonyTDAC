@@ -26,10 +26,10 @@ class User implements UserInterface
     /**
      * Define roles representation.
      *
-     * IMPORTANT: don't use space after comma "," due to data transformation logic!
+     * IMPORTANT: pay attention on space after comma "," due to data transformation logic!
      */
     const ROLES = [
-        'admin' => 'ROLE_ADMIN,ROLE_USER',
+        'admin' => 'ROLE_ADMIN, ROLE_USER',
         'user'  => 'ROLE_USER'
     ];
 
@@ -71,7 +71,7 @@ class User implements UserInterface
      * @Assert\NotBlank(message="Vous devez saisir un mot de passe.")
      * @Assert\Regex(
      *     groups={"user_creation", "user_update"},
-     *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$/",
+     *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,20}$/",
      *     message="Le format attendu n'est pas respecté. (voir aide)"
      * )
      * @ORM\Column(type="string", length=98)
