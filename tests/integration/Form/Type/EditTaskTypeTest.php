@@ -38,40 +38,46 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
             'Succeeds when data are correct' => [
                 'title'   => 'Tâche modifiée',
                 'content' => 'Ceci est une description de tâche modifiée.',
-                'isValid' => true
+                'isSynchronized' => true,
+                'isValid'        => true
             ]
         ];
         yield [
             'Fails when title data is not unique (unique entity constraint)' => [
-                'title'   => 'Task 1: et', // Task 1 real title which exists in test database
+                'title'   => 'Task 2: voluptatem', // Task 2 real title which exists in test database
                 'content' => 'Ceci est une description de tâche modifiée.',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
             'Fails when title data is blank' => [
                 'title'   => '',
                 'content' => 'Ceci est une description de tâche modifiée.',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
             'Fails when content is blank' => [
                 'title'   => 'Tâche modifiée',
                 'content' => '',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
             'Fails when title data is not set' => [
                 'content' => 'Ceci est une description de tâche modifiée.',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
         yield [
             'Fails when content is not set' => [
                 'title'   => 'Tâche modifiée',
-                'isValid' => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
     }
@@ -85,9 +91,8 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
      */
     public function testSubmittedModifiedTaskFormMapping(): void
     {
-        $dataModel = (new Task())
-        ->setTitle('Titre de tâche existante')
-        ->setContent('Description de tâche existante');
+        // Get existing task with id "1"
+        $dataModel = $this->entityManager->getRepository(Task::class)->find(1);
         $title = 'Titre de tâche modifiée';
         $content = 'Description de tâche modifiée';
         // Clone data model to get the same data automatically set in constructor
@@ -100,6 +105,7 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
                 'content' => $content
             ]
         ];
+        // Create a real form
         $form = $this->createForm(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
@@ -108,9 +114,6 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
 
     /**
      * Check that expected data are validated when task modification form is submitted.
-     *
-     * Please note that each validation constraint is already checked
-     * in TaskTest::testValidationRulesAreCorrectlySet().
      *
      * @dataProvider provideDataStructureToValidate
      *
@@ -122,39 +125,57 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
      */
     public function testSubmittedModifiedTaskDataValidation(array $data): void
     {
-        $dataModel = (new Task())
-            ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
+        // Get existing task with id "1"
+        $dataModel = $this->entityManager->getRepository(Task::class)->find(1);
+        $isValid = $data['isValid'];
         // Use arrow function combined to array filtering with flag based on key
-        $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit(['task' => $formData]);
-        static::assertSame($data['isValid'], $form->isValid());
+        static::assertSame($isValid, $form->isValid());
     }
 
     /**
      * Check that data transformation is correctly made when task modification form is submitted.
      *
+     * @dataProvider provideDataStructureToValidate
+     *
+     * @param array $data
+     *
      * @return void
      *
      * @throws \Exception
      */
-    public function testSubmittedModifiedTaskDataTransformation(): void
+    public function testSubmittedModifiedTaskDataTransformation(array $data): void
     {
-        $dataModel = (new Task())
-            ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
-        $formData = [
-            'task' => [
-                'title'   => 'Titre de tâche modifiée',
-                'content' => 'Description de tâche modifiée'
-            ]
-        ];
+        // Get existing task with id "1"
+        $dataModel = $this->entityManager->getRepository(Task::class)->find(1);
+        $isSynchronized = $data['isSynchronized'];
+        // Use arrow function combined to array filtering with flag based on key
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(EditTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
-        $form->submit($formData);
-        static::assertTrue($form->isSynchronized());
+        $form->submit(['task' => $formData]);
+        $transformationFailure = 0;
+        foreach ($form->get('task') as $childForm) {
+            if (null !== $childForm->getTransformationFailure()) {
+                $transformationFailure++;
+                break;
+            }
+        }
+        // Make use of "$form->isSynchronized()" is not adapted and correct!
+        static::assertSame($isSynchronized, 0 === $transformationFailure);
     }
 
     /**

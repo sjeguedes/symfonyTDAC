@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -70,7 +71,16 @@ class BaseUserType extends AbstractType
             ->add('password', RepeatedType::class, [
                 'type'            => PasswordType::class,
                 'options'         => [
-                    'always_empty' => false // keep previous filled in value with repeated type options array
+                    // Keep previous filled in value with repeated type options array
+                    'always_empty' => false,
+                    // Use closure to set password "null" value as empty string
+                    'empty_data' => function (FormInterface $form): FormInterface {
+                        if (null === $form->getData()) {
+                            $form->setData('');
+                        }
+
+                        return $form;
+                    }
                 ],
                 'invalid_message' => 'Les deux mots de passe doivent correspondre.',
                 'first_options'   => [
@@ -81,8 +91,7 @@ class BaseUserType extends AbstractType
                 ],
                 'second_options'  => [
                     'label' => 'Tapez le mot de passe à nouveau'
-                ],
-                'empty_data'      => ''
+                ]
             ]);
         // Transform roles data to get an array of string
         $builder

@@ -52,7 +52,7 @@
         <log type="coverage-text" target="php://stdout" />
         <!-- Log coverage html output -->
         <log type="coverage-html"
-             target="./var/coverage"
+             target="./var/tests/coverage"
              showUncoveredFiles="true" />
     </logging>
 
