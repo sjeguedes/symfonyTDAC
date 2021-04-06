@@ -86,8 +86,6 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
      * Check that data mapping is correctly made when task modification form is submitted.
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedModifiedTaskFormMapping(): void
     {
@@ -120,8 +118,6 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
      * @param array $data
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedModifiedTaskDataValidation(array $data): void
     {
@@ -149,8 +145,6 @@ class EditTaskTypeTest extends AbstractFormTypeKernelTestCase
      * @param array $data
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedModifiedTaskDataTransformation(array $data): void
     {

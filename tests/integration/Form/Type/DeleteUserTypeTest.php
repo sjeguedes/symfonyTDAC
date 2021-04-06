@@ -7,7 +7,6 @@ namespace App\Tests\Integration\Form\Type;
 use App\Entity\User;
 use App\Form\Type\DeleteUserType;
 use App\Tests\Integration\Form\Type\Helpers\AbstractFormTypeKernelTestCase;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * Class DeleteUserTypeTest
@@ -16,16 +15,6 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class DeleteUserTypeTest extends AbstractFormTypeKernelTestCase
 {
-    /**
-     * @var User|null
-     */
-    private ?User $dataModel;
-
-    /**
-     * @var UserPasswordEncoderInterface|null
-     */
-    private ?UserPasswordEncoderInterface $userPasswordEncoder;
-
     /**
      * Setup needed instance(s).
      *
@@ -36,15 +25,6 @@ class DeleteUserTypeTest extends AbstractFormTypeKernelTestCase
     public function setUp(): void
     {
         parent::setUp();
-        // Get user password encoder private service
-        $this->userPasswordEncoder = static::$container->get('security.user_password_encoder.generic');
-        // Get a user data model
-        $this->dataModel = (new User())
-            ->setUsername('username')
-            ->setEmail('username@test.fr')
-            ->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
-        $this->dataModel
-            ->setPassword($this->userPasswordEncoder->encodePassword($this->dataModel, 'pass_1'));
     }
 
     /**
@@ -57,14 +37,16 @@ class DeleteUserTypeTest extends AbstractFormTypeKernelTestCase
         yield [
             'Succeeds when no data exists' => [
                 // No field exists at this time!
-                'isValid' => true
+                'isSynchronized' => true,
+                'isValid'        => true
             ]
         ];
         yield [
             'Fails when unexpected data are set' => [
                 // No data is expected to be submitted at this time!
                 'unexpected' => 'Test',
-                'isValid'    => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
     }
@@ -73,16 +55,16 @@ class DeleteUserTypeTest extends AbstractFormTypeKernelTestCase
      * Check that data mapping is correctly made when user deletion form is submitted.
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedDeletedUserFormMapping(): void
     {
-        $dataModel = $this->dataModel;
+        // Get existing user with id "1"
+        $dataModel = $this->entityManager->getRepository(User::class)->find(1);
         // Clone data model to get the same data automatically set in constructor
         $expectedObject = clone $dataModel;
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
         $formData = [];
+        // Create a real form
         $form = $this->createForm(DeleteUserType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
@@ -97,36 +79,53 @@ class DeleteUserTypeTest extends AbstractFormTypeKernelTestCase
      * @param array $data
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedDeletedUserDataValidation(array $data): void
     {
-        $dataModel = $this->dataModel;
+        // Get existing user with id "1"
+        $dataModel = $this->entityManager->getRepository(User::class)->find(1);
+        $isValid = $data['isValid'];
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
-        $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
+        // Use arrow function combined to array filtering with flag based on key
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(DeleteUserType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
-        static::assertSame($data['isValid'], $form->isValid());
+        static::assertSame($isValid, $form->isValid());
     }
 
     /**
      * Check that data transformation is correctly made when user deletion form is submitted.
      *
-     * @return void
+     * @dataProvider provideDataStructureToValidate
      *
-     * @throws \Exception
+     * @param array $data
+     *
+     * @return void
      */
-    public function testSubmittedDeletedUserDataTransformation(): void
+    public function testSubmittedDeletedUserDataTransformation(array $data): void
     {
-        $dataModel = $this->dataModel;
+        // Get existing user with id "1"
+        $dataModel = $this->entityManager->getRepository(User::class)->find(1);
+        $isSynchronized = $data['isSynchronized'];
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
-        $formData = [];
+        // Use arrow function combined to array filtering with flag based on key
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(DeleteUserType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
-        static::assertTrue($form->isSynchronized());
+        // CAUTION: make use of "$form->isSynchronized()" is not always adapted and correct with nested form(s)!
+        static::assertSame($isSynchronized, $form->isSynchronized());
     }
 
     /**
@@ -136,8 +135,6 @@ class DeleteUserTypeTest extends AbstractFormTypeKernelTestCase
      */
     public function tearDown(): void
     {
-        $this->dataModel = null;
-        $this->userPasswordEncoder = null;
         parent::tearDown();
     }
 }

@@ -37,14 +37,16 @@ class DeleteTaskTypeTest extends AbstractFormTypeKernelTestCase
         yield [
             'Succeeds when no data exists' => [
                 // No field exists at this time!
-                'isValid' => true
+                'isSynchronized' => true,
+                'isValid'        => true
             ]
         ];
         yield [
             'Fails when unexpected data are set' => [
                 // No data is expected to be submitted at this time!
                 'unexpected' => 'Test',
-                'isValid'    => false
+                'isSynchronized' => true,
+                'isValid'        => false
             ]
         ];
     }
@@ -53,18 +55,16 @@ class DeleteTaskTypeTest extends AbstractFormTypeKernelTestCase
      * Check that data mapping is correctly made when task deletion form is submitted.
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedDeletedTaskFormMapping(): void
     {
-        $dataModel = (new Task())
-            ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
+        // Get existing task with id "1"
+        $dataModel = $this->entityManager->getRepository(Task::class)->find(1);
         // Clone data model to get the same data automatically set in constructor
         $expectedObject = clone $dataModel;
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
         $formData = [];
+        // Create a real form
         $form = $this->createForm(DeleteTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
@@ -79,40 +79,53 @@ class DeleteTaskTypeTest extends AbstractFormTypeKernelTestCase
      * @param array $data
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedDeletedTaskDataValidation(array $data): void
     {
-        $dataModel = (new Task())
-            ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
+        // Get existing task with id "1"
+        $dataModel = $this->entityManager->getRepository(Task::class)->find(1);
+        $isValid = $data['isValid'];
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
-        $formData = array_filter($data, fn ($key) => 'isValid' !== $key,ARRAY_FILTER_USE_KEY);
+        // Use arrow function combined to array filtering with flag based on key
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(DeleteTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
-        static::assertSame($data['isValid'], $form->isValid());
+        static::assertSame($isValid, $form->isValid());
     }
 
     /**
      * Check that data transformation is correctly made when task deletion form is submitted.
      *
-     * @return void
+     * @dataProvider provideDataStructureToValidate
      *
-     * @throws \Exception
+     * @param array $data
+     *
+     * @return void
      */
-    public function testSubmittedDeletedTaskDataTransformation(): void
+    public function testSubmittedDeletedTaskDataTransformation(array $data): void
     {
-        $dataModel = (new Task())
-            ->setTitle('Titre de tâche existante')
-            ->setContent('Description de tâche existante');
+        // Get existing task with id "1"
+        $dataModel = $this->entityManager->getRepository(Task::class)->find(1);
+        $isSynchronized = $data['isSynchronized'];
         // IMPORTANT: there are no valuable tests to proceed at this time, due to no existing field(s)!
-        $formData = [];
+        // Use arrow function combined to array filtering with flag based on key
+        $formData = array_filter(
+            $data,
+            fn ($key) => 'isSynchronized' !== $key && 'isValid' !== $key,
+            ARRAY_FILTER_USE_KEY
+        );
+        // Create a real form
         $form = $this->createForm(DeleteTaskType::class, $dataModel);
         // "Simulate" submitted form data provided by a request
         $form->submit($formData);
-        static::assertTrue($form->isSynchronized());
+        // CAUTION: make use of "$form->isSynchronized()" is not always adapted and correct with nested form(s)!
+        static::assertSame($isSynchronized, $form->isSynchronized());
     }
 
     /**

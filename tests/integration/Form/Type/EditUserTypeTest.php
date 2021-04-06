@@ -184,8 +184,6 @@ class EditUserTypeTest extends AbstractFormTypeKernelTestCase
      * Check that data mapping is correctly made when user modification form is submitted.
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedModifiedUserFormMapping(): void
     {
@@ -227,8 +225,6 @@ class EditUserTypeTest extends AbstractFormTypeKernelTestCase
      * @param array $data
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedModifiedUserDataValidation(array $data): void
     {
@@ -256,8 +252,6 @@ class EditUserTypeTest extends AbstractFormTypeKernelTestCase
      * @param array $data
      *
      * @return void
-     *
-     * @throws \Exception
      */
     public function testSubmittedModifiedUserDataTransformation(array $data): void
     {
