@@ -74,7 +74,7 @@ class User implements UserInterface
      *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,20}$/",
      *     message="Le format attendu n'est pas respecté. (voir aide)"
      * )
-     * @ORM\Column(type="string", length=98)
+     * @ORM\Column(type="string")
      *
      */
     private ?string $password;
@@ -85,7 +85,7 @@ class User implements UserInterface
      * @Assert\NotBlank(message="Vous devez saisir une adresse email.")
      * @Assert\Email(message="Le format de l'adresse n'est pas correct.")
      *
-     * @ORM\Column(type="string", length=60, unique=true)
+     * @ORM\Column(type="string", unique=true)
      */
     private ?string $email;
 
@@ -161,11 +161,13 @@ class User implements UserInterface
      * @param \DateTimeImmutable $updatedAt
      *
      * @return User
+     *
+     * @throws \Exception
      */
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         if ($this->createdAt > $updatedAt) {
-            throw new \LogicException('Update date is not logical: Task cannot be modified before creation!');
+            throw new \LogicException('Update date is not logical: User cannot be modified before creation!');
         }
         $this->updatedAt = $updatedAt;
 
@@ -261,10 +263,12 @@ class User implements UserInterface
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * @return void
      */
     public function eraseCredentials(): void
     {
-        // This is not used.
+        // This is not used since no temporary sensitive data need(s) to be erased!
     }
 }

@@ -271,9 +271,4 @@ class Task
 
         return $this;
     }
-
-    public function getIsDone(): ?bool
-    {
-        return $this->isDone;
-    }
 }
