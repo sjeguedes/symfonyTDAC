@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Form\Handler;
 
 use App\Entity\Manager\DataModelManagerInterface;
-use App\Entity\Task;
-use App\Form\Handler\DeleteTaskFormHandler;
+use App\Entity\User;
+use App\Form\Handler\DeleteUserFormHandler;
 use App\Form\Handler\FormHandlerInterface;
-use App\Tests\Unit\Form\Handler\Helpers\AbstractTaskFormHandlerTestCase;
+use App\Tests\Unit\Form\Handler\Helpers\AbstractUserFormHandlerTestCase;
 use App\Tests\Unit\Helpers\EntityReflectionTestCaseTrait;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,11 +19,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
- * Class DeleteTaskFormHandlerTest
+ * Class DeleteUserFormHandlerTest
  *
- * Manage unit tests for task deletion form handler.
+ * Manage unit tests for user deletion form handler.
  */
-class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
+class DeleteUserFormHandlerTest extends AbstractUserFormHandlerTestCase
 {
     use EntityReflectionTestCaseTrait;
 
@@ -45,12 +45,12 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     /**
      * @var MockObject|DataModelManagerInterface|null
      */
-    private ?DataModelManagerInterface $taskDataModelManager;
+    private ?DataModelManagerInterface $userDataModelManager;
 
     /**
      * @var FormHandlerInterface|null
      */
-    private ?FormHandlerInterface $deleteTaskHandler;
+    private ?FormHandlerInterface $deleteUserHandler;
 
     /**
      * Create a request instance with expected parameters.
@@ -63,17 +63,17 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
      */
     private function createRequest(
         array $formData = [],
-        string $uri = '/tasks/1/delete',
+        string $uri = '/users/1/delete',
         string $method = 'DELETE'
     ): Request {
         // Define default data as valid
         $defaultFormData = [
-            'delete_task_1' => [
+            'delete_user_1' => [
                 // No fields are set at this time!
             ]
         ];
         $formData = empty($formData) ? $defaultFormData : $formData;
-        $request = Request::create(empty($formData) ? '/tasks/1/delete' : $uri, $method, $formData);
+        $request = Request::create(empty($formData) ? '/users/1/delete' : $uri, $method, $formData);
 
         return $request;
     }
@@ -95,19 +95,25 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $request = $request ?? $this->createRequest($formData);
         // Create a new form handler instance if default request is not used!
         if (null !== $request) {
-            $this->formFactory = $this->buildFormFactory($request, Task::class);
-            $this->deleteTaskHandler = new DeleteTaskFormHandler(
+            $this->formFactory = $this->buildFormFactory($request, User::class);
+            $this->deleteUserHandler = new DeleteUserFormHandler(
                 $this->formFactory,
-                $this->taskDataModelManager,
+                $this->userDataModelManager,
                 $this->flashBag
             );
         }
-        // Use reflection to get a fake existing task with id
-        $existingTask = (new Task())
-            ->setTitle('Titre de tâche existante')
-            ->setContent('Contenu de tâche existante');
-        $existingTask = $this->setEntityIdByReflection($existingTask, 1);
-        $form = $this->deleteTaskHandler->process($request, ['dataModel' => $existingTask]);
+        // Use reflection to get a fake existing user with id
+        $existingUser = (new User())
+            ->setUsername('utilisateur')
+            ->setEmail('utilisateur@test.fr')
+            ->setRoles(['ROLE_USER'])
+            // Plain password value is "password_1A$".
+            ->setPassword(
+                '$argon2id$v=19$m=65536,t=4,p=1$m3o/' .
+                'LtXDliuganMV43ER1w$7kHF1zCwhUOdnkRboZTj0YmGNRodv7Ow0Ht1j5b1fbI'
+            );
+        $existingUser = $this->setEntityIdByReflection($existingUser, 1);
+        $form = $this->deleteUserHandler->process($request, ['dataModel' => $existingUser]);
         return $form;
     }
 
@@ -121,13 +127,13 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->formFactory = $this->buildFormFactory($this->createRequest(), Task::class);
+        $this->formFactory = $this->buildFormFactory($this->createRequest(), User::class);
         $this->flashBag = static::createMock(FlashBagInterface::class);
         $this->entityManager = static::createPartialMock(EntityManager::class, ['remove', 'flush']);
-        $this->taskDataModelManager = $this->setTaskDataModelManager($this->entityManager);
-        $this->deleteTaskHandler = new DeleteTaskFormHandler(
+        $this->userDataModelManager = $this->setUserDataModelManager($this->entityManager);
+        $this->deleteUserHandler = new DeleteUserFormHandler(
             $this->formFactory,
-            $this->taskDataModelManager,
+            $this->userDataModelManager,
             $this->flashBag
         );
     }
@@ -144,35 +150,35 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         // Process a real submitted form with invalid data thanks to helper method.
         // No field is set, and no data is expected at this time!
         $this->processForm(
-            ['delete_task_1' => ['unexpected' => 'Test']] // Use real field(s) later if needed
+            ['delete_user_1' => ['unexpected' => 'Test']] // Use real field(s) later if needed
         );
-        $isExecuted = $this->deleteTaskHandler->execute();
+        $isExecuted = $this->deleteUserHandler->execute();
         static::assertFalse($isExecuted);
     }
 
     /**
-     * Check that "execute" method returns true when task deletion succeeded.
+     * Check that "execute" method returns true when user deletion succeeded.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testExecuteMethodReturnsTrueWhenTaskDeletionFlushIsOk(): void
+    public function testExecuteMethodReturnsTrueWhenUserDeletionFlushIsOk(): void
     {
         // Process a real submitted form first with default valid data thanks to helper method.
         $this->processForm();
-        $isTaskDeletionFlushed = $this->deleteTaskHandler->execute();
-        static::assertTrue($isTaskDeletionFlushed);
+        $isUserDeletionFlushed = $this->deleteUserHandler->execute();
+        static::assertTrue($isUserDeletionFlushed);
     }
 
     /**
-     * Check that "execute" method returns false when task deletion failed.
+     * Check that "execute" method returns false when user deletion failed.
      *
      * @return void
      *
      * @throws \Exception
      */
-    public function testExecuteReturnsFalseWhenTaskTaskDeletionFlushIsNotOk(): void
+    public function testExecuteReturnsFalseWhenUserUserDeletionFlushIsNotOk(): void
     {
         // Process a real submitted form first with default valid data thanks to helper method.
         $this->processForm();
@@ -182,8 +188,8 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
             ->expects($this->once())
             ->method('flush')
             ->willThrowException(new \Exception());
-        $isTaskDeletionFlushed = $this->deleteTaskHandler->execute();
-        static::assertFalse($isTaskDeletionFlushed);
+        $isUserDeletionFlushed = $this->deleteUserHandler->execute();
+        static::assertFalse($isUserDeletionFlushed);
     }
 
     /**
@@ -196,8 +202,8 @@ class DeleteTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
         $this->formFactory = null;
         $this->flashBag = null;
         $this->entityManager = null;
-        $this->taskDataModelManager = null;
-        $this->deleteTaskHandler = null;
+        $this->userDataModelManager = null;
+        $this->deleteUserHandler = null;
         parent::tearDown();
     }
 }

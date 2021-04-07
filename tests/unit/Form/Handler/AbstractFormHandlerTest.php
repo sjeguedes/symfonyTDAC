@@ -5,21 +5,29 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Form\Handler;
 
 use App\Entity\Task;
+use App\Entity\User;
 use App\Form\Handler\AbstractFormHandler;
 use App\Form\Handler\FormHandlerInterface;
+use App\Form\Transformer\ArrayToExplodedStringModelTransformer;
+use App\Form\Type\Base\BaseUserType;
 use App\Form\Type\CreateTaskType;
 use App\Form\Type\DeleteTaskType;
+use App\Form\Type\DeleteUserType;
 use App\Form\Type\EditTaskType;
+use App\Form\Type\EditUserType;
 use App\Form\Type\ToggleTaskType;
 use App\Tests\Unit\Helpers\CustomAssertionsTestCaseTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Forms;
+use Symfony\Component\Form\PreloadedExtension;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\Validator\Validation;
 
 /**
  * Class AbstractFormHandlerTest
@@ -108,7 +116,9 @@ class AbstractFormHandlerTest extends TestCase
             'Uses task creation form type'       => ['create_task', CreateTaskType::class, Task::class],
             'Uses task update form type'         => ['edit_task', EditTaskType::class, Task::class],
             'Uses task toggle first form type'   => ['toggle_task_1', ToggleTaskType::class, Task::class],
-            'Uses task deletion first form type' => ['delete_task_1', DeleteTaskType::class, Task::class]
+            'Uses task deletion first form type' => ['delete_task_1', DeleteTaskType::class, Task::class],
+            'Uses user update form type'         => ['edit_user', EditUserType::class, User::class],
+            'Uses user deletion first form type' => ['delete_user_1', DeleteUserType::class, User::class]
         ];
     }
 
@@ -142,9 +152,18 @@ class AbstractFormHandlerTest extends TestCase
         string $modelName
     ): void {
         // Use a concrete form factory with Http foundation extension to be able to handle a Request.
-        $this->formFactory = Forms::createFormFactoryBuilder()
-            ->addExtension(new HttpFoundationExtension())
-            ->getFormFactory();
+        $formFactoryBuilder = Forms::createFormFactoryBuilder()
+            ->addExtension(new HttpFoundationExtension());
+        // Add "BaseUserType" pre-loaded extension for user actions
+        if (User::class === $modelName) {
+            // Get a custom "roles" model transformer instance to make form work
+            $dataTransformer = new ArrayToExplodedStringModelTransformer();
+            $formFactoryBuilder->addExtension(new PreloadedExtension([new BaseUserType($dataTransformer)], []));
+            // Get validator extension to avoid issue with all user forms
+            $validator = Validation::createValidatorBuilder()->getValidator();
+            $formFactoryBuilder->addExtension(new ValidatorExtension($validator));
+        }
+        $this->formFactory = $formFactoryBuilder->getFormFactory();
         // Use anonymous class
         $this->formHandler = new class (
             $this->formFactory,
