@@ -35,7 +35,7 @@
                                 {{ form_errors(delete_form) }}
                             </div>
                             <a href="{{ path('user_edit', {'id' : user.id}) }}" title="Modifier l'utilisateur"
-                               class="btn btn-info btn-sm pull-left mr"
+                               class="btn btn-info btn-sm pull-left mr-8"
                             >
                                 <span class="glyphicon glyphicon-pencil"></span>
                             </a>
@@ -52,7 +52,7 @@
                                 <button type="submit" title="Supprimer l'utilisateur définitivement"
                                         id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm"
                                 >
-                                    <span class="glyphicon glyphicon-remove"></span>
+                                    <span class="glyphicon glyphicon-trash"></span>
                                     {#Supprimer#}
                                 </button>
                                 {{ form_end(delete_form) }}

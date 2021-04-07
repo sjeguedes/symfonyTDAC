@@ -29,14 +29,17 @@ class UserDataModelManager extends AbstractDataModelManager
     /**
      * Update an existing user.
      *
-     * @param User $user
+     * @param User   $user
+     * @param string $encodedPassword
      *
      * @return bool
      *
      * @throws \Exception
      */
-    public function update(User $user): bool
+    public function update(User $user, string $encodedPassword): bool
     {
+        // Update password with encoded string version
+        $user->setPassword($encodedPassword);
         // Trace user update
         $user->setUpdatedAt(new \DateTimeImmutable());
         // Save the change(s) made on user

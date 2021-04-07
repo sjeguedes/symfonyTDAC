@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\Handler\FormHandlerInterface;
 use App\Form\Type\CreateUserType;
-use App\Form\Type\EditUserType;
 use App\View\Builder\ViewModelBuilderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -93,32 +92,36 @@ class UserController extends AbstractController
     /**
      * Update a User entity and save data.
      *
-     * @param Request                      $request
-     * @param User                         $user
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param User                 $user
+     * @param Request              $request
+     * @param FormHandlerInterface $editUserHandler
      *
      * @return RedirectResponse|Response
      *
-     * @Route("/users/{id}/edit", name="user_edit")
+     * @Route("/users/{id}/edit", name="user_edit", methods={"GET", "POST"})
      */
-    public function editUserAction(Request $request, User $user, UserPasswordEncoderInterface $userPasswordEncoder)
-    {
-        $form = $this->createForm(EditUserType::class, $user);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $password = $userPasswordEncoder->encodePassword($user, $user->getPassword());
-            $user->setPassword($password);
-
-            $this->getDoctrine()->getManager()->flush();
-
-            $this->addFlash('success', "L'utilisateur a bien été modifié");
-
+    public function editUserAction(
+        User $user,
+        Request $request,
+        FormHandlerInterface $editUserHandler
+    ): Response {
+        // Handle (and validate) corresponding form
+        $form = $editUserHandler->process($request, [
+            'dataModel' => $user
+        ]);
+        // Perform action(s) on handling success state
+        if ($editUserHandler->execute()) {
+            // Save change(s), encode password, and add a successful flash message
+            // Then, redirect to users list
             return $this->redirectToRoute('user_list');
         }
 
-        return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
+        return $this->render('user/edit.html.twig', [
+            'view_model' => $this->viewModelBuilder->create('edit_user', [
+                'form' => $form,
+                'user' => $user
+            ])
+        ]);
     }
 
     /**

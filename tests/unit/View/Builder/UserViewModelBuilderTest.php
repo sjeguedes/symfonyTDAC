@@ -57,18 +57,27 @@ class UserViewModelBuilderTest extends TestCase
      */
     private function getUserCollection(): array
     {
-        $user1 = static::createPartialMock(User::class, ['getId']);
-        $user2 = static::createPartialMock(User::class, ['getId']);
-        $user3 = static::createPartialMock(User::class, ['getId']);
+        $user1 = static::createPartialMock(User::class, ['getId', 'getUsername']);
+        $user2 = static::createPartialMock(User::class, ['getId', 'getUsername']);
+        $user3 = static::createPartialMock(User::class, ['getId', 'getUsername']);
         $user1
             ->method('getId')
             ->willReturn(1);
+        $user1
+            ->method('getUsername')
+            ->willReturn('utilisateur1');
         $user2
             ->method('getId')
             ->willReturn(2);
+        $user2
+            ->method('getUsername')
+            ->willReturn('utilisateur2');
         $user3
             ->method('getId')
             ->willReturn(3);
+        $user3
+            ->method('getUsername')
+            ->willReturn('utilisateur3');
 
         return [$user1, $user2, $user3];
     }
@@ -83,9 +92,9 @@ class UserViewModelBuilderTest extends TestCase
         $userList = $this->getUserCollection();
         // Put at least users "id" values to be more realistic but other data exist!
         return [
-            0 => ['id' => $userList[0]->getId()],
-            1 => ['id' => $userList[1]->getId()],
-            2 => ['id' => $userList[2]->getId()]
+            0 => ['id' => $userList[0]->getId(), 'username' => $userList[0]->getUsername()],
+            1 => ['id' => $userList[1]->getId(), 'username' => $userList[1]->getUsername()],
+            2 => ['id' => $userList[2]->getId(), 'username' => $userList[2]->getUsername()]
         ];
     }
 
@@ -237,7 +246,9 @@ class UserViewModelBuilderTest extends TestCase
         static::assertObjectHasAttribute('editUserFormView', $viewModel);
         static::assertInstanceOf(FormView::class, $viewModel->editUserFormView);
         static::assertObjectHasAttribute('userId', $viewModel);
+        static::assertObjectHasAttribute('username', $viewModel);
         static::assertSame(1, $viewModel->userId);
+        static::assertSame('utilisateur1', $viewModel->username);
     }
 
 

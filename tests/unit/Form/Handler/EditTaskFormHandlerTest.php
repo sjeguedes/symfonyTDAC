@@ -239,7 +239,7 @@ class EditTaskFormHandlerTest extends AbstractTaskFormHandlerTestCase
      * Check that "execute" method returns false when task update is submitted with no change.
      *
      * Please note that it is a kind of feature which aims at improving user experience.
-     * "No change" means form in data are equals to initial data.
+     * "No change" means data in form are equals to initial data.
      *
      * @return void
      *

@@ -143,6 +143,7 @@ class UserViewModelBuilder extends AbstractViewModelBuilder
     {
         $this->viewModel->editUserFormView = $this->viewModel->form->createView();
         $this->viewModel->userId = $this->viewModel->user->getId();
+        $this->viewModel->username = $this->viewModel->user->getUsername();
         // Delete unnecessary properties
         unset($this->viewModel->{'form'});
         unset($this->viewModel->{'user'});

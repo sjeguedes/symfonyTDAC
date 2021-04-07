@@ -47,6 +47,7 @@ services:
         arguments:
             $viewModelBuilder: '@App\View\Builder\UserViewModelBuilder'
         bind:
+            $editUserHandler: '@App\Form\Handler\EditUserFormHandler'
             $deleteUserHandler: '@App\Form\Handler\DeleteUserFormHandler'
 
     # define services in this directory as Doctrine fixtures
@@ -73,6 +74,11 @@ services:
     App\Form\Handler\EditTaskFormHandler:
         arguments:
             $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define user update form handler as a service with concrete dependencies
+    App\Form\Handler\EditUserFormHandler:
+        arguments:
+            $userDataModelManager: '@App\Entity\Manager\UserDataModelManager'
 
     # define task toggle form handler as a service with concrete dependencies
     App\Form\Handler\ToggleTaskFormHandler:

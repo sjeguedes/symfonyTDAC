@@ -57,18 +57,27 @@ class TaskViewModelBuilderTest extends TestCase
      */
     private function getTaskCollection(): array
     {
-        $task1 = static::createPartialMock(Task::class, ['getId']);
-        $task2 = static::createPartialMock(Task::class, ['getId']);
-        $task3 = static::createPartialMock(Task::class, ['getId']);
+        $task1 = static::createPartialMock(Task::class, ['getId', 'getTitle']);
+        $task2 = static::createPartialMock(Task::class, ['getId', 'getTitle']);
+        $task3 = static::createPartialMock(Task::class, ['getId', 'getTitle']);
         $task1
             ->method('getId')
             ->willReturn(1);
+        $task1
+            ->method('getTitle')
+            ->willReturn('Titre de tâche 1');
         $task2
             ->method('getId')
             ->willReturn(2);
+        $task2
+            ->method('getTitle')
+            ->willReturn('Titre de tâche 2');
         $task3
             ->method('getId')
             ->willReturn(3);
+        $task3
+            ->method('getTitle')
+            ->willReturn('Titre de tâche 3');
 
         return [$task1, $task2, $task3];
     }
@@ -83,9 +92,9 @@ class TaskViewModelBuilderTest extends TestCase
         $taskList = $this->getTaskCollection();
         // Put at least tasks "id" values to be more realistic but other data exist!
         return [
-            0 => ['id' => $taskList[0]->getId()],
-            1 => ['id' => $taskList[1]->getId()],
-            2 => ['id' => $taskList[2]->getId()]
+            0 => ['id' => $taskList[0]->getId(), 'title' => $taskList[0]->getTitle()],
+            1 => ['id' => $taskList[1]->getId(), 'title' => $taskList[1]->getTitle()],
+            2 => ['id' => $taskList[2]->getId(), 'title' => $taskList[2]->getTitle()]
         ];
     }
 
@@ -266,7 +275,9 @@ class TaskViewModelBuilderTest extends TestCase
         static::assertObjectHasAttribute('editTaskFormView', $viewModel);
         static::assertInstanceOf(FormView::class, $viewModel->editTaskFormView);
         static::assertObjectHasAttribute('taskId', $viewModel);
+        static::assertObjectHasAttribute('taskTitle', $viewModel);
         static::assertSame(1, $viewModel->taskId);
+        static::assertSame('Titre de tâche 1', $viewModel->taskTitle);
     }
 
     /**

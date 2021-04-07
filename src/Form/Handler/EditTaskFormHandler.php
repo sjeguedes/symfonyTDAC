@@ -58,7 +58,7 @@ class EditTaskFormHandler extends AbstractFormHandler implements FormValidationS
     {
         $previousTask = $this->getClonedOriginalModel();
         $updatedTask = $this->getDataModel();
-        // Compare the two objects to evaluate change(s)
+        // Compare the two objects (properties and values only) to evaluate change(s)
         return $previousTask != $updatedTask;
     }
 

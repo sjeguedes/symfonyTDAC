@@ -105,7 +105,7 @@
                 <div id="task-{{ task.id }}-toggle-form">
                     {# Edit task #}
                     <a href="{{ path('task_edit', {'id' : task.id }) }}" title="Modifier la tâche"
-                       class="btn btn-info btn-sm pull-left"
+                       class="btn btn-info btn-sm pull-left mr-8"
                     >
                         <span class="glyphicon glyphicon-pencil"></span>
                     </a>
@@ -138,7 +138,7 @@
                     <button type="submit" title="Supprimer la tâche définitivement"
                             id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-left"
                     >
-                        Supprimer
+                        <span class="glyphicon glyphicon-trash"></span>
                     </button>
                     {{ form_end(delete_form) }}
                 </div>

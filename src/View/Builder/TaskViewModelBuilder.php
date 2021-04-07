@@ -163,6 +163,7 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     {
         $this->viewModel->editTaskFormView = $this->viewModel->form->createView();
         $this->viewModel->taskId = $this->viewModel->task->getId();
+        $this->viewModel->taskTitle = $this->viewModel->task->getTitle();
         // Delete unnecessary properties
         unset($this->viewModel->{'form'});
         unset($this->viewModel->{'task'});

@@ -1,14 +1,22 @@
 {% extends 'base.html.twig' %}
 
-{% block header_title %}<h1>Modifier <strong>{{ user.username }}</strong></h1>{% endblock %}
+{% block header_title %}
+    <h1>Modifier l'utilisateur "<strong>{{ view_model.username }}</strong>"</h1>
+{% endblock %}
+
 {% block header_img %}{% endblock %}
 
 {% block body %}
-    <div class="row">
-        {{ form_start(form, {'action' : path('user_edit', {'id' : user.id})}) }}
-        {{ form_widget(form) }}
+    <div class="row mb">
+        <div class="col-sm-12">
+            {{ form_start(view_model.editUserFormView, {'action' : path('user_edit', {'id' : view_model.userId})}) }}
+                {{ form_widget(view_model.editUserFormView) }}
+                <button type="submit" class="btn btn-success pull-right">Modifier</button>
+            {{ form_end(view_model.editUserFormView) }}
 
-        <button type="submit" class="btn btn-success pull-right">Modifier</button>
-        {{ form_end(form) }}
+            <a href="{{ path('user_list') }}" title="Revenir à la consultation des utilisateurs" class="btn btn-primary">
+                Retour à la liste des utilisateurs
+            </a>
+        </div>
     </div>
 {% endblock %}

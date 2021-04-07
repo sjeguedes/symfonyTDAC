@@ -10,19 +10,18 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationRequestHandler;
 use Symfony\Component\Form\Extension\HttpFoundation\Type\FormTypeHttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormFactoryBuilderInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\Util\ServerParams;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
 use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class AbstractFormHandlerTestCase
@@ -53,6 +52,22 @@ abstract class AbstractFormHandlerTestCase extends TestCase
      */
     protected function buildFormFactory(Request $request, string $modelClassName): FormFactoryInterface
     {
+        // Create the expected form factory builder
+        $formFactoryBuilder = $this->createFormFactoryBuilder($request, $modelClassName);
+
+        return $formFactoryBuilder->getFormFactory();
+    }
+
+    /**
+     * Create a form factory builder with necessary configuration.
+     *
+     * @param Request $request
+     * @param string  $modelClassName
+     *
+     * @return FormFactoryBuilderInterface
+     */
+    protected function createFormFactoryBuilder(Request $request, string $modelClassName): FormFactoryBuilderInterface
+    {
         $requestStack = new RequestStack();
         $requestStack->push($request);
         $serverParams = new ServerParams($requestStack);
@@ -75,7 +90,7 @@ abstract class AbstractFormHandlerTestCase extends TestCase
             new ValidatorExtension($validator)
         );
 
-        return $formFactoryBuilder->getFormFactory();
+        return $formFactoryBuilder;
     }
 
     /**

@@ -118,9 +118,8 @@ class UserDataModelManagerTest extends KernelTestCase
             ->setUsername('new_username')
             ->setEmail('new_username@test.fr')
             ->setRoles(['ROLE_USER']);
-        $data['newUser']
-            ->setPassword($this->userPasswordEncoder->encodePassword($data['newUser'], 'pass_2'));
-        $this->userDataModelManager->update($data['newUser']);
+        $encodedPassword = $this->userPasswordEncoder->encodePassword($data['newUser'], 'pass_2');
+        $this->userDataModelManager->update($data['newUser'], $encodedPassword);
         $updatedUser = $this->entityManager
             ->getRepository(User::class)
             ->findOneBy(['email' => $data['newUser']->getEmail()]);
@@ -143,7 +142,8 @@ class UserDataModelManagerTest extends KernelTestCase
         // Call "create" method before to get a new fresh user
         $data = $this->createUserInDatabase();
         $previousDateOfUpdate = $data['newUser']->getUpdatedAt();
-        $this->userDataModelManager->update($data['newUser']);
+        $encodedPassword = $this->userPasswordEncoder->encodePassword($data['newUser'], 'pass_2');
+        $this->userDataModelManager->update($data['newUser'], $encodedPassword);
         $updatedUser = $this->entityManager
             ->getRepository(User::class)
             ->findOneBy(['email' => $data['newUser']->getEmail()]);
