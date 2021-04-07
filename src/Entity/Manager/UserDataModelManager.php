@@ -16,12 +16,15 @@ class UserDataModelManager extends AbstractDataModelManager
     /**
      * Add a new user.
      *
-     * @param User $newUser
+     * @param User   $newUser
+     * @param string $encodedPassword
      *
      * @return bool
      */
-    public function create(User $newUser): bool
+    public function create(User $newUser, string $encodedPassword): bool
     {
+        // Use password with encoded string version
+        $newUser->setPassword($encodedPassword);
         // Save the new user
         return $this->save($newUser, 'User persistence error', true);
     }

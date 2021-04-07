@@ -77,16 +77,16 @@ class UserDataModelManagerTest extends KernelTestCase
     private function createUserInDatabase(): array
     {
         $userDataModel = (new User())
-            ->setUsername('username')
-            ->setEmail('username@test.fr')
+            ->setUsername('utilisateur')
+            ->setEmail('utilisateur@test.fr')
             ->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
-        $userDataModel
-            ->setPassword($this->userPasswordEncoder->encodePassword($userDataModel, 'pass_1'));
-        $this->userDataModelManager->create($userDataModel);
+        $encodedPassword = $this->userPasswordEncoder->encodePassword($userDataModel, 'password_1A$');
+        // Password encoded value is set in method!
+        $this->userDataModelManager->create($userDataModel, $encodedPassword);
         $newUser = $this->entityManager
             ->getRepository(User::class)
             ->findOneBy(['email' => $userDataModel->getEmail()]);
-        return ['dataModel' => $userDataModel, 'newUser' => $newUser];
+        return ['dataModel' => $userDataModel, 'user' => $newUser];
     }
 
     /**
@@ -100,7 +100,7 @@ class UserDataModelManagerTest extends KernelTestCase
     {
         // Call "create" method before to get a new fresh user
         $data = $this->createUserInDatabase();
-        static::assertEquals($data['newUser'], $data['dataModel']);
+        static::assertEquals($data['user'], $data['dataModel']);
     }
 
     /**
@@ -114,19 +114,20 @@ class UserDataModelManagerTest extends KernelTestCase
     {
         // Call "create" method before to get a new fresh user
         $data = $this->createUserInDatabase();
-        $data['newUser']
-            ->setUsername('new_username')
-            ->setEmail('new_username@test.fr')
+        $data['user']
+            ->setUsername('utilisateur modifié')
+            ->setEmail('utilisateur-modifie@test.fr')
             ->setRoles(['ROLE_USER']);
-        $encodedPassword = $this->userPasswordEncoder->encodePassword($data['newUser'], 'pass_2');
-        $this->userDataModelManager->update($data['newUser'], $encodedPassword);
+        $encodedPassword = $this->userPasswordEncoder->encodePassword($data['user'], 'password_2B$');
+        // Password encoded value is set in method!
+        $this->userDataModelManager->update($data['user'], $encodedPassword);
         $updatedUser = $this->entityManager
             ->getRepository(User::class)
-            ->findOneBy(['email' => $data['newUser']->getEmail()]);
+            ->findOneBy(['email' => $data['user']->getEmail()]);
         // Ensure expected changes was made
-        static::assertSame($data['newUser']->getUsername(), $updatedUser->getUsername());
-        static::assertSame($data['newUser']->getRoles(), $updatedUser->getRoles());
-        static::assertSame($data['newUser']->getPassword(), $updatedUser->getPassword());
+        static::assertSame($data['user']->getUsername(), $updatedUser->getUsername());
+        static::assertSame($data['user']->getRoles(), $updatedUser->getRoles());
+        static::assertSame($data['user']->getPassword(), $updatedUser->getPassword());
     }
 
     /**
@@ -141,12 +142,13 @@ class UserDataModelManagerTest extends KernelTestCase
         // Dates of creation and update are set in constructor automatically with the same value.
         // Call "create" method before to get a new fresh user
         $data = $this->createUserInDatabase();
-        $previousDateOfUpdate = $data['newUser']->getUpdatedAt();
-        $encodedPassword = $this->userPasswordEncoder->encodePassword($data['newUser'], 'pass_2');
-        $this->userDataModelManager->update($data['newUser'], $encodedPassword);
+        $previousDateOfUpdate = $data['user']->getUpdatedAt();
+        $encodedPassword = $this->userPasswordEncoder->encodePassword($data['user'], 'password_2B$');
+        // Password encoded value is set in method!
+        $this->userDataModelManager->update($data['user'], $encodedPassword);
         $updatedUser = $this->entityManager
             ->getRepository(User::class)
-            ->findOneBy(['email' => $data['newUser']->getEmail()]);
+            ->findOneBy(['email' => $data['user']->getEmail()]);
         // Ensure user date of update is "set" (more exactly modified)
         static::assertTrue($previousDateOfUpdate < $updatedUser->getUpdatedAt());
     }

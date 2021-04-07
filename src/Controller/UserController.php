@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\User;
 use App\Form\Handler\FormHandlerInterface;
-use App\Form\Type\CreateUserType;
 use App\View\Builder\ViewModelBuilderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * Class UserController
@@ -55,8 +54,9 @@ class UserController extends AbstractController
     /**
      * Create a User entity and save data.
      *
-     * @param Request $request
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param Request                   $request
+     * @param FormHandlerInterface      $createUserHandler
+     * @param DataModelFactoryInterface $dataModelFactory
      *
      * @return RedirectResponse|Response
      *
@@ -66,27 +66,25 @@ class UserController extends AbstractController
      */
     public function createUserAction(
         Request $request,
-        UserPasswordEncoderInterface $userPasswordEncoder
+        FormHandlerInterface $createUserHandler,
+        DataModelFactoryInterface $dataModelFactory
     ): Response {
-        $user = new User();
-        $form = $this->createForm(CreateUserType::class, $user);
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $password = $userPasswordEncoder->encodePassword($user, $user->getPassword());
-            $user->setPassword($password);
-
-            $em->persist($user);
-            $em->flush();
-
-            $this->addFlash('success', "L'utilisateur a bien été ajouté.");
-
+        // Handle (and validate) corresponding form
+        $form = $createUserHandler->process($request, [
+            'dataModel' => $dataModelFactory->create('user')
+        ]);
+        // Perform action(s) on handling success state
+        if ($createUserHandler->execute()) {
+            // Create a new user, encode password, and add a successful flash message
+            // Then, redirect to users list
             return $this->redirectToRoute('user_list');
         }
 
-        return $this->render('user/create.html.twig', ['form' => $form->createView()]);
+        return $this->render('user/create.html.twig', [
+            'view_model' => $this->viewModelBuilder->create('create_user', [
+                'form' => $form
+            ])
+        ]);
     }
 
     /**
