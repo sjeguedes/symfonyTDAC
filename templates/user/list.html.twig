@@ -22,7 +22,7 @@
                 </thead>
                 <tbody>
                 {% for user in  view_model.users %}
-                    <tr>
+                    <tr class="user">
                         <th scope="row">{{ loop.index }}</th>
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>

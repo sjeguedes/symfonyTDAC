@@ -106,12 +106,13 @@ class FixturesLoader implements FixtureInterface
         $users = [];
         for ($i = 0; $i < 5; $i++) {
             $users[$i] = new User();
-            // Set user properties (A default role as "ROLE_USER" is defined by default in constructor!)
+            // Set user properties
             $userName = strtolower($this->faker->firstName . '.' . $this->faker->lastName);
             $users[$i]
                 ->setUserName($userName . '_' . ($i + 1) )
                 ->setPassword(
-                    $this->userPasswordEncoder->encodePassword($users[$i], 'pass' . '_' . ($i + 1))
+                    // Use expected and validated format to encode
+                    $this->userPasswordEncoder->encodePassword($users[$i], 'password' . '_' . ($i + 1) . 'A$')
                 )
                 ->setEmail($userName . '@' . $this->faker->freeEmailDomain)
                 ->setCreatedAt(
@@ -120,6 +121,10 @@ class FixturesLoader implements FixtureInterface
                     )
                 )
                 ->setUpdatedAt($users[$i]->getCreatedAt());
+            // Define first user as "admin" (A default role as "ROLE_USER" is defined by default in constructor!)
+            if (0 === $i) {
+                $users[$i]->setRoles(['ROLE_ADMIN', 'ROLE_USER']);
+            }
             // Persist data
             $manager->persist($users[$i]);
         }

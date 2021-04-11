@@ -11,7 +11,7 @@
         <div class="col-sm-12">
             {{ form_start(view_model.editUserFormView, {'action' : path('user_edit', {'id' : view_model.userId})}) }}
                 {{ form_widget(view_model.editUserFormView) }}
-                <button type="submit" class="btn btn-success pull-right">Modifier</button>
+                <button type="submit" title="Modifier" id="edit-user" class="btn btn-success pull-right">Modifier</button>
             {{ form_end(view_model.editUserFormView) }}
 
             <a href="{{ path('user_list') }}" title="Revenir à la consultation des utilisateurs" class="btn btn-primary">

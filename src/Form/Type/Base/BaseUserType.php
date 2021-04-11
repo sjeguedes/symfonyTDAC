@@ -55,6 +55,10 @@ class BaseUserType extends AbstractType
                 'label'      => "Nom d'utilisateur",
                 'empty_data' => ''
             ])
+            ->add('email', EmailType::class, [
+                'label'      => 'Adresse email',
+                'empty_data' => ''
+            ])
             ->add('roles', ChoiceType::class, [
                 'label'          => 'Rôle utilisateur (fonction)',
                 'choices'        => [
@@ -63,10 +67,6 @@ class BaseUserType extends AbstractType
                 ],
                 'invalid_message' => 'Inutile d\'altérer les données autorisées !'
                 // No "empty_data => ''" option is used here since "ROLE_USER" is set by default (also in constructor)!
-            ])
-            ->add('email', EmailType::class, [
-                'label'      => 'Adresse email',
-                'empty_data' => ''
             ])
             ->add('password', RepeatedType::class, [
                 'type'            => PasswordType::class,

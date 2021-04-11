@@ -23,7 +23,7 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         'task_creation' => 'create_task[task]', // compound form
         'task_update'   => 'edit_task[task]', // compound form
         'task_toggle'   => 'toggle_task',
-        'task_deletion' => 'delete_task',
+        'task_deletion' => 'delete_task'
     ];
 
     /**
@@ -87,7 +87,7 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     }
 
     /**
-     * Check that a user should authenticate to be able to create a task.
+     * Check that a user should authenticate to be able to perform task actions.
      *
      * @dataProvider provideURIs
      *
@@ -261,7 +261,7 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         $form = $crawler->selectButton('delete-task-' . $randomId)->form();
         $this->client->submit($form);
         $deletedTask = $taskRepository->find($randomId);
-        // Check that task with id "1" does not exist anymore
+        // Check that task with id "$randomId" does not exist anymore
         static::assertSame(null, $deletedTask);
     }
 

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller\Helpers;
 
 use App\Entity\User;
+use Doctrine\Common\EventManager;
+use Doctrine\ORM\Events;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -58,6 +61,46 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     }
 
     /**
+     * Create a Doctrine listener instance which throws an ORM exception.
+     *
+     * @param string $eventName
+     * @return object
+     */
+    private function getTestDoctrineListenerWhichThrowsORMException(string $eventName): object
+    {
+        return new class() {
+            /**
+             * Define Doctrine callbacks to use.
+             */
+            private const CALLBACKS = [
+                Events::postPersist,
+                Events::postUpdate,
+                Events::postRemove,
+                Events::onFlush
+            ];
+
+            /**
+             * Throw an exception on "$methodName" operation with dynamic call.
+             *
+             * @param string $methodName
+             * @param array  $args
+             *
+             * @return void
+             */
+            public function __call(string $methodName, array $args): void
+            {
+                if (!\in_array($methodName, self::CALLBACKS)) {
+                    throw new \BadMethodCallException('Doctrine callback is unknown!');
+                }
+                // Execute callback automatically: variable "args" is unnecessary at this time!)
+                (function (...$args): void {
+                    throw new ORMException();
+                })();
+            }
+        };
+    }
+
+    /**
      * Login with a user token and session storage.
      *
      * @return UserInterface|User
@@ -71,7 +114,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         $userRepository = static::$kernel->getContainer()->get('doctrine')->getRepository(User::class);
         // Retrieve the test user
         /** @var UserInterface $testUser */
-        $testUser = $userRepository->findOneBy(['email' => 'daniel.lecomte@club-internet.fr']);
+        $testUser = $userRepository->findOneBy(['email' => 'marie.lambert@yahoo.fr']);
         // Define the context which defaults to the firewall name.
         $firewallName = 'main';
         $firewallContext = 'main';
@@ -84,6 +127,28 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         $this->client->getCookieJar()->set($cookie);
 
         return $testUser;
+    }
+
+    /**
+     * Make entity manager throw exception on database operations.
+     *
+     * Please note that these method simulates an ORM issue in order to check UX information message.
+     *
+     * @param string $eventName
+     *
+     * @return void
+     */
+    protected function makeEntityManagerThrowExceptionOnORMOperations(string $eventName): void
+    {
+        // IMPORTANT: keep the same kernel during request to avoid loss of added listener
+        $this->client->disableReboot();
+        /** @var EventManager $eventManager */
+        $eventManager = static::$container->get('doctrine.dbal.event_manager');
+        // Define and add a Doctrine listener with anonymous class instance in order to throw ORM exception
+        $eventManager->addEventListener(
+            $eventName,
+            $this->getTestDoctrineListenerWhichThrowsORMException($eventName)
+        );
     }
 
     /**
