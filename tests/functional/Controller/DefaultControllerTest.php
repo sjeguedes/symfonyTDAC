@@ -25,7 +25,7 @@ class DefaultControllerTest extends AbstractControllerWebTestCase
         $this->loginUser();
         $this->client->request('GET', '/');
         $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
-        $this-> assertSelectorTextContains(
+        $this->assertSelectorTextContains(
             '.container h1',
             'Bienvenue sur Todo List, l\'application vous permettant de gérer l\'ensemble de vos tâches sans effort !'
         );

@@ -39,7 +39,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
             'Create a user'        => ['POST', '/users/create'],
             'Access user update'   => ['GET', '/users/1/edit'],
             'Update (Edit) a user' => ['POST', '/users/1/edit'],
-            'Delete a user state'  => ['DELETE', '/users/1/delete']
+            'Delete a user'        => ['DELETE', '/users/1/delete']
         ];
     }
 
@@ -276,7 +276,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
         // Call the request
         $this->client->request('GET', '/users/create');
         foreach ([Events::postPersist, Events::onFlush] as $eventName) {
-            // Simulate ORM exception thanks to particular test doctrine listener
+            // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
             // Submit the form
             $crawler = $this->client->submitForm('Ajouter', [
@@ -310,7 +310,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
         // Call the request
         $this->client->request('GET', '/users/' . $randomId . '/edit');
         foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
-            // Simulate ORM exception thanks to particular test doctrine listener
+            // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
             // Submit the form
             $crawler = $this->client->submitForm('Modifier', [
@@ -339,13 +339,13 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnUserDeletionORMFailure(): void
     {
         $this->loginUser();
+        // Get one of the 5 existing test users
+        $randomId = rand(1, 5);
         // Call the request
         $crawler = $this->client->request('GET', '/users');
         foreach ([Events::postRemove, Events::onFlush] as $eventName) {
-            // Simulate ORM exception thanks to particular test doctrine listener
+            // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
-            // Get one of the 5 existing test users
-            $randomId = rand(1, 5);
             // No data is submitted during deletion action, only the user id is taken into account!
             $form = $crawler->selectButton('delete-user-' . $randomId)->form();
             // Submit the form

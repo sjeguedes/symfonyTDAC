@@ -63,11 +63,11 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     /**
      * Create a Doctrine listener instance which throws an ORM exception.
      *
-     * @param string $eventName
      * @return object
      */
-    private function getTestDoctrineListenerWhichThrowsORMException(string $eventName): object
+    private function getTestDoctrineListenerWhichThrowsORMException(): object
     {
+        // Get a listener with dynamic callback
         return new class() {
             /**
              * Define Doctrine callbacks to use.
@@ -80,19 +80,21 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
             ];
 
             /**
-             * Throw an exception on "$methodName" operation with dynamic call.
+             * Throw an ORM exception on "$methodName" operation with dynamic call.
              *
              * @param string $methodName
              * @param array  $args
              *
              * @return void
+             *
+             * @throws \Exception
              */
             public function __call(string $methodName, array $args): void
             {
                 if (!\in_array($methodName, self::CALLBACKS)) {
-                    throw new \BadMethodCallException('Doctrine callback is unknown!');
+                    throw new \BadMethodCallException('Doctrine callback is unknown or not expected!');
                 }
-                // Execute callback automatically: variable "args" is unnecessary at this time!)
+                // Invoke callback automatically: variable "args" is unnecessary at this time!
                 (function (...$args): void {
                     throw new ORMException();
                 })();
@@ -147,7 +149,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         // Define and add a Doctrine listener with anonymous class instance in order to throw ORM exception
         $eventManager->addEventListener(
             $eventName,
-            $this->getTestDoctrineListenerWhichThrowsORMException($eventName)
+            $this->getTestDoctrineListenerWhichThrowsORMException()
         );
     }
 

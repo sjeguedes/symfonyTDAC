@@ -69,6 +69,8 @@ class CreateTaskFormHandler extends AbstractFormHandler implements FormValidatio
 
             return true;
         }
+        // Inform that an error happened in process!
+        $this->flashBag->add('error', 'Un problème est survenu !');
 
         return false;
     }

@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
 use App\Tests\Functional\Controller\Helpers\AbstractControllerWebTestCase;
+use Doctrine\ORM\Events;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\Security\Csrf\CsrfToken;
 
@@ -350,5 +351,125 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         static::assertSame(null, $existingTask->getAuthor());
         // Check that authenticated user is set as the last editor
         static::assertEquals($testUser->getId(), $existingTask->getLastEditor()->getId());
+    }
+
+    /**
+     * Check that technical error (database operations failure) is taken into account
+     * to improve UX during task creation.
+     *
+     * @return void
+     */
+    public function testTechnicalErrorIsTakenIntoAccountOnTaskCreationORMFailure(): void
+    {
+        $this->loginUser();
+        // Call the request
+        $this->client->request('GET', '/tasks/create');
+        foreach ([Events::postPersist, Events::onFlush] as $eventName) {
+            // Simulate ORM exception thanks to particular test Doctrine listener
+            $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
+            // Submit the form
+            $crawler = $this->client->submitForm('Ajouter', [
+                self::BASE_FORM_FIELDS_NAMES['task_creation'] . '[title]'   => 'Nouvelle tâche',
+                self::BASE_FORM_FIELDS_NAMES['task_creation'] . '[content]' => 'Ceci est un contenu de nouvelle tâche.'
+            ], 'POST');
+            // Check that no redirection is made to task list
+            static::assertFalse($this->client->getResponse()->isRedirect('/tasks'));
+            // Ensure correct UX is displayed when ORM operation on entity failed
+            static::assertSame(
+                'Oops ! Un problème est survenu !',
+                trim($crawler->filter('div.alert-danger')->text(null, false))
+            );
+        }
+    }
+
+    /**
+     * Check that technical error (database operations failure) is taken into account
+     * to improve UX during task update.
+     *
+     * @return void
+     */
+    public function testTechnicalErrorIsTakenIntoAccountOnTaskUpdateORMFailure(): void
+    {
+        $this->loginUser();
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        // Call the request
+        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
+        foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
+            // Simulate ORM exception thanks to particular test Doctrine listener
+            $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
+            // Submit the form
+            $crawler = $this->client->submitForm('Modifier', [
+                self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => 'Tâche modifiée',
+                self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => 'Ceci est un changement de contenu de la tâche.'
+            ], 'POST');
+            // Check that no redirection is made to task list
+            static::assertFalse($this->client->getResponse()->isRedirect('/tasks'));
+            // Ensure correct UX is displayed when ORM operation on entity failed
+            static::assertSame(
+                'Oops ! Un problème est survenu !',
+                trim($crawler->filter('div.alert-danger')->text(null, false))
+            );
+        }
+    }
+
+    /**
+     * Check that technical error (database operations failure) is taken into account
+     * to improve UX during task toggle.
+     *
+     * @return void
+     */
+    public function testTechnicalErrorIsTakenIntoAccountOnTaskToggleORMFailure(): void
+    {
+        $this->loginUser();
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        // Call the request
+        $crawler = $this->client->request('GET', '/tasks');
+        foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
+            // Simulate ORM exception thanks to particular test Doctrine listener
+            $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
+            // No data is submitted during toggle action, only the task id is taken into account!
+            $form = $crawler->selectButton('toggle-task-' . $randomId)->form();
+            // Submit the form
+            $crawler = $this->client->submit($form);
+            // Check that no redirection is made to task list
+            static::assertFalse($this->client->getResponse()->isRedirect('/tasks'));
+            // Ensure correct UX is displayed when ORM operation on entity failed
+            static::assertSame(
+                'Oops ! Un problème est survenu !',
+                trim($crawler->filter('div.alert-danger')->text(null, false))
+            );
+        }
+    }
+
+    /**
+     * Check that technical error (database operations failure) is taken into account
+     * to improve UX during task deletion.
+     *
+     * @return void
+     */
+    public function testTechnicalErrorIsTakenIntoAccountOnTaskDeletionORMFailure(): void
+    {
+        $this->loginUser();
+        // Get one of the 20 existing test tasks
+        $randomId = rand(1, 20);
+        // Call the request
+        $crawler = $this->client->request('GET', '/tasks');
+        foreach ([Events::postRemove, Events::onFlush] as $eventName) {
+            // Simulate ORM exception thanks to particular test Doctrine listener
+            $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
+            // No data is submitted during deletion action, only the task id is taken into account!
+            $form = $crawler->selectButton('delete-task-' . $randomId)->form();
+            // Submit the form
+            $crawler = $this->client->submit($form);
+            // Check that no redirection is made to task list
+            static::assertFalse($this->client->getResponse()->isRedirect('/tasks'));
+            // Ensure correct UX is displayed when ORM operation on entity failed
+            static::assertSame(
+                'Oops ! Un problème est survenu !',
+                trim($crawler->filter('div.alert-danger')->text(null, false))
+            );
+        }
     }
 }
