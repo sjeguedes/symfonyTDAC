@@ -1,14 +1,22 @@
 {% extends 'base.html.twig' %}
 
-{% block header_title %}<h1>Créer un utilisateur</h1>{% endblock %}
+{% block header_title %}
+    <h1>Créer un utilisateur</h1>
+{% endblock %}
+
 {% block header_img %}{% endblock %}
 
 {% block body %}
-    <div class="row">
-        {{ form_start(form, {'action' : path('user_create')}) }}
-            {{ form_widget(form) }}
+    <div class="row mb">
+        <div class="col-sm-12">
+            {{ form_start(view_model.createUserFormView, {'action' : path('user_create')}) }}
+                {{ form_widget(view_model.createUserFormView) }}
+                <button type="submit" title="Ajouter" id="create-user" class="btn btn-success pull-right">Ajouter</button>
+            {{ form_end(view_model.createUserFormView) }}
 
-            <button type="submit" class="btn btn-success pull-right">Ajouter</button>
-        {{ form_end(form) }}
+            <a href="{{ path('user_list') }}" title="Revenir à la consultation des utilisateurs" class="btn btn-primary">
+                Retour à la liste des utilisateurs
+            </a>
+        </div>
     </div>
 {% endblock %}

@@ -10,48 +10,68 @@
 
         <title>To Do List app</title>
 
-        <!-- Bootstrap Core CSS -->
-        {#<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">#}
-
+        {% block stylesheets %}
         <!-- Latest compiled and minified Bootstrap CSS with CDN -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
               integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-
         <!-- Custom CSS -->
-        <link href="{{ asset('css/shop-homepage.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/custom-styles.css') }}" rel="stylesheet">
+        {% endblock %}
 
+        {% block javascripts_top %}
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
         <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
+        {% endblock %}
     </head>
 
     <body>
         <nav class="navbar navbar-light navbar-fixed-top" style="background-color: #e3f2fd;" role="navigation">
             <div class="container">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">To Do List app</a>
-
-                    <img src="{{ asset('img/Logo_OpenClassrooms.png') }}" alt="OpenClassrooms" />
+                    <a class="navbar-brand" href="/" title="Page d'accueil">
+                        <span class="db pull-left mr">To Do List app</span>
+                        <img class="pull-left m-t" src="{{ asset('img/Logo_OpenClassrooms.png') }}" alt="OpenClassrooms">
+                    </a>
                 </div>
             </div>
         </nav>
 
         <!-- Page Content -->
         <div class="container">
-            <div class="row">
-                <a href="{{ path('user_create') }}" class="btn btn-primary">Créer un utilisateur</a>
-
-                {% if app.user %}
-                <a href="{{ path('logout') }}" class="pull-right btn btn-danger">Se déconnecter</a>
-                {% endif %}
-
-                {% if not app.user and 'login' != app.request.attributes.get('_route') %}
-                <a href="{{ path('login') }}" class="btn btn-success">Se connecter</a>
-                {% endif %}
+            <div class="row mb">
+                <div class="col-md-12">
+                    {# Exclude user creation link on user creation pages, for authenticated user #}
+                    {% if app.user and app.request.get('_route') != 'user_create' %}
+                    <a href="{{ path('user_create') }}" title="Ajouter un nouvel utilisateur" class="btn btn-primary mr">
+                        Créer un utilisateur
+                    </a>
+                    {% endif %}
+                    {# Exclude user list link on user list, user creation, user edit pages, for authenticated user #}
+                    {% set excludedRoutes = ['user_list', 'user_create', 'user_edit'] %}
+                    {% if app.user and excludedRoutes|filter(v => v != app.request.get('_route'))|length == 3 %}
+                    <a href="{{ path('user_list') }}" title="Accéder à l'ensemble des utilisateurs"
+                       class="btn btn-default"
+                    >
+                        Consulter la liste des utilisateurs
+                    </a>
+                    {% endif %}
+                    {# Show disconnection link, for authenticated user #}
+                    {% if app.user %}
+                    <a href="{{ path('logout') }}" title="Ne plus être authentifié" class="pull-right btn btn-danger">
+                        Se déconnecter
+                    </a>
+                    {% endif %}
+                    {# Show connection link by excluding login page, for anonymous user #}
+                    {% if not app.user and 'login' != app.request.attributes.get('_route') %}
+                    <a href="{{ path('login') }}" title="S'authentifier" class="pull-right btn btn-success">
+                        Se connecter
+                    </a>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="row">
@@ -68,13 +88,21 @@
                         </div>
                     {% endfor %}
 
+                    {# Add custom info flash message! #}
+                    {% for flash_message in app.session.flashBag.get('info') %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Surprenant !</strong> {{ flash_message }}
+                        </div>
+                    {% endfor %}
+
                     {% block header_title %}{% endblock %}
-                    {% block header_img %}<img class="slide-image" src="{{ asset('img/todolist_homepage.jpg') }}" alt="todo list">{% endblock %}
+                    <div class="mb">
+                        {% block header_img %}
+                            <img class="slide-image" src="{{ asset('img/todolist_homepage.jpg') }}" alt="todo list">
+                        {% endblock %}
+                    </div>
                 </div>
             </div>
-
-            <br />
-
             <div class="row">
                 <div class="col-md-12">
                     {% block body %}{% endblock %}
@@ -83,8 +111,7 @@
         </div>
         <!-- /.container -->
 
-        <div class="container">
-
+        <div class="container m-t">
             <hr>
             <footer>
                 <div class="row">
@@ -93,17 +120,16 @@
                     </div>
                 </div>
             </footer>
-
         </div>
 
-        {#<script src="{{ asset('js/jquery.js') }}"></script>#}
+        {% block javascripts_bottom %}
         {# Get JQuery with CDN #}
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"
                 integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 
-        {#<script src="{{ asset('js/bootstrap.min.js') }}"></script>#}
         <!-- Latest compiled and minified Bootstrap JavaScript with CDN -->
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        {% endblock %}
     </body>
 </html>

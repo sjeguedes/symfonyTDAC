@@ -32,7 +32,94 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    # define TaskController services
+    App\Controller\TaskController:
+        arguments:
+            $viewModelBuilder: '@App\View\Builder\TaskViewModelBuilder'
+        bind:
+            $createTaskHandler: '@App\Form\Handler\CreateTaskFormHandler'
+            $editTaskHandler: '@App\Form\Handler\EditTaskFormHandler'
+            $toggleTaskHandler: '@App\Form\Handler\ToggleTaskFormHandler'
+            $deleteTaskHandler: '@App\Form\Handler\DeleteTaskFormHandler'
+
+    # define UserController services
+    App\Controller\UserController:
+        arguments:
+            $viewModelBuilder: '@App\View\Builder\UserViewModelBuilder'
+        bind:
+            $createUserHandler: '@App\Form\Handler\CreateUserFormHandler'
+            $editUserHandler: '@App\Form\Handler\EditUserFormHandler'
+            $deleteUserHandler: '@App\Form\Handler\DeleteUserFormHandler'
+
     # define services in this directory as Doctrine fixtures
     App\DataFixtures\:
         resource: '%kernel.project_dir%/src/DataFixtures/*'
         tags: ['doctrine.fixture.orm']
+
+    # define data (entity) model factory as a generic service for corresponding custom interface
+    App\Entity\Factory\DataModelFactory: ~
+    App\Entity\Factory\DataModelFactoryInterface: '@App\Entity\Factory\DataModelFactory'
+
+    # define task data model manager as a service
+    App\Entity\Manager\TaskDataModelManager: ~
+
+    # define user data model manager as a service
+    App\Entity\Manager\UserDataModelManager: ~
+
+    # define task creation form handler as a service with concrete dependencies
+    App\Form\Handler\CreateTaskFormHandler:
+        arguments:
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define user creation form handler as a service with concrete dependencies
+    App\Form\Handler\CreateUserFormHandler:
+        arguments:
+            $userDataModelManager: '@App\Entity\Manager\UserDataModelManager'
+
+    # define task update form handler as a service with concrete dependencies
+    App\Form\Handler\EditTaskFormHandler:
+        arguments:
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define user update form handler as a service with concrete dependencies
+    App\Form\Handler\EditUserFormHandler:
+        arguments:
+            $userDataModelManager: '@App\Entity\Manager\UserDataModelManager'
+
+    # define task toggle form handler as a service with concrete dependencies
+    App\Form\Handler\ToggleTaskFormHandler:
+        arguments:
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define task deletion form handler as a service with concrete dependencies
+    App\Form\Handler\DeleteTaskFormHandler:
+        arguments:
+            $taskDataModelManager: '@App\Entity\Manager\TaskDataModelManager'
+
+    # define user deletion form handler as a service with concrete dependencies
+    App\Form\Handler\DeleteUserFormHandler:
+        arguments:
+            $userDataModelManager: '@App\Entity\Manager\UserDataModelManager'
+
+    # define user base form type as a service with concrete dependencies
+    App\Form\Type\Base\BaseUserType:
+        arguments:
+            $dataTransformer: '@App\Form\Transformer\ArrayToExplodedStringModelTransformer'
+
+    # define task actions view model builder as a service
+    App\View\Builder\TaskViewModelBuilder: ~
+
+    # define user actions view model builder as a service
+    App\View\Builder\UserViewModelBuilder: ~
+
+    # define flash bag as lazy service
+    Symfony\Component\HttpFoundation\Session\Flash\FlashBag:
+        lazy: true
+
+    # define security token storage as lazy service
+    Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage:
+        lazy: true
+
+    # define security user password encoder as lazy service
+    Symfony\Component\Security\Core\Encoder\UserPasswordEncoder:
+        lazy: true

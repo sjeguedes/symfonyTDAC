@@ -11,21 +11,60 @@
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
+        <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
+        <server name="SYMFONY_PHPUNIT_VERSION" value="8.5" />
+        <!-- Disable Sf deprecations -->
+        <!-- https://symfony.com/doc/current/components/phpunit_bridge.html#disabling-the-deprecation-helper -->
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled=1" />
     </php>
 
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
         </testsuite>
+        <testsuite name="Project Unit Tests Suite">
+            <directory>tests/unit</directory>
+        </testsuite>
+        <testsuite name="Project Integration Tests Suite">
+            <directory>tests/integration</directory>
+        </testsuite>
+        <testsuite name="Project Functional Tests Suite">
+            <directory>tests/functional</directory>
+        </testsuite>
     </testsuites>
 
     <filter>
-        <whitelist>
-            <directory>src</directory>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src</directory>
+            <!-- Exclude files or directories here! -->
+            <exclude>
+                <file>src/Kernel.php</file>
+            </exclude>
         </whitelist>
     </filter>
 
     <listeners>
         <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
     </listeners>
+
+    <logging>
+        <!-- Log coverage directly in console -->
+        <log type="coverage-text" target="php://stdout" />
+        <!-- Log coverage html output -->
+        <log type="coverage-html"
+             target="./var/tests/coverage"
+             showUncoveredFiles="true" />
+    </logging>
+
+    <extensions>
+        <!-- Rollback transaction after each test with Doctrine test bundle -->
+        <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
+    </extensions>
+
+    <!-- Run `composer require symfony/panther` before enabling this extension -->
+    <!--
+    <extensions>
+        <extension class="Symfony\Component\Panther\ServerExtension" />
+    </extensions>
+    -->
 </phpunit>
