@@ -52,8 +52,9 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
      *
      * @return void
      */
-    protected static function assertAccessIsDenied(KernelBrowser $client): void
+    protected static function assertAccessIsUnauthorizedWithTemporaryRedirection(KernelBrowser $client): void
     {
+        // Check 302 status code
         static::assertEquals(Response::HTTP_FOUND, $client->getResponse()->getStatusCode());
         $crawler = $client->followRedirect();
         $buttonCrawlerNode = $crawler->selectButton('Se connecter');
@@ -103,11 +104,23 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     }
 
     /**
-     * Login with a user token and session storage.
+     * Login with an admin user token and session storage.
      *
      * @return UserInterface|User
      */
-    protected function loginUser(): UserInterface
+    protected function loginAdmin(): UserInterface
+    {
+        return $this->loginUser(true);
+    }
+
+    /**
+     * Login with a user token and session storage.
+     *
+     * @param bool $isAdmin
+     *
+     * @return UserInterface|User
+     */
+    protected function loginUser(bool $isAdmin = false): UserInterface
     {
         // Get a Session instance
         $session = static::$kernel->getContainer()->get('session');
@@ -116,12 +129,15 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         $userRepository = static::$kernel->getContainer()->get('doctrine')->getRepository(User::class);
         // Retrieve the test user
         /** @var UserInterface $testUser */
-        $testUser = $userRepository->findOneBy(['email' => 'marie.lambert@yahoo.fr']);
+        $testUser = $userRepository->findOneBy([
+            // Only "Daniel" is admin!
+            'email' => !$isAdmin ? 'marie.lambert@yahoo.fr' : 'daniel.lecomte@club-internet.fr'
+        ]);
         // Define the context which defaults to the firewall name.
         $firewallName = 'main';
         $firewallContext = 'main';
         // Get a user token to save in session
-        $token = new UsernamePasswordToken($testUser, null, $firewallName, ['ROLE_USER']);
+        $token = new UsernamePasswordToken($testUser, null, $firewallName, $testUser->getRoles());
         $session->set('_security_'.$firewallContext, serialize($token));
         $session->save();
         // Get a cookie to use with HTTP client

@@ -24,7 +24,12 @@ class SecurityController extends AbstractController
      */
     public function loginAction(AuthenticationUtils $authenticationUtils): Response
     {
-         return $this->render('security/login.html.twig', [
+        // Redirect to homepage if current user is already authenticated (same behaviour as just logged in user)!
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('homepage');
+        }
+
+        return $this->render('security/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
             'error'         => $authenticationUtils->getLastAuthenticationError(),
             // Create a Symfony form for authentication process

@@ -20,11 +20,15 @@ security:
             form_login:
                 login_path: login
                 check_path: login_check
-                always_use_default_target_path:  true
+                always_use_default_target_path: true
                 default_target_path:  /
             logout: ~
 
     access_control:
+        # Allow access to login form unauthenticated users
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/users, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        # This line was fixed (accessible to all before!!) to allow only "admin" users
+        # to perform actions as concerns other users!
+        - { path: ^/users, roles: ROLE_ADMIN }
+        # Allow authenticated users to access pages which do not concern users management
         - { path: ^/, roles: ROLE_USER }

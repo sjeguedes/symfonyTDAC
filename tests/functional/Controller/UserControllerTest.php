@@ -86,16 +86,32 @@ class UserControllerTest extends AbstractControllerWebTestCase
      * @param string $uri
      *
      * @return void
-     *
-     * TODO: fix access to user controller methods by filtering authenticated user in next security improvements feature!
-     * TODO: then activate this test!
      */
-    /*public function testUnauthenticatedUserCannotAccessUserRequests(string $method, string $uri): void
+    public function testUnauthenticatedUserCannotAccessUserRequests(string $method, string $uri): void
     {
         $this->client->request($method, $uri);
         // Use assertions with custom method
-        static::assertAccessIsDenied($this->client);
-    }*/
+        static::assertAccessIsUnauthorizedWithTemporaryRedirection($this->client);
+    }
+
+    /**
+     * Check that an authenticated user should have "admin" role to be able to perform other users actions.
+     *
+     * @dataProvider provideURIs
+     *
+     * @param string $method
+     * @param string $uri
+     *
+     * @return void
+     */
+    public function testAuthenticatedUserCannotAccessUserRequestsWithoutAdminRole(string $method, string $uri): void
+    {
+        // Log in user without admin role
+        $this->loginUser();
+        $this->client->request($method, $uri);
+        // Check forbidden access with response status code
+        static::assertResponseStatusCodeSame(403);
+    }
 
     /**
      * Check that forms CSRF protection is correctly set.
@@ -108,7 +124,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testCsrfProtectionIsActiveAndCorrectlyConfigured(array $data): void
     {
-        $this->loginUser();
+        $this->loginAdmin();
         $crawler = $this->client->request('GET', $data['uri']);
         /** @var CsrfToken $csrfToken */
         $csrfToken = static::$container->get('security.csrf.token_manager')->getToken($data['csrf_token_id']);
@@ -134,7 +150,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testUsersCanBeListed(): void
     {
-        $this->loginUser();
+        $this->loginAdmin();
         // Access full user list
         $crawler = $this->client->request('GET', '/users');
         static::assertSame(5, $crawler->filter('tr.user')->count());
@@ -147,7 +163,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testNewUserCanBeCreated(): void
     {
-        $this->loginUser();
+        $this->loginAdmin();
         $this->client->request('GET', '/users/create');
         $this->client->submitForm('Ajouter', [
             self::BASE_FORM_FIELDS_NAMES['user_creation'] . '[username]'         => 'utilisateur',
@@ -171,7 +187,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testNewUserHasRoles(): void
     {
-        $this->loginUser();
+        $this->loginAdmin();
         $this->client->request('GET', '/users/create');
         $this->client->submitForm('Ajouter', [
             self::BASE_FORM_FIELDS_NAMES['user_creation'] . '[username]'         => 'utilisateur',
@@ -194,9 +210,10 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testExistingUserCanBeUpdated(): void
     {
-        $this->loginUser();
-        // Get one of the 5 existing test users
-        $randomId = rand(1, 5);
+        $this->loginAdmin();
+        // Get one of the other 4 existing test users
+        // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
+        $randomId = rand(2, 5);
         $this->client->request('GET', '/users/' . $randomId . '/edit');
         $this->client->submitForm('Modifier', [
             self::BASE_FORM_FIELDS_NAMES['user_update'] . '[username]'         => 'utilisateur modifié',
@@ -220,12 +237,13 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testExistingUserCanBeDeleted(): void
     {
-        $this->loginUser();
+        $this->loginAdmin();
         $crawler = $this->client->request('GET', '/users');
         /** @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
-        // Get one of the 5 existing test users
-        $randomId = rand(1, 5);
+        // Get one of the other 4 existing test users
+        // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
+        $randomId = rand(2, 5);
         $existingUser = $userRepository->find($randomId);
         static::assertInstanceOf(User::class, $existingUser);
         // No data is submitted during deletion action, only the user id is taken into account!
@@ -243,9 +261,10 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testExistingUserCannotBeUpdatedWithoutFormInputsChanges(): void
     {
-        $this->loginUser();
-        // Get one of the 5 existing test users
-        $randomId = rand(1, 5);
+        $this->loginAdmin();
+        // Get one of the other 4 existing test users
+        // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
+        $randomId = rand(2, 5);
         $this->client->request('GET', '/users/' . $randomId . '/edit');
         /** @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
@@ -272,7 +291,7 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testTechnicalErrorIsTakenIntoAccountOnUserCreationORMFailure(): void
     {
-        $this->loginUser();
+        $this->loginAdmin();
         // Call the request
         $this->client->request('GET', '/users/create');
         foreach ([Events::postPersist, Events::onFlush] as $eventName) {
@@ -304,9 +323,10 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testTechnicalErrorIsTakenIntoAccountOnUserUpdateORMFailure(): void
     {
-        $this->loginUser();
-        // Get one of the 5 existing test users
-        $randomId = rand(1, 5);
+        $this->loginAdmin();
+        // Get one of the other 4 existing test users
+        // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
+        $randomId = rand(2, 5);
         // Call the request
         $this->client->request('GET', '/users/' . $randomId . '/edit');
         foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
@@ -338,9 +358,10 @@ class UserControllerTest extends AbstractControllerWebTestCase
      */
     public function testTechnicalErrorIsTakenIntoAccountOnUserDeletionORMFailure(): void
     {
-        $this->loginUser();
-        // Get one of the 5 existing test users
-        $randomId = rand(1, 5);
+        $this->loginAdmin();
+        // Get one of the other 4 existing test users
+        // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
+        $randomId = rand(2, 5);
         // Call the request
         $crawler = $this->client->request('GET', '/users');
         foreach ([Events::postRemove, Events::onFlush] as $eventName) {

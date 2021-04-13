@@ -8,6 +8,7 @@ use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\User;
 use App\Form\Handler\FormHandlerInterface;
 use App\View\Builder\ViewModelBuilderInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +19,11 @@ use Symfony\Component\Routing\Annotation\Route;
  * Class UserController
  *
  * Manage users actions.
+ *
+ * Please note this annotation comes in addition to ACL security (look at config/packages/security.yaml)
+ * as a complementary check to allow only "admin" users to perform these actions!
+ *
+ * @IsGranted("ROLE_ADMIN", message="Only admin user can perform this action!")
  */
 class UserController extends AbstractController
 {
@@ -76,7 +82,7 @@ class UserController extends AbstractController
         // Perform action(s) on handling success state
         if ($createUserHandler->execute()) {
             // Create a new user, encode password, and add a successful flash message
-            // Then, redirect to users list
+            // Then, redirect to user list
             return $this->redirectToRoute('user_list');
         }
 
@@ -110,7 +116,7 @@ class UserController extends AbstractController
         // Perform action(s) on handling success state
         if ($editUserHandler->execute()) {
             // Save change(s), encode password, and add a successful flash message
-            // Then, redirect to users list
+            // Then, redirect to user list
             return $this->redirectToRoute('user_list');
         }
 

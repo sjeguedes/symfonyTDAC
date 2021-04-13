@@ -101,7 +101,7 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     {
         $this->client->request($method, $uri);
         // Use assertions with custom method
-        static::assertAccessIsDenied($this->client);
+        static::assertAccessIsUnauthorizedWithTemporaryRedirection($this->client);
     }
 
     /**

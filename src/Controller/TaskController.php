@@ -80,7 +80,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($createTaskHandler->execute()) {
             // Associate authenticated user to new task and add a successful flash message
-            // Then, redirect to tasks list
+            // Then, redirect to task list
             return $this->redirectToRoute('task_list');
         }
 
@@ -114,7 +114,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($editTaskHandler->execute()) {
             // Save change(s), specify authenticated user as task last editor, and add a successful flash message
-            // Then, redirect to tasks list
+            // Then, redirect to task list
             return $this->redirectToRoute('task_list');
         }
 
@@ -149,7 +149,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($toggleTaskHandler->execute()) {
             // Save state change, and add a successful flash message
-            // Then, redirect to tasks list ("isDone" status filter may exist!)
+            // Then, redirect to task list ("isDone" status filter may exist!)
             return $this->redirectToRoute('task_list', [
                 'listStatus' => $request->query->get('listStatus')
             ]);
@@ -186,7 +186,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($deleteTaskHandler->execute()) {
             // Save deletion, and add a successful flash message
-            // Then, redirect to tasks list ("isDone" status filter may exist!)
+            // Then, redirect to task list ("isDone" status filter may exist!)
             return $this->redirectToRoute('task_list', [
                 'listStatus' => $request->query->get('listStatus')
             ]);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
-use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,10 +30,10 @@ class LoginUserType extends AbstractType
         // Define form fields names as expected in UserPasswordFormAuthenticationListener by default
         $builder
             ->add('_username', TextType::class, [
-                'label'      => 'Nom d\'utilisateur :'
+                'label' => 'Nom d\'utilisateur :'
             ])
             ->add('_password', PasswordType::class, [
-                'label'        => 'Mot de passe :'
+                'label' => 'Mot de passe :'
             ]);
     }
 
@@ -58,9 +57,11 @@ class LoginUserType extends AbstractType
      * Cancel form name to return form as expected in UserPasswordFormAuthenticationListener by default.
      *
      * {@inheritdoc}
+     *
+     * @return void
      */
-    public function getBlockPrefix()
+    public function getBlockPrefix(): void
     {
-        return null;
+        return;
     }
 }
