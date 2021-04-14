@@ -45,26 +45,28 @@
             <div class="row mb">
                 <div class="col-md-12">
                     {# Exclude user creation link on user creation pages, for authenticated user #}
-                    {% if app.user and app.request.get('_route') != 'user_create' %}
+                    {% if is_granted('ROLE_ADMIN') and app.request.get('_route') != 'user_create' %}
                     <a href="{{ path('user_create') }}" title="Ajouter un nouvel utilisateur" class="btn btn-primary mr">
                         Créer un utilisateur
                     </a>
                     {% endif %}
+
                     {# Exclude user list link on user list, user creation, user edit pages, for authenticated user #}
                     {% set excludedRoutes = ['user_list', 'user_create', 'user_edit'] %}
-                    {% if app.user and excludedRoutes|filter(v => v != app.request.get('_route'))|length == 3 %}
+                    {% if is_granted('ROLE_ADMIN') and excludedRoutes|filter(v => v != app.request.get('_route'))|length == 3 %}
                     <a href="{{ path('user_list') }}" title="Accéder à l'ensemble des utilisateurs"
-                       class="btn btn-default"
-                    >
+                       class="btn btn-default">
                         Consulter la liste des utilisateurs
                     </a>
                     {% endif %}
+
                     {# Show disconnection link, for authenticated user #}
                     {% if app.user %}
                     <a href="{{ path('logout') }}" title="Ne plus être authentifié" class="pull-right btn btn-danger">
                         Se déconnecter
                     </a>
                     {% endif %}
+
                     {# Show connection link by excluding login page, for anonymous user #}
                     {% if not app.user and 'login' != app.request.attributes.get('_route') %}
                     <a href="{{ path('login') }}" title="S'authentifier" class="pull-right btn btn-success">

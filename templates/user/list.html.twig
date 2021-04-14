@@ -30,32 +30,56 @@
                             {# Added user deletion form errors managed by Symfony as a better practice! #}
                             {% set delete_form = view_model.deleteUserFormViews[user.id] %}
                             <div id="user-{{ user.id }}-forms-errors"
-                                    {{ delete_form.vars.errors is not empty  ? 'class="m-b clearfix"' : '' }}
-                            >
+                                    {{ delete_form.vars.errors is not empty  ? 'class="m-b clearfix"' : '' }}>
                                 {{ form_errors(delete_form) }}
                             </div>
+
+                            {# Edit user #}
                             <a href="{{ path('user_edit', {'id' : user.id}) }}" title="Modifier l'utilisateur"
-                               class="btn btn-info btn-sm pull-left mr-8"
-                            >
+                               class="btn btn-info btn-sm pull-left mr-8">
                                 <span class="glyphicon glyphicon-pencil"></span>
                             </a>
-                            {# Added deletion form managed by Symfony as a better practice! #}
-                            <div id="user-{{ user.id }}-deletion-form" class="pull-left">
-                                {{ form_start(delete_form, {
-                                    'action' : path(
-                                        'user_delete',
-                                        {'id' : user.id}
-                                    )
-                                }) }}
-                                {# No field to display at this time but maybe errors #}
-                                {{ form_rest(delete_form) }}
-                                <button type="submit" title="Supprimer l'utilisateur définitivement"
-                                        id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm"
-                                >
-                                    <span class="glyphicon glyphicon-trash"></span>
-                                    {#Supprimer#}
-                                </button>
-                                {{ form_end(delete_form) }}
+
+                            {# Use a user deletion confirmation modal #}
+                            <button type="button" title="Supprimer l'utilisateur' définitivement"
+                                    class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modal-{{user.id }}">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                            <div id="modal-{{ user.id }}" class="modal fade"
+                                 tabindex="-1" role="dialog" aria-labelledby="userModal{{ user.id }}">
+                                <div class="modal-dialog modal-sm" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                            <p class="mt">
+                                                <strong>
+                                                    Confirmer la suppression<br>de l'utilisateur
+                                                    <span class="text-primary">{{ user.username }}</span>
+                                                </strong>
+                                            </p>
+                                        </div>
+                                        <div class="modal-body clearfix">
+                                            {# Added deletion form managed by Symfony as a better practice! #}
+                                            <div id="user-{{ user.id }}-deletion-form" class="pull-left">
+                                                {{ form_start(delete_form, {
+                                                    'action' : path(
+                                                        'user_delete',
+                                                        {'id' : user.id}
+                                                    )
+                                                }) }}
+                                                    {# No field to display at this time but maybe errors #}
+                                                    {{ form_rest(delete_form) }}
+                                                    <button type="submit" title="Confirmer la suppression de l'utilisateur"
+                                                            id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm">
+                                                        Supprimer
+                                                    </button>
+                                                {{ form_end(delete_form) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>

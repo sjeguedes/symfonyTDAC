@@ -17,20 +17,16 @@
         <div class="col-xs-6 col-sm-9">
             {% if list_status is null %}
             <a href="{{ path('task_list', {'listStatus' : 'undone'}) }}" title="Consulter la liste des tâches à faire"
-               class="btn btn-info pull-left mr mb"
-            >
+               class="btn btn-info pull-left mr mb">
                 Consulter les tâches à faire
             </a>
-
             <a href="{{ path('task_list', {'listStatus' : 'done'}) }}" title="Consulter la liste des tâches terminées"
-               class="btn btn-warning pull-left mb"
-            >
+               class="btn btn-warning pull-left mb">
                 Consulter les tâches terminées
             </a>
             {% else %}
             <a href="{{ path('task_list') }}" title="Consulter toutes les tâches"
-               class="btn btn-default mb"
-            >
+               class="btn btn-default mb">
                 Consulter la liste des tâches
             </a>
             {% endif %}
@@ -38,8 +34,7 @@
         <div class="col-sx-6 col-sm-3">
             {# Task creation CTA #}
             <a href="{{ path('task_create') }}" title="Ajouter une nouvelle tâche"
-               class="btn btn-info pull-right"
-            >
+               class="btn btn-info pull-right">
                 Créer une tâche
             </a>
         </div>
@@ -74,8 +69,7 @@
                             <br>
                             {# Control task content collpase #}
                             <a class="btn-link" data-toggle="collapse" href="#collapse-{{ task.id }}"
-                               aria-expanded="false" aria-controls="collapse-{{ task.id }}"
-                            >
+                               aria-expanded="false" aria-controls="collapse-{{ task.id }}">
                                 <span class="glyphicon glyphicon-chevron-right"></span>
                                 <strong><span class="text-end">voir le texte complet</span></strong>
                             </a>
@@ -105,10 +99,10 @@
                 <div id="task-{{ task.id }}-toggle-form">
                     {# Edit task #}
                     <a href="{{ path('task_edit', {'id' : task.id }) }}" title="Modifier la tâche"
-                       class="btn btn-info btn-sm pull-left mr-8"
-                    >
+                       class="btn btn-info btn-sm pull-left mr-8">
                         <span class="glyphicon glyphicon-pencil"></span>
                     </a>
+
                     {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
                     {{ form_start(toggle_form, {
                         'action' : path(
@@ -118,29 +112,52 @@
                     {# No field to display at this time but maybe errors #}
                     {{ form_rest(toggle_form) }}
                     <button type="submit" title="Changer l'état de réalisation de la tâche"
-                            id="toggle-task-{{ task.id }}" class="btn btn-success btn-sm pull-right"
-                    >
+                            id="toggle-task-{{ task.id }}" class="btn btn-success btn-sm pull-right">
                         Marquer {{ false == task.isDone ? 'comme faite': 'comme non terminée' }}
                     </button>
                     {{ form_end(toggle_form) }}
                 </div>
                 {# Added deletion form managed by Symfony as a better practice! #}
                 <div id="task-{{ task.id }}-deletion-form">
-                    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
-                    {{ form_start(delete_form, {
-                        'action' : path(
-                            'task_delete',
-                            {'id' : task.id, 'listStatus' : delete_form.vars.with_status ?? null}
-                        )
-                    }) }}
-                    {# No field to display at this time but maybe errors #}
-                    {{ form_rest(delete_form) }}
-                    <button type="submit" title="Supprimer la tâche définitivement"
-                            id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-left"
-                    >
+                    {# Use a task deletion confirmation modal #}
+                    <button type="button" title="Supprimer la tâche définitivement"
+                            class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modal-{{ task.id }}">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
-                    {{ form_end(delete_form) }}
+                    <div id="modal-{{ task.id }}" class="modal fade"
+                         tabindex="-1" role="dialog" aria-labelledby="taskModal{{ task.id }}">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <p class="mt">
+                                        <strong>
+                                            Confirmer la suppression<br>de la tâche
+                                            <span class="text-primary">{{ task.title }}</span>
+                                        </strong>
+                                    </p>
+                                </div>
+                                <div class="modal-body clearfix">
+                                    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
+                                    {{ form_start(delete_form, {
+                                        'action' : path(
+                                            'task_delete',
+                                            {'id' : task.id, 'listStatus' : delete_form.vars.with_status ?? null}
+                                        )
+                                    }) }}
+                                    {# No field to display at this time but maybe errors #}
+                                    {{ form_rest(delete_form) }}
+                                    <button type="submit" title="Confirmer la suppression de la tâche"
+                                            id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-right">
+                                        Supprimer
+                                    </button>
+                                    {{ form_end(delete_form) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
