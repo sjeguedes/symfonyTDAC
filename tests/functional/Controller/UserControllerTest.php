@@ -211,10 +211,9 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testExistingUserCanBeUpdated(): void
     {
         $this->loginAdmin();
-        // Get one of the other 4 existing test users
+        // Get user with id 2
         // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
-        $randomId = rand(2, 5);
-        $this->client->request('GET', '/users/' . $randomId . '/edit');
+        $this->client->request('GET', '/users/2/edit');
         $this->client->submitForm('Modifier', [
             self::BASE_FORM_FIELDS_NAMES['user_update'] . '[username]'         => 'utilisateur modifié',
             self::BASE_FORM_FIELDS_NAMES['user_update'] . '[email]'            => 'utilisateur-modifie@test.fr',
@@ -241,15 +240,14 @@ class UserControllerTest extends AbstractControllerWebTestCase
         $crawler = $this->client->request('GET', '/users');
         /** @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
-        // Get one of the other 4 existing test users
+        // Get user with id 2
         // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
-        $randomId = rand(2, 5);
-        $existingUser = $userRepository->find($randomId);
+        $existingUser = $userRepository->find(2);
         static::assertInstanceOf(User::class, $existingUser);
         // No data is submitted during deletion action, only the user id is taken into account!
-        $form = $crawler->selectButton('delete-user-' . $randomId)->form();
+        $form = $crawler->selectButton('delete-user-2')->form();
         $this->client->submit($form);
-        $deletedUser = $userRepository->find($randomId);
+        $deletedUser = $userRepository->find(2);
         // Check that user with id "$randomId" does not exist anymore
         static::assertSame(null, $deletedUser);
     }
@@ -262,19 +260,18 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testExistingUserCannotBeUpdatedWithoutFormInputsChanges(): void
     {
         $this->loginAdmin();
-        // Get one of the other 4 existing test users
+        // Get user with id 2
         // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
-        $randomId = rand(2, 5);
-        $this->client->request('GET', '/users/' . $randomId . '/edit');
+        $this->client->request('GET', '/users/2/edit');
         /** @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
-        $existingUser = $userRepository->find($randomId);
+        $existingUser = $userRepository->find(2);
         $crawler =$this->client->submitForm('Modifier', [
             self::BASE_FORM_FIELDS_NAMES['user_update'] . '[username]'         => $existingUser->getUsername(),
             self::BASE_FORM_FIELDS_NAMES['user_update'] . '[email]'            => $existingUser->getEmail(),
             self::BASE_FORM_FIELDS_NAMES['user_update'] . '[roles]'            => implode(', ', $existingUser->getRoles()),
-            self::BASE_FORM_FIELDS_NAMES['user_update'] . '[password][first]'  => 'password_' . $randomId . 'A$',
-            self::BASE_FORM_FIELDS_NAMES['user_update'] . '[password][second]' => 'password_' . $randomId . 'A$'
+            self::BASE_FORM_FIELDS_NAMES['user_update'] . '[password][first]'  => 'password_' . 2 . 'A$',
+            self::BASE_FORM_FIELDS_NAMES['user_update'] . '[password][second]' => 'password_' . 2 . 'A$'
         ], 'POST');
         static::assertFalse($this->client->getResponse()->isRedirect('/users'));
         static::assertSame(
@@ -324,11 +321,10 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnUserUpdateORMFailure(): void
     {
         $this->loginAdmin();
-        // Get one of the other 4 existing test users
+        // Get user with id 2
         // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
-        $randomId = rand(2, 5);
         // Call the request
-        $this->client->request('GET', '/users/' . $randomId . '/edit');
+        $this->client->request('GET', '/users/2/edit');
         foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
             // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
@@ -359,16 +355,15 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnUserDeletionORMFailure(): void
     {
         $this->loginAdmin();
-        // Get one of the other 4 existing test users
+        // Get user with id 2
         // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
-        $randomId = rand(2, 5);
         // Call the request
         $crawler = $this->client->request('GET', '/users');
         foreach ([Events::postRemove, Events::onFlush] as $eventName) {
             // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
             // No data is submitted during deletion action, only the user id is taken into account!
-            $form = $crawler->selectButton('delete-user-' . $randomId)->form();
+            $form = $crawler->selectButton('delete-user-2')->form();
             // Submit the form
             $crawler = $this->client->submit($form);
             // Check that no redirection is made to user list
