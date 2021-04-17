@@ -123,6 +123,7 @@ class TaskVoterTest extends TestCase
         // Get tasks to test
         $tasks = $this->createDefaultTasks();
         $tasks[0]->method('getAuthor')->willReturn($authenticatedUser1);
+        $tasks[1]->method('getAuthor')->willReturn(null);
         $taskWithUser1AsAuthor = $tasks[0];
         $taskWithoutAuthor = $tasks[1];
         // An anonymous user is never allowed to delete a task,
@@ -157,6 +158,7 @@ class TaskVoterTest extends TestCase
         // Get tasks to test
         $tasks = $this->createDefaultTasks();
         $tasks[0]->method('getAuthor')->willReturn($authenticatedUser1);
+        $tasks[1]->method('getAuthor')->willReturn(null);
         $tasks[2]->method('getAuthor')->willReturn($authenticatedUser2);
         $taskWithUser1AsAuthor = $tasks[0];
         $taskWithoutAuthor = $tasks[1];
@@ -165,6 +167,13 @@ class TaskVoterTest extends TestCase
         yield 'Simple authenticated user cannot delete a task without being the author' => [
             TaskVoter::USER_CAN_DELETE_IT_AS_AUTHOR,
             $taskWithUser2AsAuthor,
+            $authenticatedUser1,
+            Voter::ACCESS_DENIED
+        ];
+        // A simple member is not allowed to delete a task if he is not the author (when author value is set to null).
+        yield 'Simple authenticated user cannot delete a task without being the author which is null' => [
+            TaskVoter::USER_CAN_DELETE_IT_AS_AUTHOR,
+            $taskWithoutAuthor, // Author is set to "null" by default.
             $authenticatedUser1,
             Voter::ACCESS_DENIED
         ];
@@ -199,6 +208,7 @@ class TaskVoterTest extends TestCase
         // Get tasks to test
         $tasks = $this->createDefaultTasks();
         $tasks[0]->method('getAuthor')->willReturn($authenticatedUser1);
+        $tasks[1]->method('getAuthor')->willReturn(null);
         $tasks[2]->method('getAuthor')->willReturn($authenticatedAdmin);
         $taskWithUser1AsAuthor = $tasks[0];
         $taskWithoutAuthor = $tasks[1];
@@ -216,6 +226,13 @@ class TaskVoterTest extends TestCase
             $taskWithAdminAsAuthor,
             $authenticatedAdmin,
             Voter::ACCESS_GRANTED
+        ];
+        // An administrator is not allowed to delete a task if its author is not null.
+        yield 'Admin authenticated user cannot delete a task if its author is not null' => [
+            TaskVoter::ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR,
+            $taskWithUser1AsAuthor,
+            $authenticatedAdmin,
+            Voter::ACCESS_DENIED
         ];
         // An administrator is allowed to delete a task if no author is set.
         yield 'Admin authenticated user can delete a task without author' => [
@@ -342,6 +359,27 @@ class TaskVoterTest extends TestCase
         $this->assertSame(
             Voter::ACCESS_ABSTAIN,
             $voter->vote($token, $task, ['WRONG_ROLE_ATTRIBUTE'])
+        );
+    }
+
+    /**
+     * Test if a wrong subject (instance) is passed to TaskVoter::voteOnAttribute().
+     *
+     * @return void
+     *
+     * @throws \Exception
+     */
+    public function testVoteWithWrongSubject(): void
+    {
+        // Get user (can be authenticated or anonymous user, it doesn't matter)
+        $user = new User();
+        // Get anonymous user token (it is sufficient to test exception.)
+        $token = $this->createUserToken($user);
+        // Get TaskVoter instance
+        $voter = $this->voter;
+        $this->assertSame(
+            Voter::ACCESS_ABSTAIN,
+            $voter->vote($token, new \StdClass(), [TaskVoter::USER_CAN_DELETE_IT_AS_AUTHOR])
         );
     }
 

@@ -86,7 +86,11 @@ class TaskVoter extends Voter
             case self::ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR:
                 return $this->isAdminAllowedToDeleteWithoutAuthor($task);
             default:
-                throw new \LogicException('Task Voter checked permission is unknown!');
+                // @codeCoverageIgnoreStart
+                throw new \LogicException(
+                    'This code should not be reached! Task Voter checked permission is unknown.'
+                );
+                // @codeCoverageIgnoreEnd
         }
     }
 
