@@ -7,7 +7,9 @@ namespace App\Controller;
 use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
+use App\Security\Authorization\TaskVoter;
 use App\View\Builder\ViewModelBuilderInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -165,6 +167,11 @@ class TaskController extends AbstractController
 
     /**
      * Delete a Task entity and remove data.
+     *
+     * A authenticated user can delete one of his own tasks.
+     * @IsGranted("USER_CAN_DELETE_IT_AS_AUTHOR", subject="task")
+     * An admin can delete task without author.
+     * @IsGranted("ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR", subject="task")
      *
      * @param Task                 $task
      * @param Request              $request
