@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Form\Type\LoginUserType;
@@ -10,6 +12,8 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
  * Class SecurityController
+ *
+ * Manage application login / logout process.
  */
 class SecurityController extends AbstractController
 {

@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Class DefaultControllerTest
  *
- * Define functional tests.
+ * Define functional tests for DefaultController.
  */
 class DefaultControllerTest extends AbstractControllerWebTestCase
 {
