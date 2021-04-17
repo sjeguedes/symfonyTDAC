@@ -79,9 +79,9 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         yield 'Gets form data to delete a task' => [
             'data' => [
                 'uri'              => '/tasks',
-                'form_name'        => self::BASE_FORM_FIELDS_NAMES['task_deletion']. '_1',
+                'form_name'        => self::BASE_FORM_FIELDS_NAMES['task_deletion']. '_5',
                 'csrf_token_id'    => 'delete_task_action',
-                'submit_button_id' => 'delete-task-1'
+                'submit_button_id' => 'delete-task-5'
             ]
         ];
         // Add other forms here
@@ -204,9 +204,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testExistingTaskCanBeUpdated(): void
     {
         $this->loginUser();
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
+        // Get task with id 3
+        $this->client->request('GET', '/tasks/3/edit');
         $this->client->submitForm('Modifier', [
             self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => 'Tâche modifiée',
             self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => 'Ceci est un changement de contenu de la tâche.'
@@ -230,40 +229,108 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         $crawler = $this->client->request('GET', '/tasks');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        $existingTask = $taskRepository->find($randomId);
+        // Get task with id 2
+        $existingTask = $taskRepository->find(2);
         // Get task "isDone" state before toggle
         $previousIsDoneValue = $existingTask->isDone();
         // No data is submitted during toggle action, only the task id is taken into account!
-        $form = $crawler->selectButton('toggle-task-' . $randomId)->form();
+        $form = $crawler->selectButton('toggle-task-2')->form();
         $this->client->submit($form);
-        $toggledTask = $taskRepository->find($randomId);
+        $toggledTask = $taskRepository->find(2);
         // Check that isDone" state is inverse after toggle
         static::assertSame(!$previousIsDoneValue, $toggledTask->isDone());
     }
 
     /**
-     * Check that an existing task is correctly deleted.
+     * Check that an existing task is correctly deleted by author.
+     *
+     * Please note that it is a "USER_CAN_DELETE_IT_AS_AUTHOR" permission check!
      *
      * @return void
      */
-    public function testExistingTaskCanBeDeleted(): void
+    public function testExistingTaskCanBeDeletedByAuthor(): void
     {
+        // Get authenticated user with id 5 who is author for task with id 5!
         $this->loginUser();
         $crawler = $this->client->request('GET', '/tasks');
+        // No data is submitted during deletion action, only the task id is taken into account!
+        $form = $crawler->selectButton('delete-task-5')->form();
+        $this->client->submit($form);
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        $existingTask = $taskRepository->find($randomId);
-        static::assertInstanceOf(Task::class, $existingTask);
-        // No data is submitted during toggle action, only the task id is taken into account!
-        $form = $crawler->selectButton('delete-task-' . $randomId)->form();
-        $this->client->submit($form);
-        $deletedTask = $taskRepository->find($randomId);
-        // Check that task with id "$randomId" does not exist anymore
+        $deletedTask = $taskRepository->find(5);
+        // Check that task with id 5 does not exist anymore
         static::assertSame(null, $deletedTask);
+    }
+
+    /**
+     * Check that an existing task cannot be deleted by an authenticated user who is not author.
+     *
+     * Please note that it is a "USER_CAN_DELETE_IT_AS_AUTHOR" permission check!
+     *
+     * @return void
+     */
+    public function testExistingTaskCannotBeDeletedByAuthenticatedUserWhoIsNotAuthor(): void
+    {
+        // First test: get authenticated user with id 5 who is not the author for task with id 1!
+        $this->loginUser();
+        $crawler = $this->client->request('GET', '/tasks');
+        // No data is submitted during deletion action, only the task id is taken into account!
+        $form = $crawler->selectButton('delete-task-1')->form();
+        $this->client->submit($form);
+        // Check that task deletion is forbidden in this case!
+        static::assertResponseStatusCodeSame(403);
+
+        // Second test: get authenticated admin user with id 1 who is not the author for task with id 5!
+        $this->loginadmin();
+        $crawler = $this->client->request('GET', '/tasks');
+        // No data is submitted during deletion action, only the task id is taken into account!
+        $form = $crawler->selectButton('delete-task-5')->form();
+        $this->client->submit($form);
+        // Check that task deletion is forbidden in this case!
+        static::assertResponseStatusCodeSame(403);
+    }
+
+    /**
+     * Check that an existing task without author is correctly deleted by admin.
+     *
+     * Please note that it is a "ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR" permission check!
+     *
+     * @return void
+     */
+    public function testExistingTaskWithoutAuthorCanBeDeletedByAdmin(): void
+    {
+        // Get admin user with id 1 who tries to delete task with id 2 without author!
+        $this->loginAdmin();
+        $crawler = $this->client->request('GET', '/tasks');
+        // No data is submitted during deletion action, only the task id is taken into account!
+        $form = $crawler->selectButton('delete-task-2')->form();
+        $this->client->submit($form);
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        $deletedTask = $taskRepository->find(2);
+        // Check that task with id 2 does not exist anymore
+        static::assertSame(null, $deletedTask);
+    }
+
+    /**
+     * Check that an existing task without author cannot be deleted by simple authenticated user.
+     *
+     * Please note that it is a "ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR" permission check!
+     *
+     * @return void
+     */
+    public function testExistingTaskWithoutAuthorCannotBeDeletedBySimpleAuthenticatedUser(): void
+    {
+        // Get simple authenticated user with id 5 who tries to delete task with id 2 without author!
+        $this->loginUser();
+        $crawler = $this->client->request('GET', '/tasks');
+        // No data is submitted during deletion action, only the task id is taken into account!
+        $form = $crawler->selectButton('delete-task-2')->form();
+        $this->client->submit($form);
+        // Check that task deletion is forbidden in this case!
+        static::assertResponseStatusCodeSame(403);
+
     }
 
     /**
@@ -277,15 +344,14 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         $crawler = $this->client->request('GET', '/tasks');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        $existingTask = $taskRepository->find($randomId);
+        // Get task with id 3
+        $existingTask = $taskRepository->find(3);
         // No data is submitted during toggle action, only the task id is taken into account!
-        $form = $crawler->selectButton('toggle-task-' . $randomId)->form();
+        $form = $crawler->selectButton('toggle-task-3')->form();
         $this->client->submit($form);
         static::assertTrue($this->client->getResponse()->isRedirect('/tasks'));
         $crawler = $this->client->followRedirect();
-        $toggledTask = $taskRepository->find($randomId);
+        $toggledTask = $taskRepository->find(3);
         // Check flash success message content
         static::assertSame(
             sprintf(
@@ -298,7 +364,7 @@ class TaskControllerTest extends AbstractControllerWebTestCase
         // Check corresponding toggle button correct label
         static::assertSame(
             'Marquer comme ' . ($toggledTask->isDone() ? 'non terminée' : 'faite'),
-            trim($crawler->filter('#toggle-task-' . $randomId)->text(null, false))
+            trim($crawler->filter('#toggle-task-3')->text(null, false))
         );
     }
 
@@ -310,12 +376,11 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testExistingTaskCannotBeUpdatedWithoutFormInputsChanges(): void
     {
         $this->loginUser();
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
+        $this->client->request('GET', '/tasks/2/edit');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        $existingTask = $taskRepository->find($randomId);
+        // Get task with id 2
+        $existingTask = $taskRepository->find(2);
         $crawler =$this->client->submitForm('Modifier', [
             self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => $existingTask->getTitle(),
             self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => $existingTask->getContent()
@@ -336,19 +401,20 @@ class TaskControllerTest extends AbstractControllerWebTestCase
      */
     public function testExistingTaskWasUpdatedByAuthenticatedUserAsLastEditor(): void
     {
+        // Get authenticated user with id 5 who is not the author for task with id 1
         $testUser = $this->loginUser();
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
+        $this->client->request('GET', '/tasks/1/edit');
         $this->client->submitForm('Modifier', [
             self::BASE_FORM_FIELDS_NAMES['task_update'] . '[title]'   => 'Tâche modifiée',
             self::BASE_FORM_FIELDS_NAMES['task_update'] . '[content]' => 'Ceci est un changement de contenu de la tâche.'
         ], 'POST');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
-        $existingTask = $taskRepository->find($randomId);
-        // Check that author remained unchanged after update ("null" since defined without author by default)
-        static::assertSame(null, $existingTask->getAuthor());
+        // Get task with id 1
+        $existingTask = $taskRepository->find(1);
+        // Check that author (who is user with id 1) remained unchanged
+        // after update
+        static::assertSame(1, $existingTask->getAuthor()->getId());
         // Check that authenticated user is set as the last editor
         static::assertEquals($testUser->getId(), $existingTask->getLastEditor()->getId());
     }
@@ -391,10 +457,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnTaskUpdateORMFailure(): void
     {
         $this->loginUser();
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
-        // Call the request
-        $this->client->request('GET', '/tasks/' . $randomId . '/edit');
+        // Call the request for task with id 2
+        $this->client->request('GET', '/tasks/2/edit');
         foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
             // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
@@ -422,15 +486,14 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnTaskToggleORMFailure(): void
     {
         $this->loginUser();
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
         // Call the request
         $crawler = $this->client->request('GET', '/tasks');
         foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
             // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
+            // Get task with id 3
             // No data is submitted during toggle action, only the task id is taken into account!
-            $form = $crawler->selectButton('toggle-task-' . $randomId)->form();
+            $form = $crawler->selectButton('toggle-task-3')->form();
             // Submit the form
             $crawler = $this->client->submit($form);
             // Check that no redirection is made to task list
@@ -451,16 +514,15 @@ class TaskControllerTest extends AbstractControllerWebTestCase
      */
     public function testTechnicalErrorIsTakenIntoAccountOnTaskDeletionORMFailure(): void
     {
+        // Get authenticated user with id 5 who is the author for task with id 5.
         $this->loginUser();
-        // Get one of the 20 existing test tasks
-        $randomId = rand(1, 20);
         // Call the request
         $crawler = $this->client->request('GET', '/tasks');
         foreach ([Events::postRemove, Events::onFlush] as $eventName) {
             // Simulate ORM exception thanks to particular test Doctrine listener
             $this->makeEntityManagerThrowExceptionOnORMOperations($eventName);
             // No data is submitted during deletion action, only the task id is taken into account!
-            $form = $crawler->selectButton('delete-task-' . $randomId)->form();
+            $form = $crawler->selectButton('delete-task-5')->form();
             // Submit the form
             $crawler = $this->client->submit($form);
             // Check that no redirection is made to task list

@@ -162,11 +162,13 @@ class UserDataModelManagerTest extends KernelTestCase
      */
     public function testUserDeletionIsCorrectlyDone(): void
     {
+        // Call "create" method before to get a new fresh user
+        $data = $this->createUserInDatabase();
         $userRepository = $this->entityManager->getRepository(User::class);
         /** @var ObjectRepository $userRepository */
         $previousUserList = $userRepository->findAll();
-        // Remove first user in list
-        $this->userDataModelManager->delete($previousUserList[0]);
+        // Remove newly created user
+        $this->userDataModelManager->delete($data['user']);
         $nextUserList = $userRepository->findAll();
         static::assertSame(\count($previousUserList) - 1, \count($nextUserList));
     }

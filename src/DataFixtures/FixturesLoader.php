@@ -54,9 +54,14 @@ class FixturesLoader implements FixtureInterface
         // Keep the same set of Faker data for each fixtures loading (on this computer)
         $this->faker->seed(2021); // Define what you want
         // Create User instances
-        $this->createUsers($manager);
+        $users = $this->createUsers($manager);
         // Create Task instances
-        $this->createTasks($manager);
+        $tasks = $this->createTasks($manager);
+        // Set authors for both tasks with id 1 and 5 with corresponding (same) id
+        $user1AsAdmin = $users[0];
+        $user5 = $users[4];
+        $tasks[0]->setAuthor($user1AsAdmin);
+        $tasks[4]->setAuthor($user5);
         // Save data
         $manager->flush();
     }
@@ -66,11 +71,11 @@ class FixturesLoader implements FixtureInterface
      *
      * @param ObjectManager $manager
      *
-     * @return void
+     * @return array|Task[]
      *
      * @throws \Exception
      */
-    private function createTasks(ObjectManager $manager): void
+    private function createTasks(ObjectManager $manager): array
     {
         $tasks = [];
         for ($i = 0; $i < 20; $i++) {
@@ -90,6 +95,8 @@ class FixturesLoader implements FixtureInterface
             // Persist data
             $manager->persist($tasks[$i]);
         }
+
+        return $tasks;
     }
 
     /**
@@ -97,11 +104,11 @@ class FixturesLoader implements FixtureInterface
      *
      * @param ObjectManager $manager
      *
-     * @return void
+     * @return array|User[]
      *
      * @throws \Exception
      */
-    private function createUsers(ObjectManager $manager): void
+    private function createUsers(ObjectManager $manager): array
     {
         $users = [];
         for ($i = 0; $i < 5; $i++) {
@@ -128,5 +135,7 @@ class FixturesLoader implements FixtureInterface
             // Persist data
             $manager->persist($users[$i]);
         }
+
+        return $users;
     }
 }

@@ -7,9 +7,8 @@ namespace App\Controller;
 use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
-use App\Security\Authorization\TaskVoter;
 use App\View\Builder\ViewModelBuilderInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -168,11 +167,6 @@ class TaskController extends AbstractController
     /**
      * Delete a Task entity and remove data.
      *
-     * A authenticated user can delete one of his own tasks.
-     * @IsGranted("USER_CAN_DELETE_IT_AS_AUTHOR", subject="task")
-     * An admin can delete task without author.
-     * @IsGranted("ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR", subject="task")
-     *
      * @param Task                 $task
      * @param Request              $request
      * @param FormHandlerInterface $deleteTaskHandler
@@ -180,6 +174,15 @@ class TaskController extends AbstractController
      * @return RedirectResponse|Response
      *
      * @Route("/tasks/{id}/delete", name="task_delete", methods={"DELETE"})
+     *
+     * A authenticated user can delete one of his own tasks or
+     * an admin can delete a task without author.
+     * @Security(
+        "is_granted('USER_CAN_DELETE_IT_AS_AUTHOR', task) or
+         is_granted('ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR', task)"
+       )
+     *
+     * @see https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/annotations/security.html
      */
     public function deleteTaskAction(
         Task $task,
