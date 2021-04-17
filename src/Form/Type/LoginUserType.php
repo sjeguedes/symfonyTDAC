@@ -47,8 +47,9 @@ class LoginUserType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            // Define id as expected in UserPasswordFormAuthenticationListener by default
-            'csrf_token_id' => 'authenticate'
+            // Define id as expected in UsernamePasswordFormAuthenticationListener by default
+            'csrf_field_name' => '_csrf_token',
+            'csrf_token_id'   => 'authenticate'
 
         ]);
     }

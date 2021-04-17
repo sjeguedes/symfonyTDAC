@@ -267,6 +267,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
      * Check that an existing task cannot be deleted by an authenticated user who is not author.
      *
      * Please note that it is a "USER_CAN_DELETE_IT_AS_AUTHOR" permission check!
+     * Form submit cannot be used due to deactivated form in template,
+     * if authenticated user has no permission.
      *
      * @return void
      */
@@ -274,19 +276,13 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     {
         // First test: get authenticated user with id 5 who is not the author for task with id 1!
         $this->loginUser();
-        $crawler = $this->client->request('GET', '/tasks');
-        // No data is submitted during deletion action, only the task id is taken into account!
-        $form = $crawler->selectButton('delete-task-1')->form();
-        $this->client->submit($form);
+        $this->client->request('DELETE', '/tasks/1/delete');
         // Check that task deletion is forbidden in this case!
         static::assertResponseStatusCodeSame(403);
 
         // Second test: get authenticated admin user with id 1 who is not the author for task with id 5!
         $this->loginadmin();
-        $crawler = $this->client->request('GET', '/tasks');
-        // No data is submitted during deletion action, only the task id is taken into account!
-        $form = $crawler->selectButton('delete-task-5')->form();
-        $this->client->submit($form);
+        $this->client->request('DELETE', '/tasks/5/delete');
         // Check that task deletion is forbidden in this case!
         static::assertResponseStatusCodeSame(403);
     }
@@ -317,6 +313,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
      * Check that an existing task without author cannot be deleted by simple authenticated user.
      *
      * Please note that it is a "ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR" permission check!
+     * Form submit cannot be used due to deactivated form in template,
+     * if authenticated user has no permission.
      *
      * @return void
      */
@@ -324,13 +322,9 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     {
         // Get simple authenticated user with id 5 who tries to delete task with id 2 without author!
         $this->loginUser();
-        $crawler = $this->client->request('GET', '/tasks');
-        // No data is submitted during deletion action, only the task id is taken into account!
-        $form = $crawler->selectButton('delete-task-2')->form();
-        $this->client->submit($form);
+        $this->client->request('DELETE', '/tasks/2/delete');
         // Check that task deletion is forbidden in this case!
         static::assertResponseStatusCodeSame(403);
-
     }
 
     /**

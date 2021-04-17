@@ -19,7 +19,9 @@ security:
             pattern: ^/
             form_login:
                 login_path: login
-                check_path: login_check
+                check_path: login
+                # Activate CSRF protection for form login handler used by default
+                csrf_token_generator: security.csrf.token_manager
                 always_use_default_target_path: true
                 default_target_path:  /
             logout: ~

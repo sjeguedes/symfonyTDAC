@@ -58,7 +58,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
         static::assertEquals(Response::HTTP_FOUND, $client->getResponse()->getStatusCode());
         $crawler = $client->followRedirect();
         $buttonCrawlerNode = $crawler->selectButton('Se connecter');
-        static::assertRegExp('/\/login_check/', $buttonCrawlerNode->form()->getUri());
+        static::assertRegExp('/\/login/', $buttonCrawlerNode->form()->getUri());
     }
 
     /**

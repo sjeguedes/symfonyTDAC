@@ -18,13 +18,13 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     /**
-     * log in a user.
+     * Log in a user.
      *
      * @param AuthenticationUtils $authenticationUtils
      *
      * @return Response
      *
-     * @Route("/login", name="login", methods={"GET"})
+     * @Route("/login", name="login", methods={"GET", "POST"})
      */
     public function loginAction(AuthenticationUtils $authenticationUtils): Response
     {
@@ -39,23 +39,6 @@ class SecurityController extends AbstractController
             // Create a Symfony form for authentication process
             'loginUser'     => $this->createForm(LoginUserType::class)->createView()
         ]);
-    }
-
-    /**
-     * Create a route for guard authentication process.
-     *
-     * @codeCoverageIgnore
-     *
-     * @return void
-     *
-     * @Route("/login_check", name="login_check", methods={"GET", "POST"})
-     *
-     * @throws \Exception
-     */
-    public function loginCheck(): void
-    {
-        // This code is never reached.
-        throw new \Exception('This code should never be executed!');
     }
 
     /**

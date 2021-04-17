@@ -118,6 +118,8 @@
                     {{ form_end(toggle_form) }}
                 </div>
                 {# Added deletion form managed by Symfony as a better practice! #}
+                {# IMPORTANT: task Voter permissions cannot be used since task is a not an object here! #}
+                {% if app.user.username == task.author or (is_granted('ROLE_ADMIN') and task.author == null) %}
                 <div id="task-{{ task.id }}-deletion-form">
                     {# Use a task deletion confirmation modal #}
                     <button type="button" title="Supprimer la tâche définitivement"
@@ -159,6 +161,8 @@
                         </div>
                     </div>
                 </div>
+                {# End of task voter permissions condition #}
+                {% endif %}
             </div>
         </div>
 
@@ -186,7 +190,7 @@
 {% block javascripts_bottom %}
     {{ parent() }}
     <script>
-        // Define "Truncated task text" collapse link behavior
+        // Define "Truncated task text" collapse link behaviour
         $.noConflict();
         jQuery(document).ready(function($) {
             $('.collapse').on('shown.bs.collapse', function () {
