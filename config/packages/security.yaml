@@ -15,15 +15,14 @@ security:
             security: false
 
         main:
-            anonymous: ~
+            anonymous:
+                lazy: true
             pattern: ^/
             form_login:
-                login_path: login
-                check_path: login
-                # Activate CSRF protection for form login handler used by default
+                check_path: /login
+                # Activate CSRF protection for login form
                 csrf_token_generator: security.csrf.token_manager
                 always_use_default_target_path: true
-                default_target_path:  /
             logout: ~
 
     access_control:
@@ -34,3 +33,4 @@ security:
         - { path: ^/users, roles: ROLE_ADMIN }
         # Allow authenticated users to access pages which do not concern users management
         - { path: ^/, roles: ROLE_USER }
+

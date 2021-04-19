@@ -47,7 +47,7 @@ class LoginUserType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            // Define id as expected in UsernamePasswordFormAuthenticationListener by default
+            // Define CSRF token id and filed name as expected in UsernamePasswordFormAuthenticationListener by default
             'csrf_field_name' => '_csrf_token',
             'csrf_token_id'   => 'authenticate'
 

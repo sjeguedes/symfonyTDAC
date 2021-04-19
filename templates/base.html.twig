@@ -31,12 +31,15 @@
     <body>
         <nav class="navbar navbar-light navbar-fixed-top" style="background-color: #e3f2fd;" role="navigation">
             <div class="container">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="/" title="Page d'accueil">
-                        <span class="db pull-left mr">To Do List app</span>
-                        <img class="pull-left m-t" src="{{ asset('img/Logo_OpenClassrooms.png') }}" alt="OpenClassrooms">
-                    </a>
-                </div>
+                <a class="navbar-brand" href="/" title="Page d'accueil">
+                    <span class="db pull-left mr">To Do List app</span>
+                    <img class="pull-left m-t" src="{{ asset('img/Logo_OpenClassrooms.png') }}" alt="OpenClassrooms">
+                </a>
+                {% if app.user %}
+                <span class="dib pull-right mt">
+                    <strong>{{ app.user.username }}</strong> <span class="glyphicon glyphicon-user"></span>
+                </span>
+                {% endif %}
             </div>
         </nav>
 
@@ -63,7 +66,8 @@
                     {# Show disconnection link, for authenticated user #}
                     {% if app.user %}
                     <a href="{{ path('logout') }}" title="Ne plus être authentifié" class="pull-right btn btn-danger">
-                        Se déconnecter
+                        <span class="hidden-xs">Se déconnecter</span>
+                        <span class="hidden visible-xs glyphicon glyphicon-log-out db pb-6"></span>
                     </a>
                     {% endif %}
 
