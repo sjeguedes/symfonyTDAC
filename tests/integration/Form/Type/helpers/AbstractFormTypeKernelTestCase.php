@@ -13,7 +13,6 @@ use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Forms;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Validator\ContainerConstraintValidatorFactory;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -28,11 +27,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 abstract class AbstractFormTypeKernelTestCase extends KernelTestCase
 {
-    /**
-     * @var KernelInterface|null
-     */
-    protected static ?KernelInterface $kernel = null;
-
     /**
      * @var FormFactoryInterface|null
      */

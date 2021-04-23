@@ -6,7 +6,6 @@ namespace App\Tests\Integration\Repository;
 
 use App\Repository\TaskRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class TaskRepositoryTest
@@ -15,11 +14,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
  */
 class TaskRepositoryTest extends KernelTestCase
 {
-    /**
-     * @var KernelInterface|null
-     */
-    protected static ?KernelInterface $kernel = null;
-
     /**
      * @var TaskRepository|null
      */

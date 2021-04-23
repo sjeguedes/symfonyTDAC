@@ -27,7 +27,7 @@ abstract class AbstractControllerWebTestCase extends WebTestCase
     /**
      * @var KernelInterface|null
      */
-    protected static ?KernelInterface $kernel = null;
+    //protected static ?KernelInterface $kernel = null;
 
     /**
      * @var KernelBrowser|null

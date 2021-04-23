@@ -6,7 +6,6 @@ namespace App\Tests\Integration\Repository;
 
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class UserRepositoryTest
@@ -15,11 +14,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
  */
 class UserRepositoryTest extends KernelTestCase
 {
-    /**
-     * @var KernelInterface|null
-     */
-    protected static ?KernelInterface $kernel = null;
-
     /**
      * @var UserRepository|null
      */
