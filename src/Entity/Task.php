@@ -52,7 +52,7 @@ class Task
      *
      * @ORM\Column(type="string", unique=true)
      */
-    private ?string $title;
+    private ?string $title = null;
 
     /**
      * @var string|null
@@ -61,7 +61,7 @@ class Task
      *
      * @ORM\Column(type="text")
      */
-    private ?string $content;
+    private ?string $content = null;
 
     /**
      * @var bool
@@ -76,7 +76,7 @@ class Task
      * @ORM\ManyToOne(targetEntity=User::class)
      * @ORM\JoinColumn(name="author_id", referencedColumnName="id", nullable=true)
      */
-    private ?UserInterface $author;
+    private ?UserInterface $author = null;
 
     /**
      * @var UserInterface|User|null the last corresponding user which edited a task
@@ -85,7 +85,7 @@ class Task
      * @ORM\ManyToOne(targetEntity=User::class)
      * @ORM\JoinColumn(name="last_editor_id", referencedColumnName="id", nullable=true)
      */
-    private ?UserInterface $lastEditor;
+    private ?UserInterface $lastEditor = null;
 
     /**
      * Task constructor.

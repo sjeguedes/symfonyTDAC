@@ -63,7 +63,7 @@ class User implements UserInterface
      *
      * @ORM\Column(type="string", length=25, unique=true)
      */
-    private ?string $username;
+    private ?string $username = null;
 
     /**
      * @var string|null
@@ -77,7 +77,7 @@ class User implements UserInterface
      *
      * @ORM\Column(type="string")
      */
-    private ?string $password;
+    private ?string $password = null;
 
     /**
      * @var string|null
@@ -87,7 +87,7 @@ class User implements UserInterface
      *
      * @ORM\Column(type="string", unique=true)
      */
-    private ?string $email;
+    private ?string $email = null;
 
     /**
      * @var string|null
