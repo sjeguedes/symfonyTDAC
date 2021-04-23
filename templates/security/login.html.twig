@@ -14,14 +14,14 @@
                 </div>
             {% endif %}
             {# Replace simple HTML form with Symfony form view #}
-            {{ form_start(loginUser, {'action' : path('login'), 'attr': {'class': 'form-inline'}}) }}
-                {{ form_label(loginUser._username) }}
-                {{ form_widget(loginUser._username, {'attr': {'value': last_username}}) }}
-                {{ form_rest(loginUser) }}
+            {{ form_start(login_user, {'action' : path('login'), 'attr': {'class': 'form-inline'}}) }}
+                {{ form_label(login_user._username) }}
+                {{ form_widget(login_user._username, {'attr': {'value': last_username}}) }}
+                {{ form_rest(login_user) }}
                 <button type="submit" title="Se connecter" id="login-user" class="btn btn-success ml">
                     Se connecter
                 </button>
-            {{ form_end(loginUser) }}
+            {{ form_end(login_user) }}
         </div>
     </div>
 {% endblock %}

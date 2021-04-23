@@ -37,7 +37,7 @@ class SecurityController extends AbstractController
             'last_username' => $authenticationUtils->getLastUsername(),
             'error'         => $authenticationUtils->getLastAuthenticationError(),
             // Create a Symfony form for authentication process
-            'loginUser'     => $this->createForm(LoginUserType::class)->createView()
+            'login_user'    => $this->createForm(LoginUserType::class)->createView()
         ]);
     }
 

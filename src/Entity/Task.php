@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @DoctrineAssert\UniqueEntity("title", message="Une tâche existe déjà avec ce titre.")
  *
  * @ORM\Entity(repositoryClass=TaskRepository::class)
- * @ORM\Table
+ * @ORM\Table("tasks")
  */
 class Task
 {

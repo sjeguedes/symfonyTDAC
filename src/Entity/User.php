@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @DoctrineAssert\UniqueEntity("email", message="Un utilisateur enregistré utilise déjà cette adresse.")
  *
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table("user")
+ * @ORM\Table("users")
  */
 class User implements UserInterface
 {
@@ -74,8 +74,8 @@ class User implements UserInterface
      *     pattern="/^(?!.*\s)(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,20}$/",
      *     message="Le format attendu n'est pas respecté. (voir aide)"
      * )
-     * @ORM\Column(type="string")
      *
+     * @ORM\Column(type="string")
      */
     private ?string $password;
 

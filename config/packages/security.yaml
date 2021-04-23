@@ -15,8 +15,8 @@ security:
             security: false
 
         main:
-            anonymous:
-                lazy: true
+            # "lazy" mode make any requests possibly HTTP cacheable: https://symfony.com/blog/new-in-symfony-4-4-lazy-firewalls
+            anonymous: lazy
             pattern: ^/
             form_login:
                 check_path: /login
