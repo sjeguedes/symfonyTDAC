@@ -83,7 +83,7 @@ class EditUserTypeTest extends AbstractFormTypeKernelTestCase
         yield [
             'Fails when email data is not unique (unique entity constraint)' => [
                 'username' => 'Nom d\'utilisateur modifié',
-                'email'    => 'olivier.francois@voila.fr', // User 2 real email which exists in test database
+                'email'    => 'olivier.francois@gmail.com', // User 2 real email which exists in test database
                 'roles'    => 'ROLE_ADMIN, ROLE_USER',
                 'password' => [
                     'first'  => 'password_1A$',
