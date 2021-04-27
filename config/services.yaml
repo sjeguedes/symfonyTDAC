@@ -8,6 +8,9 @@ parameters:
     locale: en
     cache_type: file_system
 
+    # performance: compile the container in one single file
+    container.dumper.inline_factories: true
+
 services:
     # default configuration for services in *this* file
     _defaults:
