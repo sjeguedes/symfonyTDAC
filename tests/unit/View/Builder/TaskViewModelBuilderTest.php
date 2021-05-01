@@ -209,6 +209,7 @@ class TaskViewModelBuilderTest extends TestCase
             ->willReturn([]);
         static::expectException(\RuntimeException::class);
         static::expectExceptionMessage('Current form name suffix is expected to be an integer as index!');
+        $this->viewModelBuilder->setLoadTaskListFormWithAjax(false);
         $this->viewModelBuilder->create('toggle_task', ['form' => $currentForm]);
     }
 
@@ -235,12 +236,14 @@ class TaskViewModelBuilderTest extends TestCase
         static::assertSame($viewModel->listStatus, $listStatus);
         static::assertObjectHasAttribute('tasks', $viewModel);
         static::assertCount(3, $viewModel->tasks);
-        static::assertObjectHasAttribute('toggleTaskFormViews', $viewModel);
-        static::assertCount(3, $viewModel->toggleTaskFormViews);
-        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->toggleTaskFormViews);
-        static::assertObjectHasAttribute('deleteTaskFormViews', $viewModel);
-        static::assertCount(3, $viewModel->deleteTaskFormViews);
-        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteTaskFormViews);
+        if (false === $this->viewModelBuilder->getLoadTaskListFormWithAjax()) {
+            static::assertObjectHasAttribute('toggleTaskFormViews', $viewModel);
+            static::assertCount(3, $viewModel->toggleTaskFormViews);
+            static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->toggleTaskFormViews);
+            static::assertObjectHasAttribute('deleteTaskFormViews', $viewModel);
+            static::assertCount(3, $viewModel->deleteTaskFormViews);
+            static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteTaskFormViews);
+        }
     }
 
     /**
@@ -306,8 +309,10 @@ class TaskViewModelBuilderTest extends TestCase
         $viewModel = $this->viewModelBuilder->create('toggle_task', ['form' => $currentForm]);
         // Other common assertions are already checked in task list view model test!
         static::assertObjectNotHasAttribute('form', $viewModel);
-        // Check that submitted toggle form with id "2" had its state preserved in view model
-        static::assertTrue($viewModel->toggleTaskFormViews[2]->vars['submitted']);
+        if (false === $this->viewModelBuilder->getLoadTaskListFormWithAjax()) {
+            // Check that submitted toggle form with id "2" had its state preserved in view model
+            static::assertTrue($viewModel->toggleTaskFormViews[2]->vars['submitted']);
+        }
     }
 
     /**
@@ -336,8 +341,10 @@ class TaskViewModelBuilderTest extends TestCase
         $viewModel = $this->viewModelBuilder->create('delete_task', ['form' => $currentForm]);
         // Other common assertions are already checked in task list view model test!
         static::assertObjectNotHasAttribute('form', $viewModel);
-        // Check that submitted deletion form with id "2" had its state preserved in view model
-        static::assertTrue($viewModel->deleteTaskFormViews[2]->vars['submitted']);
+        if (false === $this->viewModelBuilder->getLoadTaskListFormWithAjax()) {
+            // Check that submitted deletion form with id "2" had its state preserved in view model
+            static::assertTrue($viewModel->deleteTaskFormViews[2]->vars['submitted']);
+        }
     }
 
     /**

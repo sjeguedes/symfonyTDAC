@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Controller;
 
 use App\Entity\Task;
 use App\Tests\Functional\Controller\Helpers\AbstractControllerWebTestCase;
+use App\View\Builder\TaskViewModelBuilder;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\Security\Csrf\CsrfToken;
@@ -116,6 +117,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testCsrfProtectionIsActiveAndCorrectlyConfigured(array $data): void
     {
         $this->loginUser();
+        // Deactivate task list toggle or deletion form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
         $crawler = $this->client->request('GET', $data['uri']);
         /** @var CsrfToken $csrfToken */
         $csrfToken = static::$container->get('security.csrf.token_manager')->getToken($data['csrf_token_id']);
@@ -226,6 +229,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testExistingTaskCanBeToggled(): void
     {
         $this->loginUser();
+        // Deactivate task list toggle form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
         $crawler = $this->client->request('GET', '/tasks');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
@@ -252,6 +257,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     {
         // Get authenticated user with id 5 who is author for task with id 5!
         $this->loginUser();
+        // Deactivate task list deletion form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
         $crawler = $this->client->request('GET', '/tasks');
         // No data is submitted during deletion action, only the task id is taken into account!
         $form = $crawler->selectButton('delete-task-5')->form();
@@ -298,6 +305,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     {
         // Get admin user with id 1 who tries to delete task with id 2 without author!
         $this->loginAdmin();
+        // Deactivate task list deletion form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
         $crawler = $this->client->request('GET', '/tasks');
         // No data is submitted during deletion action, only the task id is taken into account!
         $form = $crawler->selectButton('delete-task-2')->form();
@@ -335,6 +344,10 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testExistingTaskWasToggledWithCorrectTextsStatus(): void
     {
         $this->loginUser();
+        // Deactivate task list toggle form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
+        // Keep the same kernel after redirection
+        $this->client->disableReboot();
         $crawler = $this->client->request('GET', '/tasks');
         /** @var ObjectRepository $taskRepository */
         $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
@@ -480,6 +493,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnTaskToggleORMFailure(): void
     {
         $this->loginUser();
+        // Deactivate task list toggle form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
         // Call the request
         $crawler = $this->client->request('GET', '/tasks');
         foreach ([Events::postUpdate, Events::onFlush] as $eventName) {
@@ -510,6 +525,8 @@ class TaskControllerTest extends AbstractControllerWebTestCase
     {
         // Get authenticated user with id 5 who is the author for task with id 5.
         $this->loginUser();
+        // Deactivate task list deletion form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(false);
         // Call the request
         $crawler = $this->client->request('GET', '/tasks');
         foreach ([Events::postRemove, Events::onFlush] as $eventName) {
@@ -527,5 +544,77 @@ class TaskControllerTest extends AbstractControllerWebTestCase
                 trim($crawler->filter('div.alert-danger')->text(null, false))
             );
         }
+    }
+
+    /**
+     * Check that an existing task is correctly toggled (marked as done or not) with AJAX form loading.
+     *
+     * @return void
+     */
+    public function testExistingTaskCanBeToggledWithAjax(): void
+    {
+        $this->loginUser();
+        // Activate task list toggle form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(true);
+        $this->client->request('GET', '/tasks');
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        // Get task with id 2
+        $existingTask = $taskRepository->find(2);
+        // Get task "isDone" state before toggle
+        $previousIsDoneValue = $existingTask->isDone();
+        // Request with AJAX to load the corresponding form
+        $crawler = $this->client->xmlHttpRequest('GET', 'tasks/2/load-toggle-form');
+        // No data is submitted during toggle action, only the task id is taken into account!
+        $form = $crawler->selectButton('toggle-task-2')->form();
+        $this->client->submit($form);
+        $toggledTask = $taskRepository->find(2);
+        // Check that isDone" state is inverse after toggle
+        static::assertSame(!$previousIsDoneValue, $toggledTask->isDone());
+    }
+
+    /**
+     * Check that an existing task is correctly deleted by author with AJAX form loading.
+     *
+     * Please note that it is a "USER_CAN_DELETE_IT_AS_AUTHOR" permission check!
+     *
+     * @return void
+     */
+    public function testExistingTaskCanBeDeletedWithAjax(): void
+    {
+        // Get authenticated user with id 5 who is author for task with id 5!
+        $this->loginUser();
+        // Activate task list deletion form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(true);
+        $this->client->request('GET', '/tasks');
+        // Request with AJAX to load the corresponding form
+        $crawler = $this->client->xmlHttpRequest('GET', 'tasks/5/load-deletion-form');
+        // No data is submitted during deletion action, only the task id is taken into account!
+        $form = $crawler->selectButton('delete-task-5')->form();
+        $this->client->submit($form);
+        /** @var ObjectRepository $taskRepository */
+        $taskRepository = static::$container->get('doctrine')->getRepository(Task::class);
+        $deletedTask = $taskRepository->find(5);
+        // Check that task with id 5 does not exist anymore
+        static::assertSame(null, $deletedTask);
+    }
+
+    /**
+     * Check that a task list toggle or deletion form cannot be reached without AJAX form loading.
+     *
+     * @return void
+     */
+    public function testTaskListFormLoadingMustBeMadeWithAjax(): void
+    {
+        // Get authenticated user with id 5 who is author for task with id 5!
+        $this->loginUser();
+        // Activate task list toggle or deletion form AJAX loading
+        static::$container->get(TaskViewModelBuilder::class)->setLoadTaskListFormWithAjax(true);
+        $this->client->request('GET', '/tasks');
+        // Request without AJAX to load the corresponding form
+        $action = ['toggle', 'deletion'][rand(0, 1)];
+        $this->client->request('GET', 'tasks/5/load-' . $action . '-form');
+        // An exception "BadMethodCallException" is thrown.
+        static::assertResponseStatusCodeSame(500);
     }
 }

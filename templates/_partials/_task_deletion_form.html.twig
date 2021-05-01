@@ -1,0 +1,23 @@
+{% block task_deletion_form %}
+    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
+    {% if deletion_form.vars.list_status is defined and deletion_form.vars.list_status is not null %}
+        {% set listStatus = deletion_form.vars.list_status %}
+    {% elseif app.request.query.get('listStatus') is not null %}
+        {% set listStatus = app.request.query.get('listStatus') %}
+    {% else %}
+        {% set listStatus = null %}
+    {% endif %}
+    {{ form_start(deletion_form, {
+        'action' : path(
+            'task_delete',
+            {'id' : task.id, 'listStatus' : listStatus}
+        )
+    }) }}
+        {# No field to display at this time but maybe errors #}
+        {{ form_rest(deletion_form) }}
+        <button type="submit" title="Confirmer la suppression de la tâche"
+                id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-right">
+            Supprimer
+        </button>
+    {{ form_end(deletion_form) }}
+{% endblock %}

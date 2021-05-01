@@ -37,6 +37,12 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
     ];
 
     /**
+     * manage an AJAX mode to load individual toggle or deletion form
+     * for better performance in task list.
+     */
+    private bool $loadTaskListFormWithAjax = true;
+
+    /**
      * {@inheritdoc}
      *
      * @throws \Exception
@@ -64,6 +70,8 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
                     throw new \RuntimeException('Incorrect reference: no corresponding view was found!');
                 }
         }
+        // Add AJAX mode state to view model
+        $this->viewModel->ajaxMode = $this->getLoadTaskListFormWithAjax();
 
         return $this->viewModel;
     }
@@ -88,6 +96,34 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         }
 
         return $currentForm->getConfig()->getType()->getInnerType();
+    }
+
+    /**
+     * Get AJAX mode in order to load a task toggle or deletion individual form.
+     *
+     * @codeCoverageIgnore
+     *
+     * @return bool
+     */
+    public function getLoadTaskListFormWithAjax(): bool
+    {
+        return $this->loadTaskListFormWithAjax;
+    }
+
+    /**
+     * Set AJAX mode in order to load a task toggle or deletion individual form.
+     *
+     * @codeCoverageIgnore
+     *
+     * @param bool $isAjax
+     *
+     * @return TaskViewModelBuilder
+     */
+    public function setLoadTaskListFormWithAjax(bool $isAjax): self
+    {
+        $this->loadTaskListFormWithAjax = $isAjax;
+
+        return $this;
     }
 
     /**
@@ -126,20 +162,28 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         // Get task list
         $tasks = $this->getTaskListViewData($isListStatus);
         $this->viewModel->tasks = $tasks;
-        // A current form instance may exist when "toggle task" action is called!
-        $this->viewModel->toggleTaskFormViews = $this->generateMultipleFormViews(
-            $tasks,
-            self::VIEW_NAMES['toggleTask'],
-            $isListStatus ? $listStatus : null,
-            $isCurrentToggleForm ? $currentForm : null
-        );
-        // A current form instance may exist when "delete task" action is called!
-        $this->viewModel->deleteTaskFormViews = $this->generateMultipleFormViews(
-            $tasks,
-            self::VIEW_NAMES['deleteTask'],
-            $isListStatus ? $listStatus : null,
-            $isCurrentDeletionForm ? $currentForm : null
-        );
+        if (!$this->getLoadTaskListFormWithAjax()) {
+            // A current form instance may exist when "toggle task" action is called!
+            $this->viewModel->toggleTaskFormViews = $this->generateMultipleFormViews(
+                $tasks,
+                self::VIEW_NAMES['toggleTask'],
+                $isListStatus ? $listStatus : null,
+                $isCurrentToggleForm ? $currentForm : null
+            );
+            // A current form instance may exist when "delete task" action is called!
+            $this->viewModel->deleteTaskFormViews = $this->generateMultipleFormViews(
+                $tasks,
+                self::VIEW_NAMES['deleteTask'],
+                $isListStatus ? $listStatus : null,
+                $isCurrentDeletionForm ? $currentForm : null
+            );
+        } else {
+            // Generate only current form view instance with AJAX mode
+            /** @var FormInterface $currentForm */
+            $this->viewModel->currentFormView = null !== $currentForm ? $currentForm->createView() : null;
+            // Pass "withStatus" data to current form view
+            null === $currentForm || !$isListStatus ?: $this->viewModel->currentFormView->vars['list_status'] = $listStatus;
+        }
     }
 
     /**
