@@ -128,7 +128,7 @@ class TaskVoter extends Voter
             return false;
         }
         // Check that authenticated user has "admin" role, otherwise permission is not allowed!
-        if (!$this->security->isGranted(explode(',', User::ROLES['admin']))) {
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
             return false;
         }
 
