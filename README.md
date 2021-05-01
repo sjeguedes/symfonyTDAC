@@ -4,9 +4,12 @@
 # SymfonyTDAC
 
 ## Symfony upgrade from version 3.1 to 4.4 LTS, with bugs fixing and features improvements
-This application manages tasks as a "to do list".  
-It is only accessible with a user account, and obviously he has to be authenticated! 
-- An anonymous user (visitor) is redirected automatically to login page.
+This application manages tasks as a kind of "to do list".  
+It is only accessible with a user account, and obviously he has to be authenticated!  
+
+- An anonymous user (visitor) is automatically redirected to login page.
+- An authenticated user is redirected to application homepage after successful login action.
+- A disconnected user is redirected to login page again.
  
 Task features: 
 - Each task is associated to a single author.
@@ -121,7 +124,7 @@ $ php bin/phpunit --testsuite 'Project Functional Tests Suite'
 ```
 ###### *You can have a look at `phpunit.xml.dist` example file located in project root folder, to manage PHPUnit configuration*
 PHPUnit current documentation: 
-> https://phpunit.readthedocs.io/en/9.5
+> https://phpunit.readthedocs.io
 
 #### 8. Project contribution:
 If you are interested in improving this project you can follow our guidelines defined in `CONTRIBUTING.md`.  
