@@ -86,9 +86,6 @@ jobs:
             - name: Check the Symfony console
               run: bin/console about
 
-            #- name: Copy .env.ci
-            #  run: php -r "file_exists('.env.test') || copy('.env.ci', '.env.test');"
-
             # https://github.com/shivammathur/setup-php/blob/master/examples/symfony-mysql.yml
             - name: Create database and load Doctrine fixtures
               run: |
