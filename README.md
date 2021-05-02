@@ -91,7 +91,7 @@ $ php bin/console doctrine:fixtures:load -n
 
 #### 7. Application automated tests:
 ###### *Please note that 3 automated test suites were made with PHPUnit test framework, to maintain this project correctly.* 
-###### *You can have a look at `tests` folder divided in 3 sub folders (unit, integration, functional) and `env.test` example file:*
+###### *You can have a look at `tests` folder divided in 3 sub folders (Unit, Integration, Functional) and `env.test` example file:*
 For local installation:
 ```
 # You can or simply use option "--env=test" for each command or switch to "test" environnement 
@@ -108,17 +108,17 @@ $ php bin/phpunit tests
 $ php bin/phpunit --testsuite 'Project Tests Suite'
 
 # Execute only unit test suite:
-$ php bin/phpunit tests/unit
+$ php bin/phpunit tests/Unit
 # or:
 $ php bin/phpunit --testsuite 'Project Unit Tests Suite'
 
 # Execute only integration test suite:
-$ php bin/phpunit tests/integration
+$ php bin/phpunit tests/Integration
 # or:
 $ php bin/phpunit --testsuite 'Project Integration Tests Suite'
 
 # Execute only functional test suite:
-$ php bin/phpunit tests/functional
+$ php bin/phpunit tests/Functional
 # or:
 $ php bin/phpunit --testsuite 'Project Functional Tests Suite'
 ```

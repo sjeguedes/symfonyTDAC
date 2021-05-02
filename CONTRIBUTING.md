@@ -28,6 +28,7 @@ In your bug report, please provide the following:
 | infos                   | version
 | ----------------------- | ---------------
 | Application version     | x.y.z
+| Symfony version         | x.y.z
 | PHP version             | x.y.z
 | ...                     | ...
 
@@ -68,9 +69,9 @@ $ php vendor/bin/phpstan analyse src tests
 ```bash
 $ php composer require "squizlabs/php_codesniffer=*" --dev
 # Analyse code
-$ php ./vendor/bin/phpcs
-# fix issues
-$ php ./vendor/bin/phpcbf
+$ php vendor/bin/phpcs
+# Fix issues
+$ php vendor/bin/phpcbf
 ```
 Please understand that we will not accept a pull request when its changes violate this project's coding guidelines.
 
