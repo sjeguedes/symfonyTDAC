@@ -104,3 +104,15 @@ jobs:
                   bin/phpunit --coverage-text
               env:
                   DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
+
+            # PHPCS
+            - name: Coding standards checks (php_codesniffer + php-cs-fixer)
+              run: |
+                  vendor/squizlabs/php_codesniffer/bin/phpcs
+                  vendor/bin/php-cs-fixer
+              if: matrix.php-versions == '7.4'
+
+            # PHPStan static analysis
+            - name: Static analysis of PHP code (PHPStan)
+              run: vendor/bin/phpstan analyse src tests
+              if: matrix.php-versions == '7.4'

@@ -56,6 +56,8 @@
         "dama/doctrine-test-bundle": "^6",
         "doctrine/doctrine-fixtures-bundle": "^3.4.0",
         "fakerphp/faker": "^1.13",
+        "phpstan/phpstan": "^0.12.85",
+        "squizlabs/php_codesniffer": "*",
         "symfony/browser-kit": "4.4.*",
         "symfony/css-selector": "4.4.*",
         "symfony/debug-bundle": "4.4.*",
