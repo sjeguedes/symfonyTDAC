@@ -1,0 +1,109 @@
+# This is a basic workflow to check project stability with Actions
+name: Full CI process for project
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+    push:
+        branches: [ feature/project-improvements, develop, master ]
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+    # Complete CI process
+    ci_full_process:
+        name: Full CI process for project
+        runs-on: ${{ matrix.operating-system }}
+        strategy:
+            fail-fast: false
+            matrix:
+                operating-system: [ubuntu-latest]
+                php-versions: ['7.4']
+        services:
+            mysql:
+                image: mysql:8.0
+                env:
+                    MYSQL_ALLOW_EMPTY_PASSWORD: false
+                    MYSQL_USER: user
+                    MYSQL_PASSWORD: password
+                    MYSQL_ROOT_PASSWORD: password
+                    MYSQL_DATABASE: test
+                    #MYSQL_USER: 'runner'
+                    #MYSQL_ROOT_PASSWORD: 'password'
+                ports:
+                    - 3306:3306
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+            # https://github.com/actions/checkout (official)
+            - name: Checkout
+              uses: actions/checkout@v2
+
+            # https://github.com/shivammathur/setup-php (community)
+            - name: Setup PHP, extensions and composer with shivammathur/setup-php
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-versions }}
+                  extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
+                  coverage: xdebug
+              env:
+                  update: true
+
+            # https://github.com/symfonycorp/security-checker-action
+            - name: Cache database vulnerabilities to speed up security checks
+              uses: actions/cache@v2
+              id: cache-db
+              with:
+                  path: ~/.symfony/cache
+                  key: db
+
+            # Symfony Security checker for vulnerabilities
+            - name: The PHP Security Checker
+              uses: symfonycorp/security-checker-action@v2
+
+            # Check PHP version
+            - name: Check PHP Version
+              run: php -v
+
+            # Validate Composer config
+            - name: Validate composer.json and composer.lock
+              run: composer validate
+
+            - name: Get composer cache directory
+              id: composer-cache
+              run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+            - name: Cache composer dependencies
+              uses: actions/cache@v1
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: ${{ runner.os }}-composer-
+
+            - name: Install Composer dependencies
+              run: |
+                  composer install --no-progress --prefer-dist --optimize-autoloader
+
+            - name: Check Symfony requirements
+              run: vendor/bin/requirements-checker
+
+            - name: Check the Symfony console
+              run: bin/console about
+
+            #- name: Copy .env.ci
+            #  run: php -r "file_exists('.env.test') || copy('.env.ci', '.env.test');"
+
+            # https://github.com/shivammathur/setup-php/blob/master/examples/symfony-mysql.yml
+            - name: Create database and load Doctrine fixtures
+              run: |
+                  bin/console doctrine:cache:clear-metadata --env=test
+                  bin/console doctrine:database:create --if-not-exists --env=test
+                  bin/console doctrine:schema:drop --force --env=test
+                  bin/console doctrine:migrations:migrate --env=test
+                  bin/console doctrine:fixtures:load --no-interaction --env=test
+              env:
+                  DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
+
+            # Install Symfony phpunit bridge before and run tests
+            - name: Run unit, integration and functional tests
+              run: |
+                  bin/phpunit install
+                  bin/phpunit --coverage-text
+              env:
+                  DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
