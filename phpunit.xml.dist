@@ -54,6 +54,7 @@
         <log type="coverage-html"
              target="./var/tests/coverage"
              showUncoveredFiles="true" />
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
 
     <extensions>

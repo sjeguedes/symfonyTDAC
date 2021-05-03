@@ -1,10 +1,11 @@
+[![CI tests & code quality](https://github.com/sjeguedes/symfonyTDAC/actions/workflows/full-ci-workflow.yml/badge.svg)](https://github.com/sjeguedes/symfonyTDAC/actions/workflows/full-ci-workflow.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/cd0698a66913d668f94b/maintainability)](https://codeclimate.com/github/sjeguedes/symfonyTDAC/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/cd0698a66913d668f94b/test_coverage)](https://codeclimate.com/github/sjeguedes/symfonyTDAC/test_coverage)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/d7c1a32d50db45d5ab05ec44db19dce0)](https://www.codacy.com/gh/sjeguedes/symfonyTDAC/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sjeguedes/symfonyTDAC&amp;utm_campaign=Badge_Grade)
 # SymfonyTDAC
 
 ## Symfony upgrade from version 3.1 to 4.4 LTS, with bugs fixing and features improvements
-This application manages tasks as a kind of "to do list".  
+This application manages tasks as a kind of simple "to do list".  
 It is only accessible with a user account, and obviously he has to be authenticated!  
 
 - An anonymous user (visitor) is automatically redirected to login page.
@@ -14,8 +15,8 @@ It is only accessible with a user account, and obviously he has to be authentica
 Task features: 
 - Each task is associated to a single author.
 - Each task is updated by a single last editor.
-- A task without author was considered created by an "anonymous author or user".
-- A task author, if one exists, cannot be changed after creation.
+- A task without author was considered created by an "anonymous author" (user).
+- A task author, if one exists, is definitely set after creation.
 
 User features:
 - An authenticated user can only manage tasks.
