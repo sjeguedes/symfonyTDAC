@@ -9,6 +9,7 @@ use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Class TaskVoter
@@ -21,13 +22,13 @@ class TaskVoter extends Voter
      * Define an simple authenticated user permission to be able to delete one of his own tasks
      * (among those he created).
      */
-    const USER_CAN_DELETE_IT_AS_AUTHOR = 'USER_CAN_DELETE_IT_AS_AUTHOR';
+    public const USER_CAN_DELETE_IT_AS_AUTHOR = 'USER_CAN_DELETE_IT_AS_AUTHOR';
 
     /**
      * Define an admin permission to be able to delete a task
      * without author (considered as "anonymous") set to "null" in database.
      */
-    const ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR = 'ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR';
+    public const ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR = 'ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR';
 
     /**
      * @var Security
@@ -98,12 +99,12 @@ class TaskVoter extends Voter
      * Check that current task has an author, and authenticated user created it
      * in order to allow to delete this task.
      *
-     * @param Task $task
-     * @param User $user
+     * @param Task               $task
+     * @param UserInterface|User $user
      *
      * @return bool
      */
-    private function isUserAllowedToDeleteAsAuthor(Task $task, User $user): bool
+    private function isUserAllowedToDeleteAsAuthor(Task $task, UserInterface $user): bool
     {
         // If task has no author (considered as "anonymous" author), no permission is allowed in this case!
         if (null === $task->getAuthor()) {

@@ -59,10 +59,10 @@ class LoginUserType extends AbstractType
      *
      * {@inheritdoc}
      *
-     * @return void
+     * @return string
      */
-    public function getBlockPrefix(): void
+    public function getBlockPrefix(): string
     {
-        return;
+        return '';
     }
 }

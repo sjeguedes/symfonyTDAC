@@ -116,7 +116,7 @@ class FixturesLoader implements FixtureInterface
             // Set user properties
             $userName = strtolower($this->faker->firstName . '.' . $this->faker->lastName);
             $users[$i]
-                ->setUserName($userName . '_' . ($i + 1) )
+                ->setUserName($userName . '_' . ($i + 1))
                 ->setPassword(
                     // Use expected and validated format to encode
                     $this->userPasswordEncoder->encodePassword($users[$i], 'password' . '_' . ($i + 1) . 'A$')

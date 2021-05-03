@@ -28,7 +28,7 @@ class User implements UserInterface
      *
      * IMPORTANT: pay attention on space after comma "," due to data transformation logic!
      */
-    const ROLES = [
+    public const ROLES = [
         'admin' => 'ROLE_ADMIN, ROLE_USER',
         'user'  => 'ROLE_USER'
     ];

@@ -1,0 +1,26 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        #- tests
+    excludePaths:
+        analyse:
+            - src/Kernel.php
+            #- tests/bootstrap.php
+
+    # https://github.com/symfony/symfony/issues/36202
+    #bootstrapFiles:
+        #- bin/.phpunit/phpunit-8.5-0/vendor/autoload.php
+
+    # Exclude not found method due to use of interface implementation
+    # Ignore level 5 no value type for iterable
+    ignoreErrors:
+        - '#Call to an undefined method#'
+        - '#has parameter \$builder with no value type specified in iterable type#'
+        - '#has parameter \$options with no value type specified in iterable type array#'
+        - '#with|has no value type specified in iterable#'
+
+    # Turn off PhpDoc Type check for code evaluation
+    treatPhpDocTypesAsCertain: false
+    # Turn off generic class with no specified types
+    checkGenericClassInNonGenericObjectType: false

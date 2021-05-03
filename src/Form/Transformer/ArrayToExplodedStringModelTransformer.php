@@ -95,7 +95,7 @@ class ArrayToExplodedStringModelTransformer implements DataTransformerInterface
             return [];
         }
         // Stop transformation if value is empty when space or delimiter are excluded by returning an empty array
-        if (0 === \strlen(preg_replace('/\s|' . $this->delimiter. '/', '',  $string))) {
+        if (0 === \strlen(preg_replace('/\s|' . $this->delimiter . '/', '', $string))) {
             return [];
         }
         // Explode trimmed and cleaned (by keeping one space after delimiter) string depending on defined delimiter

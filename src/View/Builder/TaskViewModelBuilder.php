@@ -91,7 +91,7 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
         /** @var  FormInterface $currentForm */
         if (!$currentForm instanceof FormInterface) {
             throw new \RuntimeException(
-                sprintf('"form" merged view data must implement %s',FormInterface::class)
+                sprintf('"form" merged view data must implement %s', FormInterface::class)
             );
         }
 
@@ -179,10 +179,11 @@ class TaskViewModelBuilder extends AbstractViewModelBuilder
             );
         } else {
             // Generate only current form view instance with AJAX mode
-            /** @var FormInterface $currentForm */
+            /** @var FormInterface|null $currentForm */
             $this->viewModel->currentFormView = null !== $currentForm ? $currentForm->createView() : null;
             // Pass "withStatus" data to current form view
-            null === $currentForm || !$isListStatus ?: $this->viewModel->currentFormView->vars['list_status'] = $listStatus;
+            $currentFormView = $this->viewModel->currentFormView;
+            null === $currentForm || !$isListStatus ?: $currentFormView->vars['list_status'] = $listStatus;
         }
     }
 

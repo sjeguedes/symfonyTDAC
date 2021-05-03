@@ -14,8 +14,8 @@ interface ViewModelBuilderInterface
     /**
      * Manage creation about a particular view model instance.
      *
-     * @param string|null          $viewReference
-     * @param array<string, mixed> $mergedData
+     * @param string|null $viewReference
+     * @param array       $mergedData
      *
      * @return object
      */
