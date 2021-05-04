@@ -178,7 +178,7 @@ class TaskController extends AbstractController
      *
      * @Route("/tasks/{id}/delete", name="task_delete", methods={"DELETE"})
      *
-     * A authenticated user can delete one of his own tasks or
+     * An authenticated user can delete one of his own tasks or
      * an admin can delete a task without author.
      * @Security(
         "is_granted('USER_CAN_DELETE_IT_AS_AUTHOR', task) or
@@ -230,7 +230,7 @@ class TaskController extends AbstractController
         FormFactoryInterface $formFactory
     ): Response {
         if (!$request->isXmlHttpRequest()) {
-            throw new \BadMethodCallException('This method cannot be called without AJAX process!');
+            throw new \BadMethodCallException('This TaskController method cannot be called without AJAX!');
         }
         $actionType = $request->attributes->get('type');
         // Create named form
@@ -240,7 +240,7 @@ class TaskController extends AbstractController
         );
 
         return $this->render('_partials/_task_' . $actionType . '_form.html.twig', [
-             // Create a particular Symfony task form
+             // Create a particular Symfony task form view
             $actionType . '_form' => $form->createView(),
             'task'                => $task
         ]);

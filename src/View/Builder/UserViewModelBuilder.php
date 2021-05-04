@@ -34,6 +34,12 @@ class UserViewModelBuilder extends AbstractViewModelBuilder
     ];
 
     /**
+     * manage an AJAX mode to load individual deletion form
+     * for better performance in user list.
+     */
+    private bool $loadUserListFormWithAjax = true;
+
+    /**
      * {@inheritdoc}
      *
      * @throws \Exception
@@ -58,6 +64,8 @@ class UserViewModelBuilder extends AbstractViewModelBuilder
                     throw new \RuntimeException('Incorrect reference: no corresponding view was found!');
                 }
         }
+        // Add AJAX mode state to view model
+        $this->viewModel->ajaxMode = $this->getLoadUserListFormWithAjax();
 
         return $this->viewModel;
     }
@@ -82,6 +90,34 @@ class UserViewModelBuilder extends AbstractViewModelBuilder
         }
 
         return $currentForm->getConfig()->getType()->getInnerType();
+    }
+
+    /**
+     * Get AJAX mode in order to load a user deletion individual form.
+     *
+     * @codeCoverageIgnore
+     *
+     * @return bool
+     */
+    public function getLoadUserListFormWithAjax(): bool
+    {
+        return $this->loadUserListFormWithAjax;
+    }
+
+    /**
+     * Set AJAX mode in order to load a user deletion individual form.
+     *
+     * @codeCoverageIgnore
+     *
+     * @param bool $isAjax
+     *
+     * @return UserViewModelBuilder
+     */
+    public function setLoadUserListFormWithAjax(bool $isAjax): self
+    {
+        $this->loadUserListFormWithAjax = $isAjax;
+
+        return $this;
     }
 
     /**
@@ -113,13 +149,19 @@ class UserViewModelBuilder extends AbstractViewModelBuilder
         // Get user list
         $users = $this->getUserListViewData();
         $this->viewModel->users = $users;
-        // A current form instance may exist when "delete user" action is called!
-        $this->viewModel->deleteUserFormViews = $this->generateMultipleFormViews(
-            $users,
-            self::VIEW_NAMES['deleteUser'],
-            null,
-            $isCurrentDeletionForm ? $currentForm : null
-        );
+        if (!$this->getLoadUserListFormWithAjax()) {
+            // A current form instance may exist when "delete user" action is called!
+            $this->viewModel->deleteUserFormViews = $this->generateMultipleFormViews(
+                $users,
+                self::VIEW_NAMES['deleteUser'],
+                null,
+                $isCurrentDeletionForm ? $currentForm : null
+            );
+        } else {
+            // Generate only current form view instance with AJAX mode
+            /** @var FormInterface|null $currentForm */
+            $this->viewModel->currentFormView = null !== $currentForm ? $currentForm->createView() : null;
+        }
     }
 
     /**

@@ -202,9 +202,11 @@ class UserViewModelBuilderTest extends TestCase
         $viewModel = $this->viewModelBuilder->create('user_list');
         static::assertObjectHasAttribute('users', $viewModel);
         static::assertCount(3, $viewModel->users);
-        static::assertObjectHasAttribute('deleteUserFormViews', $viewModel);
-        static::assertCount(3, $viewModel->deleteUserFormViews);
-        static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteUserFormViews);
+        if (false === $this->viewModelBuilder->getLoadUserListFormWithAjax()) {
+            static::assertObjectHasAttribute('deleteUserFormViews', $viewModel);
+            static::assertCount(3, $viewModel->deleteUserFormViews);
+            static::assertContainsOnlyInstancesOf(FormView::class, $viewModel->deleteUserFormViews);
+        }
     }
 
     /**
@@ -278,8 +280,10 @@ class UserViewModelBuilderTest extends TestCase
         $viewModel = $this->viewModelBuilder->create('delete_user', ['form' => $currentForm]);
         // Other common assertions are already checked in user list view model test!
         static::assertObjectNotHasAttribute('form', $viewModel);
-        // Check that submitted deletion form with id "2" had its state preserved in view model
-        static::assertTrue($viewModel->deleteUserFormViews[2]->vars['submitted']);
+        if (false === $this->viewModelBuilder->getLoadUserListFormWithAjax()) {
+            // Check that submitted deletion form with id "2" had its state preserved in view model
+            static::assertTrue($viewModel->deleteUserFormViews[2]->vars['submitted']);
+        }
     }
 
     /**

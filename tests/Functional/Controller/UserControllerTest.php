@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Controller;
 
 use App\Entity\User;
 use App\Tests\Functional\Controller\Helpers\AbstractControllerWebTestCase;
+use App\View\Builder\UserViewModelBuilder;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\Security\Csrf\CsrfToken;
@@ -125,6 +126,8 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testCsrfProtectionIsActiveAndCorrectlyConfigured(array $data): void
     {
         $this->loginAdmin();
+        // Deactivate user list deletion form AJAX loading
+        static::$container->get(UserViewModelBuilder::class)->setLoadUserListFormWithAjax(false);
         $crawler = $this->client->request('GET', $data['uri']);
         /** @var CsrfToken $csrfToken */
         $csrfToken = static::$container->get('security.csrf.token_manager')->getToken($data['csrf_token_id']);
@@ -237,6 +240,8 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testExistingUserCanBeDeleted(): void
     {
         $this->loginAdmin();
+        // Deactivate user list deletion form AJAX loading
+        static::$container->get(UserViewModelBuilder::class)->setLoadUserListFormWithAjax(false);
         $crawler = $this->client->request('GET', '/users');
         /** @var ObjectRepository $userRepository */
         $userRepository = static::$container->get('doctrine')->getRepository(User::class);
@@ -355,6 +360,8 @@ class UserControllerTest extends AbstractControllerWebTestCase
     public function testTechnicalErrorIsTakenIntoAccountOnUserDeletionORMFailure(): void
     {
         $this->loginAdmin();
+        // Deactivate user list deletion form AJAX loading
+        static::$container->get(UserViewModelBuilder::class)->setLoadUserListFormWithAjax(false);
         // Get user with id 2
         // Exclude unique test admin account to avoid issue (during test if roles is changed to simple user!)
         // Call the request
@@ -374,5 +381,48 @@ class UserControllerTest extends AbstractControllerWebTestCase
                 trim($crawler->filter('div.alert-danger')->text(null, false))
             );
         }
+    }
+
+    /**
+     * Check that an existing user is correctly deleted by admin with AJAX form loading.
+     *
+     * @return void
+     */
+    public function testExistingTaskCanBeDeletedWithAjax(): void
+    {
+        // Get authenticated admin with id 5
+        $this->loginAdmin();
+        // Activate user list deletion form AJAX loading
+        static::$container->get(UserViewModelBuilder::class)->setLoadUserListFormWithAjax(true);
+        $this->client->request('GET', '/users');
+        // Request with AJAX to load the corresponding form
+        $crawler = $this->client->xmlHttpRequest('GET', 'users/2/load-deletion-form');
+        // No data is submitted during deletion action, only the user id is taken into account!
+        $form = $crawler->selectButton('delete-user-2')->form();
+        $this->client->submit($form);
+        /** @var ObjectRepository $userRepository */
+        $userRepository = static::$container->get('doctrine')->getRepository(User::class);
+        $deletedUser = $userRepository->find(2);
+        // Check that user with id 2 does not exist anymore
+        static::assertSame(null, $deletedUser);
+    }
+
+    /**
+     * Check that a user list deletion form cannot be reached without AJAX form loading.
+     *
+     * @return void
+     */
+    public function testUserListFormLoadingMustBeMadeWithAjax(): void
+    {
+        // Get authenticated user with id 1
+        $this->loginUser(true);
+        // Activate user list deletion form AJAX loading
+        static::$container->get(UserViewModelBuilder::class)->setLoadUserListFormWithAjax(true);
+        $this->client->request('GET', '/users');
+        // Request without AJAX to load the corresponding form
+        $action = 'deletion';
+        $this->client->request('GET', 'users/2/load-' . $action . '-form');
+        // An exception "BadMethodCallException" is thrown.
+        static::assertResponseStatusCodeSame(500);
     }
 }

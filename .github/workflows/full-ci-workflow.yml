@@ -116,13 +116,13 @@ jobs:
               if: matrix.php-versions == '7.4'
 
             # Generate code climate test coverage report
-            - name: Test coverage
-              uses: paambaati/codeclimate-action@v2.5.7
-              env:
-                  DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
-                  CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-              with:
-                  coverageCommand: |
-                      bin/phpunit --colors --coverage-clover build/logs/clover.xml
-                      ./cc-test-reporter after-build -t clover
+            #- name: Test coverage
+              #uses: paambaati/codeclimate-action@v2.5.7
+              #env:
+                  #DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
+                  #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+              #with:
+                  #coverageCommand: |
+                      #bin/phpunit --colors --coverage-clover build/logs/clover.xml
+                      #./cc-test-reporter after-build -t clover
 
