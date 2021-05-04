@@ -3,6 +3,7 @@ name: CI tests & code quality
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
+    pull_request:
     push:
         branches: [ feature/project-improvements, develop, master ]
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -39,7 +40,8 @@ jobs:
               with:
                   php-version: ${{ matrix.php-versions }}
                   extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
-                  coverage: xdebug
+                  #coverage: xdebug
+                  coverage: pcov
               env:
                   update: true
 
@@ -107,7 +109,7 @@ jobs:
             - name: Coding standards checks (php_codesniffer + php-cs-fixer)
               run: |
                   vendor/squizlabs/php_codesniffer/bin/phpcs --standard=PSR1,PSR2,PSR12 ./src --ignore=*/src/Kernel.php
-                  vendor/squizlabs/php_codesniffer/bin/phpcbf --standard=PSR1,PSR2,PSR12 ./src --ignore=*/src/Kernel.php --standard=PSR1,PSR2,PSR12 ./src --ignore=*/src/Kernel.php
+                  vendor/squizlabs/php_codesniffer/bin/phpcbf --standard=PSR1,PSR2,PSR12 ./src --ignore=*/src/Kernel.php
               if: matrix.php-versions == '7.4'
 
             # PHPStan static analysis
@@ -116,13 +118,44 @@ jobs:
               if: matrix.php-versions == '7.4'
 
             # Generate code climate test coverage report
-            #- name: Test coverage
-              #uses: paambaati/codeclimate-action@v2.5.7
-              #env:
-                  #DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
+            - name: codeclimate required GitHub env vars (pull_request)
+              run: |
+                 git fetch --no-tags --prune --depth=1 origin +refs/heads/$GITHUB_HEAD_REF:refs/remotes/origin/$GITHUB_HEAD_REF
+                  echo "::set-env name=GIT_BRANCH::$GITHUB_HEAD_REF"
+                  echo "::set-env name=GIT_COMMIT_SHA::$(git rev-parse origin/$GITHUB_HEAD_REF)"
+              env:
+                  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+              if: github.event_name == 'pull_request'
+
+            - name: codeclimate required GitHub env vars (push)
+              run: |
+                  echo "::set-env name=GIT_BRANCH::$GITHUB_REF"
+                  echo "::set-env name=GIT_COMMIT_SHA::$GITHUB_SHA"
+              env:
+                  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+              if: github.event_name == 'push'
+
+            #- name: Tests coverage codeclimate report
+            #  uses: paambaati/codeclimate-action@v2.5.7
+            #  env:
+            #      DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
+            #      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+            #  with:
+            #      coverageCommand: bin/phpunit --colors --coverage-clover build/logs/clover.xml
+            #      debug: true
+
+            - name: Setup Code Climate test-reporter
+              run: |
+                # download test reporter as a static binary
+                curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+                chmod +x ./cc-test-reporter
+
+            - name: Run tests
+              run: |
+                ./cc-test-reporter before-build
+                bin/phpunit --colors --coverage-clover build/logs/clover.xml
+                ./cc-test-reporter after-build -r ${{ secrets.CC_TEST_REPORTER_ID }} --debug --coverage-input-type clover --exit-code $?
+              env:
+                  DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
                   #CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-              #with:
-                  #coverageCommand: |
-                      #bin/phpunit --colors --coverage-clover build/logs/clover.xml
-                      #./cc-test-reporter after-build -t clover
 
