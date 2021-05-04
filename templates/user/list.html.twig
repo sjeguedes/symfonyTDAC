@@ -62,7 +62,7 @@
                                         </div>
                                         <div class="modal-body clearfix">
                                             {# Added deletion form managed by Symfony as a better practice! #}
-                                            <div id="user-{{ user.id }}-deletion-form" class="pull-left">
+                                            <div id="user-{{ user.id }}-deletion-form">
                                                 {{ form_start(delete_form, {
                                                     'action' : path(
                                                         'user_delete',
@@ -72,7 +72,7 @@
                                                     {# No field to display at this time but maybe errors #}
                                                     {{ form_rest(delete_form) }}
                                                     <button type="submit" title="Confirmer la suppression de l'utilisateur"
-                                                            id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm">
+                                                            id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm pull-right">
                                                         Supprimer
                                                     </button>
                                                 {{ form_end(delete_form) }}
