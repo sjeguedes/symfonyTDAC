@@ -23,13 +23,13 @@
             <directory>tests</directory>
         </testsuite>
         <testsuite name="Project Unit Tests Suite">
-            <directory>tests/unit</directory>
+            <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="Project Integration Tests Suite">
-            <directory>tests/integration</directory>
+            <directory>tests/Integration</directory>
         </testsuite>
         <testsuite name="Project Functional Tests Suite">
-            <directory>tests/functional</directory>
+            <directory>tests/Functional</directory>
         </testsuite>
     </testsuites>
 
@@ -54,6 +54,7 @@
         <log type="coverage-html"
              target="./var/tests/coverage"
              showUncoveredFiles="true" />
+        <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
 
     <extensions>

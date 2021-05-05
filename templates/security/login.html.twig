@@ -1,17 +1,27 @@
 {% extends 'base.html.twig' %}
 
+{% block header_title %}
+    <h1>S'authentifier pour accéder à l'application</h1>
+{% endblock %}
+
 {% block body %}
-    {% if error %}
-        <div class="alert alert-danger" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
-
-    <form action="{{ path('login_check') }}" method="post">
-        <label for="username">Nom d'utilisateur :</label>
-        <input type="text" id="username" name="_username" value="{{ last_username }}" />
-
-        <label for="password">Mot de passe :</label>
-        <input type="password" id="password" name="_password" />
-
-        <button class="btn btn-success" type="submit">Se connecter</button>
-    </form>
+    <div class="row mb">
+        <div class="col-sm-12">
+            {# Show authentication error if there is one! #}
+            {% if error %}
+                <div class="alert alert-danger mb" role="alert">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+            {# Replace simple HTML form with Symfony form view #}
+            {{ form_start(login_user, {'action' : path('login'), 'attr': {'class': 'form-inline'}}) }}
+                {{ form_label(login_user._username) }}
+                {{ form_widget(login_user._username, {'attr': {'value': last_username}}) }}
+                {{ form_rest(login_user) }}
+                <button type="submit" title="Se connecter" id="login-user" class="btn btn-success ml">
+                    Se connecter
+                </button>
+            {{ form_end(login_user) }}
+        </div>
+    </div>
 {% endblock %}

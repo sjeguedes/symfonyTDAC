@@ -7,8 +7,11 @@ namespace App\Controller;
 use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\User;
 use App\Form\Handler\FormHandlerInterface;
+use App\Form\Type\DeleteUserType;
 use App\View\Builder\ViewModelBuilderInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +21,11 @@ use Symfony\Component\Routing\Annotation\Route;
  * Class UserController
  *
  * Manage users actions.
+ *
+ * Please note this annotation comes in addition to ACL security (look at config/packages/security.yaml)
+ * as a complementary check to allow only "admin" users to perform these actions!
+ *
+ * @IsGranted("ROLE_ADMIN", message="Only admin user can perform this action!")
  */
 class UserController extends AbstractController
 {
@@ -76,7 +84,7 @@ class UserController extends AbstractController
         // Perform action(s) on handling success state
         if ($createUserHandler->execute()) {
             // Create a new user, encode password, and add a successful flash message
-            // Then, redirect to users list
+            // Then, redirect to user list
             return $this->redirectToRoute('user_list');
         }
 
@@ -110,7 +118,7 @@ class UserController extends AbstractController
         // Perform action(s) on handling success state
         if ($editUserHandler->execute()) {
             // Save change(s), encode password, and add a successful flash message
-            // Then, redirect to users list
+            // Then, redirect to user list
             return $this->redirectToRoute('user_list');
         }
 
@@ -153,6 +161,39 @@ class UserController extends AbstractController
             'view_model' => $this->viewModelBuilder->create('delete_user', [
                 'form' => $form
             ])
+        ]);
+    }
+
+    /**
+     * Load a user particular form view via AJAX for better performance.
+     *
+     * @param                      User $user
+     * @param Request              $request
+     * @param FormFactoryInterface $formFactory
+     *
+     * @return Response
+     *
+     * @Route("users/{id}/load-{type<deletion>}-form", name="user_load_form", methods={"GET"})
+     */
+    public function loadUserForm(
+        User $user,
+        Request $request,
+        FormFactoryInterface $formFactory
+    ): Response {
+        if (!$request->isXmlHttpRequest()) {
+            throw new \BadMethodCallException('This UserController method cannot be called without AJAX!');
+        }
+        $actionType = $request->attributes->get('type');
+        // Create named form
+        $form = $formFactory->createNamed(
+            ('deletion' !== $actionType ?: 'delete_user') . '_' . $user->getId(),
+            'deletion' !== $actionType ?: deleteUserType::class
+        );
+
+        return $this->render('_partials/_user_' . $actionType . '_form.html.twig', [
+            // Create a particular Symfony user form view
+            $actionType . '_form' => $form->createView(),
+            'user'                => $user
         ]);
     }
 }

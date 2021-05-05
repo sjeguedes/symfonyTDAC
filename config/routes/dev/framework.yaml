@@ -1,0 +1,6 @@
+# use this special route to check error pages rendering during development
+# http://localhost/index.php/_error/{statusCode}
+# http://localhost/index.php/_error/{statusCode}.{format}
+_errors:
+    resource: '@FrameworkBundle/Resources/config/routing/errors.xml'
+    prefix: /_error

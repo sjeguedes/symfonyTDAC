@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block header_title %}
+    <h1>Désolé, il y a eu un problème !</h1>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-12">
+            <h2 >Erreur {{ status_code }}</h2>
+            <p class="mb">
+                <strong>Statut : <span class="text-danger">{{ status_text }}</span><br><br></strong>
+                Une mauvaise requête ou une erreur technique est survenue !<br>
+                Merci de contacter le support si cela vous semble nécessaire.
+            </p>
+
+            {# Homepage link #}
+            <a href="{{ path('homepage') }}" title="Revenir à l'accueil de l'application"
+               class="btn btn-success dib mb">
+                Retour à l'accueil
+            </a>
+        </div>
+    </div>
+{% endblock %}

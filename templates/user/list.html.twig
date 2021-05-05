@@ -27,35 +27,69 @@
                         <td>{{ user.username }}</td>
                         <td>{{ user.email }}</td>
                         <td>
-                            {# Added user deletion form errors managed by Symfony as a better practice! #}
-                            {% set delete_form = view_model.deleteUserFormViews[user.id] %}
-                            <div id="user-{{ user.id }}-forms-errors"
-                                    {{ delete_form.vars.errors is not empty  ? 'class="m-b clearfix"' : '' }}
-                            >
-                                {{ form_errors(delete_form) }}
-                            </div>
+                            {# ------------------------------------------------------------------------------------------ #}
+                            {% if view_model.ajaxMode == false %}
+                                {# Added user deletion form errors managed by Symfony as a better practice! #}
+                                {% set deletion_form = view_model.deleteUserFormViews[user.id] %}
+                                <div id="user-{{ user.id }}-forms-errors"
+                                        {{ deletion_form.vars.errors is not empty  ? 'class="mb"' : '' }}>
+                                    {{ form_errors(deletion_form) }}
+                                </div>
+                            {% endif %}
+                            {# ------------------------------------------------------------------------------------------ #}
+                            {% if view_model.ajaxMode == true and view_model.currentFormView is not null
+                                and view_model.currentFormView.vars.data.id == user.id %}
+                                {# Added user current deletion form errors managed by Symfony as a better practice! #}
+                                {% set current_form = view_model.currentFormView %}
+                                <div id="user-{{ user.id }}-forms-errors"
+                                        {{ current_form.vars.errors is not empty ? 'class="mb"' : '' }}>
+                                    {{ form_errors(current_form) }}
+                                </div>
+                            {% endif %}
+                            {# ------------------------------------------------------------------------------------------ #}
+
+                            {# Edit user #}
                             <a href="{{ path('user_edit', {'id' : user.id}) }}" title="Modifier l'utilisateur"
-                               class="btn btn-info btn-sm pull-left mr-8"
-                            >
+                               class="btn btn-info btn-sm pull-left mr-8">
                                 <span class="glyphicon glyphicon-pencil"></span>
                             </a>
-                            {# Added deletion form managed by Symfony as a better practice! #}
-                            <div id="user-{{ user.id }}-deletion-form" class="pull-left">
-                                {{ form_start(delete_form, {
-                                    'action' : path(
-                                        'user_delete',
-                                        {'id' : user.id}
-                                    )
-                                }) }}
-                                {# No field to display at this time but maybe errors #}
-                                {{ form_rest(delete_form) }}
-                                <button type="submit" title="Supprimer l'utilisateur définitivement"
-                                        id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm"
-                                >
-                                    <span class="glyphicon glyphicon-trash"></span>
-                                    {#Supprimer#}
-                                </button>
-                                {{ form_end(delete_form) }}
+
+                            {# Use a user deletion confirmation modal #}
+                            <button type="button" title="Supprimer l'utilisateur' définitivement"
+                                    class="btn btn-danger btn-sm user-action" data-toggle="modal" data-target="#user-deletion-modal-{{user.id }}">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                            <div id="user-deletion-modal-{{ user.id }}" class="modal fade"
+                                 tabindex="-1" role="dialog" aria-labelledby="userModal{{ user.id }}">
+                                <div class="modal-dialog modal-sm" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                            <p class="mt">
+                                                <strong>
+                                                    Confirmer la suppression<br>de l'utilisateur
+                                                    <span class="text-primary">{{ user.username }}</span>
+                                                </strong>
+                                            </p>
+                                        </div>
+                                        <div class="modal-body clearfix">
+                                            {# Added deletion form managed by Symfony as a better practice! #}
+                                            <div id="user-{{ user.id }}-deletion-form">
+                                                {# ------------------------------------------------------------------------------------------ #}
+                                                {% if view_model.ajaxMode == false %}
+                                                    {# Task deletion form #}
+                                                    {% include '_partials/_user_deletion_form.html.twig' with {
+                                                        'user': user,
+                                                        'deletion_form': deletion_form
+                                                    } only %}
+                                                {% endif %}
+                                                {# ------------------------------------------------------------------------------------------ #}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -64,4 +98,43 @@
             </table>
         </div>
     {% endif %}
+{% endblock %}
+
+{% block javascripts_bottom %}
+    {{ parent() }}
+    <script>
+        $.noConflict();
+        jQuery(document).ready(function ($) {
+            // -------------------------------------------------------------------------------------------------
+            // Load a particular Symfony form with AJAX on user action (deletion) button click
+            $('.user-action').click(function () {
+                let matches = $(this).attr('data-target').match(/(deletion)-modal-(\d+)$/);
+                let actionType = matches[1];
+                let userId = matches[2];
+                // Get form container
+                let formContainer = $('#user-' + actionType + '-modal-' + userId + ' .modal-body');
+                formContainer.css('min-height', '60px');
+                let loader = '<img class="db pull-right" src="/img/ajax_loader.gif" alt="Chargement ...">';
+                // Add AJAX loader
+                formContainer.html(loader);
+                let request = $.ajax({
+                    url: '/users/' + userId + '/load-' + actionType + '-form',
+                    method: 'GET',
+                    dataType: 'html'
+                });
+                request.done(function (response) {
+                    formContainer.css('visibility', 'hidden');
+                    let timeout = setTimeout(function () {
+                        formContainer.html(response).css('visibility', 'visible');
+                        clearTimeout(timeout);
+                    }, 500);
+                });
+                request.fail(function (jqXHR, textStatus) {
+                    let error = '<span class="text-danger">Désolé l\'action est interrompue, une erreur est survenue !</span>';
+                    error = '<span class="text-danger glyphicon glyphicon-exclamation-sign"></span>&nbsp;' + error;
+                    formContainer.html(error);
+                });
+            });
+        });
+    </script>
 {% endblock %}

@@ -17,20 +17,16 @@
         <div class="col-xs-6 col-sm-9">
             {% if list_status is null %}
             <a href="{{ path('task_list', {'listStatus' : 'undone'}) }}" title="Consulter la liste des tâches à faire"
-               class="btn btn-info pull-left mr mb"
-            >
+               class="btn btn-info pull-left mr mb">
                 Consulter les tâches à faire
             </a>
-
             <a href="{{ path('task_list', {'listStatus' : 'done'}) }}" title="Consulter la liste des tâches terminées"
-               class="btn btn-warning pull-left mb"
-            >
+               class="btn btn-warning pull-left mb">
                 Consulter les tâches terminées
             </a>
             {% else %}
             <a href="{{ path('task_list') }}" title="Consulter toutes les tâches"
-               class="btn btn-default mb"
-            >
+               class="btn btn-default mb">
                 Consulter la liste des tâches
             </a>
             {% endif %}
@@ -38,8 +34,7 @@
         <div class="col-sx-6 col-sm-3">
             {# Task creation CTA #}
             <a href="{{ path('task_create') }}" title="Ajouter une nouvelle tâche"
-               class="btn btn-info pull-right"
-            >
+               class="btn btn-info pull-right">
                 Créer une tâche
             </a>
         </div>
@@ -74,8 +69,7 @@
                             <br>
                             {# Control task content collpase #}
                             <a class="btn-link" data-toggle="collapse" href="#collapse-{{ task.id }}"
-                               aria-expanded="false" aria-controls="collapse-{{ task.id }}"
-                            >
+                               aria-expanded="false" aria-controls="collapse-{{ task.id }}">
                                 <span class="glyphicon glyphicon-chevron-right"></span>
                                 <strong><span class="text-end">voir le texte complet</span></strong>
                             </a>
@@ -93,55 +87,117 @@
                 </div>
             </div>
             <div id="task-{{ task.id }}-forms" class="clearfix">
-                {# Added task toggle and deletion forms errors managed by Symfony as a better practice! #}
-                {% set toggle_form = view_model.toggleTaskFormViews[task.id] %}
-                {% set delete_form = view_model.deleteTaskFormViews[task.id] %}
-                <div id="task-{{ task.id }}-forms-errors"
-                    {{ (toggle_form.vars.errors is not empty) or (delete_form.vars.errors is not empty)  ? 'class="m-b-20"' : '' }}>
-                    {{ form_errors(toggle_form) }}
-                    {{ form_errors(delete_form) }}
-                </div>
+                {# ------------------------------------------------------------------------------------------ #}
+                {% if view_model.ajaxMode == false %}
+                    {# Added task toggle and deletion forms errors managed by Symfony as a better practice! #}
+                    {% set toggle_form = view_model.toggleTaskFormViews[task.id] %}
+                    {% set deletion_form = view_model.deleteTaskFormViews[task.id] %}
+                    <div id="task-{{ task.id }}-forms-errors"
+                        {{ (toggle_form.vars.errors is not empty) or (deletion_form.vars.errors is not empty)  ? 'class="m-b-20"' : '' }}>
+                        {{ form_errors(toggle_form) }}
+                        {{ form_errors(deletion_form) }}
+                    </div>
+                {% endif %}
+                {# ------------------------------------------------------------------------------------------ #}
+                {% if view_model.ajaxMode == true and view_model.currentFormView is not null
+                    and view_model.currentFormView.vars.data.id == task.id %}
+                    {# Added task current toggle or deletion form errors managed by Symfony as a better practice! #}
+                    {% set current_form = view_model.currentFormView %}
+                    <div id="task-{{ task.id }}-forms-errors"
+                            {{ current_form.vars.errors is not empty ? 'class="m-b-20"' : '' }}>
+                        {{ form_errors(current_form) }}
+                    </div>
+                {% endif %}
+                {# ------------------------------------------------------------------------------------------ #}
                 {# Added toggle form managed by Symfony as a better practice! #}
                 <div id="task-{{ task.id }}-toggle-form">
                     {# Edit task #}
                     <a href="{{ path('task_edit', {'id' : task.id }) }}" title="Modifier la tâche"
-                       class="btn btn-info btn-sm pull-left mr-8"
-                    >
+                       class="btn btn-info btn-sm pull-left mr-8">
                         <span class="glyphicon glyphicon-pencil"></span>
                     </a>
-                    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
-                    {{ form_start(toggle_form, {
-                        'action' : path(
-                            'task_toggle', {'id' : task.id, 'listStatus' : toggle_form.vars.list_status ?? null}
-                        )
-                    }) }}
-                    {# No field to display at this time but maybe errors #}
-                    {{ form_rest(toggle_form) }}
+
+                    {# Use a task toggle confirmation modal #}
                     <button type="submit" title="Changer l'état de réalisation de la tâche"
-                            id="toggle-task-{{ task.id }}" class="btn btn-success btn-sm pull-right"
-                    >
+                            class="btn btn-success btn-sm pull-right task-action"
+                            data-toggle="modal" data-target="#task-toggle-modal-{{ task.id }}">
                         Marquer {{ false == task.isDone ? 'comme faite': 'comme non terminée' }}
                     </button>
-                    {{ form_end(toggle_form) }}
+                    <div id="task-toggle-modal-{{ task.id }}" class="modal fade"
+                         tabindex="-1" role="dialog" aria-labelledby="taskModal{{ task.id }}">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <p class="mt">
+                                        <strong>
+                                            Confirmer le changement d'état<br>de la tâche
+                                            <span class="text-primary">{{ task.title }}</span><br>
+                                            comme <span class="text-success">
+                                                {{ (false == task.isDone ? 'faite': 'non terminée')|upper }}
+                                            </span>
+                                        </strong>
+                                    </p>
+                                </div>
+                                <div class="modal-body clearfix">
+                                    {# ------------------------------------------------------------------------------------------ #}
+                                    {% if view_model.ajaxMode == false %}
+                                        {# Task toggle form #}
+                                        {% include '_partials/_task_toggle_form.html.twig' with {
+                                            'task': task,
+                                            'toggle_form': toggle_form
+                                        } only %}
+                                    {% endif %}
+                                    {# ------------------------------------------------------------------------------------------ #}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {# Added deletion form managed by Symfony as a better practice! #}
+                {# IMPORTANT: task Voter permissions cannot be used since task is a not an object here! #}
+                {% if app.user.username == task.author or (is_granted('ROLE_ADMIN') and task.author == null) %}
                 <div id="task-{{ task.id }}-deletion-form">
-                    {# Pass 'listStatus" query parameter to redirect to task list with this filter #}
-                    {{ form_start(delete_form, {
-                        'action' : path(
-                            'task_delete',
-                            {'id' : task.id, 'listStatus' : delete_form.vars.with_status ?? null}
-                        )
-                    }) }}
-                    {# No field to display at this time but maybe errors #}
-                    {{ form_rest(delete_form) }}
-                    <button type="submit" title="Supprimer la tâche définitivement"
-                            id="delete-task-{{ task.id }}" class="btn btn-danger btn-sm pull-left"
-                    >
+                    {# Use a task deletion confirmation modal #}
+                    <button type="button" title="Supprimer la tâche définitivement"
+                            class="btn btn-danger btn-sm task-action"
+                            data-toggle="modal" data-target="#task-deletion-modal-{{ task.id }}">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
-                    {{ form_end(delete_form) }}
+                    <div id="task-deletion-modal-{{ task.id }}" class="modal fade"
+                         tabindex="-1" role="dialog" aria-labelledby="taskModal{{ task.id }}">
+                        <div class="modal-dialog modal-sm" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <p class="mt">
+                                        <strong>
+                                            Confirmer la suppression<br>de la tâche
+                                            <span class="text-primary">{{ task.title }}</span>
+                                        </strong>
+                                    </p>
+                                </div>
+                                <div class="modal-body clearfix">
+                                    {# ------------------------------------------------------------------------------------------ #}
+                                    {% if view_model.ajaxMode == false %}
+                                        {# Task deletion form #}
+                                         {% include '_partials/_task_deletion_form.html.twig' with {
+                                             'task': task,
+                                             'deletion_form': deletion_form
+                                         } only %}
+                                    {% endif %}
+                                    {# ------------------------------------------------------------------------------------------ #}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                {# End of task voter permissions condition #}
+                {% endif %}
             </div>
         </div>
 
@@ -169,17 +225,50 @@
 {% block javascripts_bottom %}
     {{ parent() }}
     <script>
-        // Define "Truncated task text" collapse link behavior
         $.noConflict();
-        jQuery(document).ready(function($) {
+        jQuery(document).ready(function ($) {
+            // Define "Truncated task text" collapse link behaviour
             $('.collapse').on('shown.bs.collapse', function () {
                 let matches = $(this).attr('id').match(/(\d+)$/i);
-                $('[href="#collapse-'+matches[1]+'"] .text-end').text('voir le résumé');
-                console.log($('[href="#collapse-'+matches[1]+'"]').text());
+                $('[href="#collapse-' + matches[1] + '"] .text-end').text('voir le résumé');
             })
             .on('hidden.bs.collapse', function () {
                 let matches = $(this).attr('id').match(/(\d+)$/i);
-                $('[href="#collapse-'+matches[1]+'"] .text-end').text('voir le texte complet');
+                $('[href="#collapse-' + matches[1] + '"] .text-end').text('voir le texte complet');
+            });
+            // -------------------------------------------------------------------------------------------------
+            // Load a particular Symfony form with AJAX on task action (toggle or deletion) button click
+            $('.task-action').click(function () {
+                let matches = $(this).attr('data-target').match(/(toggle|deletion)-modal-(\d+)$/);
+                let actionType = matches[1];
+                let taskId = matches[2];
+                // Pass list status query param to URI with Twig
+                let listStatus = '{{- app.request.query.get('listStatus')|e("js")  -}}';
+                let queryParams = '' !== listStatus ? { listStatus :  listStatus } : {};
+                // Get form container
+                let formContainer = $('#task-' + actionType + '-modal-' + taskId + ' .modal-body');
+                formContainer.css('min-height', '60px');
+                let loader = '<img class="db pull-right" src="/img/ajax_loader.gif" alt="Chargement ...">';
+                // Add AJAX loader
+                formContainer.html(loader);
+                let request = $.ajax({
+                    url: '/tasks/' + taskId + '/load-' + actionType + '-form',
+                    method: 'GET',
+                    data: queryParams,
+                    dataType: 'html'
+                });
+                request.done(function (response) {
+                    formContainer.css('visibility', 'hidden');
+                    let timeout = setTimeout(function () {
+                        formContainer.html(response).css('visibility', 'visible');
+                        clearTimeout(timeout);
+                    }, 500);
+                });
+                request.fail(function (jqXHR, textStatus) {
+                    let error = '<span class="text-danger">Désolé l\'action est interrompue, une erreur est survenue !</span>';
+                    error = '<span class="text-danger glyphicon glyphicon-exclamation-sign"></span>&nbsp;' + error;
+                    formContainer.html(error);
+                });
             });
         });
     </script>

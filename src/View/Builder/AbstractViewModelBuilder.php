@@ -53,7 +53,9 @@ abstract class AbstractViewModelBuilder implements ViewModelBuilderInterface
     public function create(string $viewReference = null, array $mergedData = []): object
     {
         // Jump loop if it is unnecessary.
-        if (empty($mergedData)) goto jumpedLoop;
+        if (empty($mergedData)) {
+            goto jumpedLoop;
+        }
         // Add merged data to those which are expected in each case.
         foreach ($mergedData as $key => $value) {
             if ('string' !== \gettype($key)) {
@@ -108,7 +110,8 @@ abstract class AbstractViewModelBuilder implements ViewModelBuilderInterface
                 $form = $currentForm;
             } else {
                 // Create other identical forms views
-                $formTypeClassName = static::FORM_TYPES[$viewReference];
+                $childClass = \get_called_class();
+                $formTypeClassName = $childClass::FORM_TYPES[$viewReference];
                 $form = $this->formFactory->createNamed(
                     $formNamePrefix . $entityId,
                     $formTypeClassName

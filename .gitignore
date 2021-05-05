@@ -18,3 +18,12 @@
 ###> symfony/translation ###
 /translations
 ###< symfony/translation ###
+
+###> squizlabs/php_codesniffer ###
+/.phpcs-cache
+/phpcs.xml
+###< squizlabs/php_codesniffer ###
+
+###> custom ###
+/build
+###< custom ###

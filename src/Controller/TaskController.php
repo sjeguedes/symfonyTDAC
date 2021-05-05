@@ -7,8 +7,12 @@ namespace App\Controller;
 use App\Entity\Factory\DataModelFactoryInterface;
 use App\Entity\Task;
 use App\Form\Handler\FormHandlerInterface;
+use App\Form\Type\DeleteTaskType;
+use App\Form\Type\ToggleTaskType;
 use App\View\Builder\ViewModelBuilderInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -80,7 +84,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($createTaskHandler->execute()) {
             // Associate authenticated user to new task and add a successful flash message
-            // Then, redirect to tasks list
+            // Then, redirect to task list
             return $this->redirectToRoute('task_list');
         }
 
@@ -114,7 +118,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($editTaskHandler->execute()) {
             // Save change(s), specify authenticated user as task last editor, and add a successful flash message
-            // Then, redirect to tasks list
+            // Then, redirect to task list
             return $this->redirectToRoute('task_list');
         }
 
@@ -149,7 +153,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($toggleTaskHandler->execute()) {
             // Save state change, and add a successful flash message
-            // Then, redirect to tasks list ("isDone" status filter may exist!)
+            // Then, redirect to task list ("isDone" status filter may exist!)
             return $this->redirectToRoute('task_list', [
                 'listStatus' => $request->query->get('listStatus')
             ]);
@@ -173,6 +177,15 @@ class TaskController extends AbstractController
      * @return RedirectResponse|Response
      *
      * @Route("/tasks/{id}/delete", name="task_delete", methods={"DELETE"})
+     *
+     * An authenticated user can delete one of his own tasks or
+     * an admin can delete a task without author.
+     * @Security(
+        "is_granted('USER_CAN_DELETE_IT_AS_AUTHOR', task) or
+         is_granted('ADMIN_CAN_DELETE_IT_WITHOUT_AUTHOR', task)"
+       )
+     *
+     * @see https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/annotations/security.html
      */
     public function deleteTaskAction(
         Task $task,
@@ -186,7 +199,7 @@ class TaskController extends AbstractController
         // Perform action(s) on handling success state
         if ($deleteTaskHandler->execute()) {
             // Save deletion, and add a successful flash message
-            // Then, redirect to tasks list ("isDone" status filter may exist!)
+            // Then, redirect to task list ("isDone" status filter may exist!)
             return $this->redirectToRoute('task_list', [
                 'listStatus' => $request->query->get('listStatus')
             ]);
@@ -197,6 +210,39 @@ class TaskController extends AbstractController
                 'form' => $form,
                 'listStatus' => $request->query->get('listStatus')
             ])
+        ]);
+    }
+
+    /**
+     * Load a task particular form view via AJAX for better performance.
+     *
+     * @param                      Task $task
+     * @param Request              $request
+     * @param FormFactoryInterface $formFactory
+     *
+     * @return Response
+     *
+     * @Route("tasks/{id}/load-{type<toggle|deletion>}-form", name="task_load_form", methods={"GET"})
+     */
+    public function loadTaskForm(
+        Task $task,
+        Request $request,
+        FormFactoryInterface $formFactory
+    ): Response {
+        if (!$request->isXmlHttpRequest()) {
+            throw new \BadMethodCallException('This TaskController method cannot be called without AJAX!');
+        }
+        $actionType = $request->attributes->get('type');
+        // Create named form
+        $form = $formFactory->createNamed(
+            ('toggle' === $actionType ? 'toggle_task' : 'delete_task') . '_' . $task->getId(),
+            'toggle' === $actionType ? toggleTaskType::class : deleteTaskType::class
+        );
+
+        return $this->render('_partials/_task_' . $actionType . '_form.html.twig', [
+             // Create a particular Symfony task form view
+            $actionType . '_form' => $form->createView(),
+            'task'                => $task
         ]);
     }
 }

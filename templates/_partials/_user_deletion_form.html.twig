@@ -1,0 +1,15 @@
+{% block user_deletion_form %}
+    {{ form_start(deletion_form, {
+        'action' : path(
+            'user_delete',
+            {'id' : user.id}
+        )
+    }) }}
+    {# No field to display at this time but maybe errors #}
+    {{ form_rest(deletion_form) }}
+    <button type="submit" title="Confirmer la suppression de l'utilisateur"
+            id="delete-user-{{ user.id }}" class="btn btn-danger btn-sm pull-right">
+        Supprimer
+    </button>
+    {{ form_end(deletion_form) }}
+{% endblock %}
