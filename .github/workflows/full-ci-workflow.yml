@@ -117,3 +117,18 @@ jobs:
               run: vendor/bin/phpstan analyse src --error-format=github
               if: matrix.php-versions == '7.4'
 
+            # Download test reporter as a static binary
+            - name: Setup Code Climate test-reporter
+              run: |
+                curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+                chmod +x ./cc-test-reporter
+
+            # Generate code climate test coverage report
+            - name: Run tests for Code Climate coverage report
+              run: |
+                ./cc-test-reporter before-build
+                bin/phpunit --colors --coverage-clover build/logs/clover.xml
+                ./cc-test-reporter after-build --debug --coverage-input-type clover --exit-code $?
+              env:
+                  DATABASE_URL: mysql://user:password@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/test
+                  CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
