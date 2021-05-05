@@ -117,7 +117,7 @@ class TaskRepositoryTest extends KernelTestCase
         static::assertArrayHasKey('lastEditor', $tasksData[0]);
         static::assertCount(8, $tasksData[0]);
         // Check that task data includes dates already formatted thanks to MySQL
-        $correspondingTaskInstance = $this->taskRepository->find(1);
+        $correspondingTaskInstance = $this->taskRepository->findBy([], ['createdAt' => 'ASC'])[0];
         static::assertSame(
             $correspondingTaskInstance->getCreatedAt()->format('d/m/Y'),
             $tasksData[0]['createdAt']

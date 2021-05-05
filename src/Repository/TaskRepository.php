@@ -60,8 +60,9 @@ class TaskRepository extends ServiceEntityRepository
                 ->andWhere('t.isDone = :isDone')
                 ->setParameter('isDone', 'done' === $withStatus ? 1 : 0);
         }
-        // Get tasks data without hydrating
+        // Get tasks data without hydrating (ordered by ascending date of creation)
         return $queryBuilder
+            ->addOrderBy('t.createdAt')
             ->getQuery()
             ->getScalarResult();
     }

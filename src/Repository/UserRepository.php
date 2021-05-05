@@ -36,7 +36,7 @@ class UserRepository extends ServiceEntityRepository
     public function findList(): array
     {
         $queryBuilder = $this->createQueryBuilder('u');
-        // Get users data without hydrating
+        // Get users data without hydrating (ordered by ascending id by default)
         return $queryBuilder
             // Select essential data to use
             ->select([
