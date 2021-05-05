@@ -11,15 +11,15 @@ Please note that this project is released with a [Contributor code of conduct](C
 ## Write bug reports with detail, background, and sample code
 In your bug report, please provide the following:
 
-* A quick summary and/or background
+* A quick summary and/or background:
 *Provide a summary describing the problem you are experiencing.*
-* Which action(s) was (were) done to reproduce  
+* Which action(s) was (were) done to reproduce:  
 *Provide steps to reproduce the bug.*
   * Be specific!
   * Give sample code if you can.
-* What you expected would happen  
+* What you expected would happen:  
 *What was the expected (correct) behavior?*
-* What actually happens  
+* What actually happens:  
 *What is the current (buggy) behavior?*
 * Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
@@ -85,4 +85,4 @@ $ php bin/phpunit
 You can integrate code guidelines and automated tests checks in continuous integration process such as [GitHub actions](https://github.com/features/actions) workflows or use other existing tools.  
 We thank you in advance for your efforts.
 
-N.B: please note that our contribution guidelines are mostly inspired from professional GitHub repository rules.
+N.B: please note that our contribution guidelines are mostly inspired from professional GitHub repositories rules.

@@ -128,7 +128,7 @@ PHPUnit current documentation:
 > https://phpunit.readthedocs.io
 
 #### 8. Project contribution:
-If you are interested in improving this project you can follow our guidelines defined in `CONTRIBUTING.md`.  
+If you are interested in improving this project you can follow our guidelines defined in [Contributing file](CONTRIBUTING.md).  
 You are welcome to make this application evolve.
 
  
